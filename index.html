@@ -8,6 +8,7 @@
   --void: #07041a;        /* cabinet black, violet bias */
   --violet: #3b12d6;      /* the art's backdrop */
   --magenta: #ff2e97;     /* the art's offset kanji */
+  --purple: #a640ff;      /* frame and offset lines */
   --bone: #fbf7ff;        /* pixel white */
   --gold: #ffc531;        /* ring gold */
   --cyan: #22e0ff;        /* glitch split */
@@ -38,7 +39,7 @@ body {
   container-type: inline-size;
   overflow: hidden;
   background: var(--violet);
-  box-shadow: 0 0 0 3px var(--ink), 0 0 0 6px var(--magenta), 0 30px 80px -20px rgba(59,18,214,.7);
+  box-shadow: 0 0 0 3px var(--ink), 0 0 0 6px var(--purple), 0 30px 80px -20px rgba(59,18,214,.7);
   image-rendering: pixelated;
   cursor: pointer;
 }
@@ -79,7 +80,7 @@ body {
 .series {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.5cqw 3cqw;
   background: var(--ink); color: var(--bone);
-  padding: 1.6cqw 2.2cqw; box-shadow: .9cqw .9cqw 0 var(--magenta);
+  padding: 1.6cqw 2.2cqw; box-shadow: .9cqw .9cqw 0 var(--purple);
 }
 .series b { font-family: var(--f-pixel); font-weight: 400; font-size: 3.2cqw; letter-spacing: .28em; }
 .series span { font-size: 3cqw; color: var(--magenta); letter-spacing: .1em; }
@@ -157,7 +158,7 @@ body {
   font-family: var(--f-pixel); font-size: 11px; letter-spacing: .12em;
   color: var(--bone); background: var(--ink);
   border: 3px solid var(--bone); padding: 12px 16px; cursor: pointer;
-  box-shadow: 4px 4px 0 var(--magenta);
+  box-shadow: 4px 4px 0 var(--purple);
 }
 .btn:hover { background: var(--violet); }
 .btn:active { transform: translate(4px,4px); box-shadow: none; }

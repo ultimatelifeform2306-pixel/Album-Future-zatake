@@ -101,6 +101,15 @@ body {
 
 /* PRESS START confirm: the head grins, a purple 8-bit ring validates */
 .start { position: relative; cursor: pointer; }
+/* PRESS START is the intro's payoff: it warps in with 8-bit stars */
+.cover:not([data-started]) .start { visibility: hidden; }
+.start.arrive { animation: start-in .5s steps(5) both, blink 1.05s .5s steps(1) infinite; }
+@keyframes start-in {
+  from { transform: scale(0) rotate(-20deg); }
+  55% { transform: scale(1.3) rotate(4deg); }
+  to { transform: none; }
+}
+.stage:not([data-started]) #play { display: none; }
 .cover.validating .start { animation: none; color: var(--purple); }
 .cover.validating .start-icon { animation: validate-pop .42s steps(4) 2 both; }
 @keyframes validate-pop {
@@ -508,6 +517,7 @@ body {
     clear();
     clearDrop();
     delete stage.dataset.playing;
+    revealStart();
     stopSound();
     cover.dataset.phase = 'rest';
     delete cover.dataset.glitch;
@@ -543,11 +553,12 @@ body {
     at(S + HIT.bass1, () => { delete cover.dataset.glitch; cover.dataset.phase = 'reveal'; hit(); retrigger('punch'); });
     at(S + HIT.bass2, () => { cover.dataset.phase = 'slam'; draw(1); hit(); retrigger('punch'); });
     at(S + HIT.beat3, () => { cover.dataset.phase = 'hud'; flashOnce('blip'); });
-    at(S + HIT.beat3 + 500, () => { cover.dataset.phase = 'rest'; delete stage.dataset.playing; });
+    at(S + HIT.beat3 + 500, () => { cover.dataset.phase = 'rest'; delete stage.dataset.playing; revealStart(); });
     events.sort((x, y) => x[0] - y[0]);
 
     cover.dataset.phase = 'boot';
     stage.dataset.playing = '';
+    hideStart();
     delete cover.dataset.glitch;
     clearStars();
     letters().forEach(s => s.classList.remove('on'));
@@ -568,6 +579,50 @@ body {
   }
 
   img.onload = () => { if (cover.dataset.phase === 'rest') draw(1); };
+  // ---------- PRESS START arrives when the intro ends ----------
+  const startLine = document.getElementById('start-line');
+  function starAt(parent, x, y, tone, delay) {
+    const el = document.createElement('i');
+    el.className = 'star pop' + (tone ? ' ' + tone : '');
+    el.style.left = x + '%'; el.style.top = y + '%';
+    el.style.animationDelay = delay + 's, ' + (delay + .36) + 's';
+    parent.appendChild(el);
+  }
+  const START_STARS = [[-7, -45], [13, -78], [38, -58], [64, -80], [90, -42], [106, -14],
+                       [104, 128], [76, 148], [46, 132], [18, 150], [-5, 114]];
+  let starTimer = 0;
+  function hideStart() {
+    clearTimeout(starTimer);
+    delete cover.dataset.started;
+    delete stage.dataset.started;
+    startLine.classList.remove('arrive');
+    startLine.querySelectorAll('.star').forEach(el => el.remove());
+  }
+  function sparkle() {
+    if (muted || !ac) return;
+    const t0 = ac.currentTime + .02;
+    [1318, 1760, 2093, 2637, 3136, 2637, 3520].forEach((f, i) => {
+      const t = t0 + i * .065;
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'square'; o.frequency.setValueAtTime(f, t);
+      g.gain.setValueAtTime(.04, t);
+      g.gain.exponentialRampToValueAtTime(.0001, t + .2);
+      o.connect(g).connect(ac.destination);
+      o.start(t); o.stop(t + .22);
+    });
+  }
+  function revealStart() {
+    hideStart();
+    cover.dataset.started = '';
+    stage.dataset.started = '';
+    void startLine.offsetWidth;
+    startLine.classList.add('arrive');
+    START_STARS.forEach(([x, y], i) => starAt(startLine, x, y, i % 2 ? 'gold' : 'purple', i * .06));
+    sparkle();
+    // the sparkle is an arrival, not decoration: clear it once it has landed
+    starTimer = setTimeout(() => startLine.querySelectorAll('.star').forEach(el => el.remove()), 1700);
+  }
+
   // ---------- PRESS START after the intro: the drop announcement ----------
   const DROP_LINE = 'SKULL OF DEATH FROM MADARA GONNA DROP OUT TOO THE 19 OCTOBER';
   const dropTxt = document.getElementById('drop-txt');

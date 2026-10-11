@@ -150,12 +150,13 @@ body {
   position: absolute; inset: 0; display: none; background: var(--ink);
   place-content: center; justify-items: center; gap: 4cqw; text-align: center;
 }
-.splash .touch { font-family: var(--f-pixel); font-size: 4.2cqw; letter-spacing: .14em; color: var(--bone); animation: blink 1.05s steps(1) infinite; }
+.splash .touch { font-family: var(--f-pixel); font-size: 4.2cqw; letter-spacing: .14em; color: var(--bone); animation: blink-soft 1.05s steps(1) infinite; }
+@keyframes blink-soft { 50% { opacity: .3; } }
 .splash .sub { font-family: var(--f-pixel); font-size: 2cqw; letter-spacing: .2em; color: var(--purple); }
 .cover[data-phase="splash"] .splash, .cover[data-phase="fade"] .splash { display: grid; }
 .cover[data-phase="fade"] :is(.vert,.title,.copy,.shade) { visibility: hidden; }
-/* after the touch: a 5-second stepped fade to black, then the intro */
-.cover[data-phase="fade"] .splash > * { animation: fade-out 5s steps(10) forwards; }
+/* after the touch: a quick stepped fade to black, then the intro */
+.cover[data-phase="fade"] .splash > * { animation: fade-out .45s steps(4) forwards; }
 @keyframes fade-out { to { opacity: 0; } }
 .cover[data-phase="splash"] :is(.vert,.title,.copy,.shade) { visibility: hidden; }
 
@@ -193,6 +194,8 @@ body {
 .btn:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
 .btn.primary { color: var(--ink); background: var(--gold); border-color: var(--ink); }
 .btn.primary:hover { background: #ffd866; }
+/* nothing behind the touch screen is reachable until it is tapped */
+.stage[data-locked] :is(.controls, .note) { visibility: hidden; pointer-events: none; }
 .note { margin: 0; font-size: 13px; color: #a99ee0; text-align: center; max-width: 52ch; line-height: 1.6; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -200,7 +203,7 @@ body {
 }
 </style>
 
-<main class="stage">
+<main class="stage" id="stage" data-locked="1">
   <div class="cover" id="cover" data-phase="rest" role="img" aria-label="Album cover: Panel Sewi, Sigmatiserie. A rapper in a black durag and hoodie throws a ringed fist toward the viewer on a violet background, framed as a 1990s game title screen. © 2026 V-Devil Entertainment.">
     <canvas id="art" width="1024" height="1024"></canvas>
     <div class="shade"></div>
@@ -234,7 +237,7 @@ body {
     <button class="btn" id="skip" type="button">SKIP INTRO</button>
     <button class="btn" id="mute" type="button" aria-pressed="false">SOUND: ON</button>
   </div>
-  <p class="note">Touch the screen to start the intro with sound, or press start to replay it: the V-Devil Team boot card with typing blips, then the opening sound with every cut on its beat, then the 8-bit voice tag. Tap the screen to skip ahead.</p>
+  <p class="note">Touch the screen to start the intro with sound; these controls replay it: the V-Devil Team boot card with typing blips, then the opening sound with every cut on its beat, then the 8-bit voice tag. Tap the screen to skip ahead.</p>
 </main>
 
 <script>
@@ -484,17 +487,16 @@ body {
   // Phones only allow sound after a touch, so they open on a black
   // TOUCH TO START screen and the first touch anywhere starts the intro.
   const UNLOCK = ['pointerup', 'touchend', 'click', 'keydown'];
+  const stage = document.getElementById('stage');
   function firstTouch(e) {
-    const btn = e.target.closest && e.target.closest('button');
-    if (btn && btn.id === 'mute') return; // toggling sound keeps the screen up
     UNLOCK.forEach(t => removeEventListener(t, firstTouch, true));
-    if (btn) return; // PRESS START, START GAME and SKIP do their own thing
+    delete stage.dataset.locked;
     soundStartedAt = performance.now();
     // unlock sound now, while the touch counts; the intro starts after the fade
     if (!muted) ensureAudio();
     cover.dataset.phase = 'fade';
     clearTimeout(fadeTimer);
-    fadeTimer = setTimeout(() => play(true), 5000);
+    fadeTimer = setTimeout(() => play(true), 450);
   }
   function boot() {
     let running = false;
@@ -502,7 +504,7 @@ body {
       ac = new (window.AudioContext || window.webkitAudioContext)();
       running = ac.state === 'running';
     } catch {}
-    if (running) { soundStartedAt = performance.now(); play(true); return; }
+    if (running) { delete stage.dataset.locked; soundStartedAt = performance.now(); play(true); return; }
     cover.dataset.phase = 'splash';
     UNLOCK.forEach(t => addEventListener(t, firstTouch, true));
   }

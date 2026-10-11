@@ -145,6 +145,16 @@ body {
 .cover.punch canvas { animation: punch .45s steps(6) both; }
 @keyframes punch { from { transform: scale(1.14); } to { transform: none; } }
 
+/* tap-to-start screen: phones allow sound only after a touch */
+.splash {
+  position: absolute; inset: 0; display: none; background: var(--ink);
+  place-content: center; justify-items: center; gap: 4cqw; text-align: center;
+}
+.splash .touch { font-family: var(--f-pixel); font-size: 4.2cqw; letter-spacing: .14em; color: var(--bone); animation: blink 1.05s steps(1) infinite; }
+.splash .sub { font-family: var(--f-pixel); font-size: 2cqw; letter-spacing: .2em; color: var(--purple); }
+.cover[data-phase="splash"] .splash { display: grid; }
+.cover[data-phase="splash"] :is(.vert,.title,.copy,.shade) { visibility: hidden; }
+
 /* state machine */
 .cover[data-phase="boot"] .boot { opacity: 1; }
 .cover[data-phase="boot"] :is(.vert,.title,.copy,.shade) { visibility: hidden; }
@@ -205,6 +215,10 @@ body {
       <div class="studio" id="studio"></div>
       <div class="pres" id="pres"></div>
     </div>
+    <div class="splash" aria-hidden="true">
+      <div class="touch">TOUCH TO START</div>
+      <div class="sub">SOUND ON</div>
+    </div>
     <div class="flash" id="flash"></div>
     <div class="crt"></div>
     <div class="glare"></div>
@@ -216,7 +230,7 @@ body {
     <button class="btn" id="skip" type="button">SKIP INTRO</button>
     <button class="btn" id="mute" type="button" aria-pressed="false">SOUND: ON</button>
   </div>
-  <p class="note">Touch anywhere to hear the intro with sound, or press start to replay it: the V-Devil Team boot card with typing blips, then the opening sound with every cut on its beat, then the 8-bit voice tag. Tap the screen to skip ahead.</p>
+  <p class="note">Touch the screen to start the intro with sound, or press start to replay it: the V-Devil Team boot card with typing blips, then the opening sound with every cut on its beat, then the 8-bit voice tag. Tap the screen to skip ahead.</p>
 </main>
 
 <script>
@@ -457,14 +471,14 @@ body {
   });
 
   // On open: play with sound straight away when the browser allows it.
-  // Phones only allow sound after a touch, so until then the intro runs
-  // silently, and the very first touch anywhere restarts it with sound.
+  // Phones only allow sound after a touch, so they open on a black
+  // TOUCH TO START screen and the first touch anywhere starts the intro.
   const UNLOCK = ['pointerup', 'touchend', 'click', 'keydown'];
   function firstTouch(e) {
+    const btn = e.target.closest && e.target.closest('button');
+    if (btn && btn.id === 'mute') return; // toggling sound keeps the screen up
     UNLOCK.forEach(t => removeEventListener(t, firstTouch, true));
-    // a button press does its own thing (PRESS START, SKIP, SOUND)
-    if (e.target.closest && e.target.closest('button')) return;
-    if (muted) return;
+    if (btn) return; // PRESS START, START GAME and SKIP do their own thing
     soundStartedAt = performance.now();
     play(true);
   }
@@ -475,7 +489,7 @@ body {
       running = ac.state === 'running';
     } catch {}
     if (running) { soundStartedAt = performance.now(); play(true); return; }
-    play(false);
+    cover.dataset.phase = 'splash';
     UNLOCK.forEach(t => addEventListener(t, firstTouch, true));
   }
   if (img.complete) boot(); else img.addEventListener('load', boot, { once: true });

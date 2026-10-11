@@ -190,6 +190,52 @@ body {
   text-wrap: balance;
 }
 
+/* character select locks the page: nothing to press, nothing moving */
+.stage[data-pick] :is(.controls, .note) { display: none; }
+body.pick-mode { background: radial-gradient(125% 95% at 50% 0%, #2d0a52 0%, #11021f 48%, #000 100%) fixed, #000; }
+
+/* 16-bit gamepad around the screen: button cluster left, d-pad right */
+.pads { position: fixed; inset: 0; display: none; pointer-events: none; z-index: 2; }
+body.pick-mode .pads { display: block; }
+.pad {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: min(23vw, 168px); aspect-ratio: 1;
+  display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+  place-items: center;
+  background: linear-gradient(150deg, #2b0a4a, #16042b 70%, #090011);
+  border: .5vmin solid #000; border-radius: 14%;
+  box-shadow: inset 0 0 0 .4vmin #4b1580, 0 1vmin 0 #000;
+  box-sizing: border-box; padding: 1.4vmin;
+}
+.pad-l { left: 3vw; }
+.pad-r { right: 3vw; }
+.key {
+  width: 86%; aspect-ratio: 1; position: relative;
+  background: radial-gradient(circle at 34% 30%, #c77bff 0%, #9333ea 38%, #5b1296 70%, #330861 100%);
+  border: .45vmin solid #000;
+  box-shadow: inset -.25vmin -.35vmin 0 #2a0550, inset .3vmin .3vmin 0 #d9a8ff;
+}
+/* left cluster: four round face buttons */
+.pad-l .key { border-radius: 50%; }
+.pad-l .k1 { grid-area: 1 / 2; } .pad-l .k2 { grid-area: 2 / 1; }
+.pad-l .k3 { grid-area: 2 / 3; } .pad-l .k4 { grid-area: 3 / 2; }
+/* right cluster: a four-way pad with pixel arrows */
+.pad-r .key { border-radius: 22%; }
+.pad-r .k1 { grid-area: 1 / 2; } .pad-r .k2 { grid-area: 2 / 1; }
+.pad-r .k3 { grid-area: 2 / 3; } .pad-r .k4 { grid-area: 3 / 2; }
+.key::after {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 0; height: 0;
+  border: .9vmin solid transparent;
+}
+.pad-r .k1::after { transform: translate(-50%, -70%); border-bottom-color: #efe2ff; }
+.pad-r .k2::after { transform: translate(-70%, -50%); border-right-color: #efe2ff; }
+.pad-r .k3::after { transform: translate(-30%, -50%); border-left-color: #efe2ff; }
+.pad-r .k4::after { transform: translate(-50%, -30%); border-top-color: #efe2ff; }
+@media (max-width: 900px) {
+  .pad { top: auto; bottom: 2.5vh; transform: none; width: min(32vw, 150px); }
+  .pad-l { left: 4vw; } .pad-r { right: 4vw; }
+}
+
 /* CRT glass */
 .crt {
   position: absolute; inset: 0; pointer-events: none; mix-blend-mode: multiply;
@@ -389,6 +435,10 @@ body {
     <button class="btn" id="mute" type="button" aria-pressed="false">SOUND: ON</button>
   </div>
   <p class="note">Touch the screen, type a name on the board, and the intro runs with sound; press start then shows what drops next; reload the page to watch it again: the V-Devil Team boot card with typing blips, then the opening sound with every cut on its beat, then the 8-bit voice tag. Tap the screen to skip ahead.</p>
+  <div class="pads" aria-hidden="true">
+    <div class="pad pad-l"><i class="key k1"></i><i class="key k2"></i><i class="key k3"></i><i class="key k4"></i></div>
+    <div class="pad pad-r"><i class="key k1"></i><i class="key k2"></i><i class="key k3"></i><i class="key k4"></i></div>
+  </div>
 </main>
 
 <script>
@@ -673,6 +723,8 @@ body {
   const dLater = (ms, fn) => dropTimers.push(setTimeout(fn, ms));
   function clearDrop() {
     dropTimers.forEach(clearTimeout); dropTimers = [];
+    delete stage.dataset.pick;
+    document.body.classList.remove('pick-mode');
     cover.classList.remove('validating');
     startIcons.forEach(i => i.src = HEAD_PLAIN);
     dropTxt.textContent = '';
@@ -759,7 +811,12 @@ body {
       });
       dLater(typed + 5000, () => { cover.dataset.phase = 'fadeout'; });
       dLater(typed + 5500, () => { cover.dataset.phase = 'black'; });
-      dLater(typed + 10500, () => { cover.dataset.phase = 'pick'; pickSfx(); });
+      dLater(typed + 10500, () => {
+        cover.dataset.phase = 'pick';
+        stage.dataset.pick = '';
+        document.body.classList.add('pick-mode');
+        pickSfx();
+      });
     });
   }
   // PRESS START shows the drop; START GAME replays the intro

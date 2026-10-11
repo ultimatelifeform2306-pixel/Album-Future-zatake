@@ -115,7 +115,21 @@ body {
   text-align: center; opacity: 0;
 }
 .boot .studio { font-family: var(--f-pixel); font-size: 5.4cqw; letter-spacing: .14em; color: var(--bone); }
-.boot .studio em { font-style: normal; color: var(--magenta); }
+.boot .studio em { font-style: normal; color: var(--purple); position: relative; display: inline-block; }
+/* DEVIL: letters drop in, then 8-bit pixel stars twinkle around the word */
+.boot .studio em span.on { animation: devil-drop .32s steps(4) both; }
+@keyframes devil-drop { from { transform: translateY(-5cqw); } 75% { transform: translateY(.6cqw); } to { transform: none; } }
+.star {
+  position: absolute; width: .6cqw; height: .6cqw; margin: -.3cqw 0 0 -.3cqw;
+  background: currentColor; color: var(--bone); pointer-events: none;
+  box-shadow: 0 -.6cqw, 0 -1.2cqw, 0 .6cqw, 0 1.2cqw, -.6cqw 0, -1.2cqw 0, .6cqw 0, 1.2cqw 0;
+  animation: twinkle .72s steps(1) infinite;
+}
+.star.gold { color: var(--gold); }
+.star.purple { color: #d9a8ff; }
+.star.pop { animation: star-pop .36s steps(3) both, twinkle .72s .36s steps(1) infinite; }
+@keyframes twinkle { 0% { transform: scale(1); } 25% { transform: scale(.5); } 50% { transform: scale(1.5); } 75% { transform: scale(.5) rotate(45deg); } }
+@keyframes star-pop { from { transform: scale(0); } 66% { transform: scale(2); } to { transform: scale(1); } }
 .boot .pres { font-family: var(--f-pixel); font-size: 3cqw; color: var(--gold); letter-spacing: .4em; }
 .boot span { visibility: hidden; }
 .boot span.on { visibility: visible; }
@@ -249,6 +263,24 @@ body {
   studio.innerHTML = `${spans('V-')}<em>${spans('DEVIL')}</em>${spans(' TEAM')}`;
   document.getElementById('pres').innerHTML = spans('PRESENTS');
   const letters = () => cover.querySelectorAll('.boot span');
+  const devil = studio.querySelector('em');
+  const devilLetters = [...devil.querySelectorAll('span')];
+  // pixel star placed in % of the DEVIL word's box
+  function star(x, y, tone, delay = 0) {
+    const el = document.createElement('i');
+    el.className = 'star pop' + (tone ? ' ' + tone : '');
+    el.style.left = x + '%'; el.style.top = y + '%';
+    el.style.animationDelay = `0s, ${.36 + delay}s`;
+    devil.appendChild(el);
+  }
+  function clearStars() { devil.querySelectorAll('.star').forEach(el => el.remove()); }
+  const BURST = [[-8, -30, 'gold'], [22, -55, ''], [50, -38, 'purple'], [80, -60, 'gold'], [108, -25, ''],
+                 [104, 120, 'purple'], [70, 145, ''], [30, 135, 'gold'], [-6, 110, 'purple']];
+  function devilLanded(i) {
+    // a spark on each letter as it lands, then a burst around the word
+    star((i + .5) / devilLetters.length * 100, i % 2 ? 128 : -32, i % 2 ? 'purple' : 'gold');
+    if (i === devilLetters.length - 1) BURST.forEach(([x, y, t], k) => star(x, y, t, k * .08));
+  }
   const TYPE_START = 80, TYPE_STEP = 70;
   const TYPED = 'V-DEVIL TEAMPRESENTS';
   const BOOT = TYPE_START + TYPED.length * TYPE_STEP + 250; // ms until the intro sound
@@ -351,6 +383,7 @@ body {
     stopSound();
     cover.dataset.phase = 'rest';
     delete cover.dataset.glitch;
+    clearStars();
     letters().forEach(s => s.classList.add('on'));
     draw(1);
   }
@@ -369,7 +402,11 @@ body {
     const S = BOOT;
     const events = [];
     const at = (ms, fn) => events.push([ms, fn]);
-    letters().forEach((s, i) => at(TYPE_START + i * TYPE_STEP, () => s.classList.add('on')));
+    letters().forEach((s, i) => at(TYPE_START + i * TYPE_STEP, () => {
+      s.classList.add('on');
+      const d = devilLetters.indexOf(s);
+      if (d >= 0) setTimeout(() => devilLanded(d), 240);
+    }));
     at(S + HIT.a, () => { cover.dataset.glitch = 'a'; flashOnce('blip'); });
     at(S + HIT.b, () => { cover.dataset.glitch = 'b'; flashOnce('blip'); });
     at(S + HIT.c, () => { cover.dataset.glitch = 'off'; });
@@ -382,6 +419,7 @@ body {
 
     cover.dataset.phase = 'boot';
     delete cover.dataset.glitch;
+    clearStars();
     letters().forEach(s => s.classList.remove('on'));
     ctx.clearRect(0, 0, canvas.width, canvas.width);
     let next = 0, lastLevel = -1;

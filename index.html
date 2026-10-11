@@ -274,6 +274,8 @@ body {
 .btn.primary:hover { background: #ffd866; }
 /* nothing behind the touch screen is reachable until it is tapped */
 .stage[data-locked] :is(.controls, .note) { visibility: hidden; pointer-events: none; }
+/* skipping and starting the intro only make sense while it runs */
+.stage:not([data-playing]) :is(#skip, #start-game) { display: none; }
 .note { margin: 0; font-size: 13px; color: #a99ee0; text-align: center; max-width: 52ch; line-height: 1.6; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -336,7 +338,7 @@ body {
     <button class="btn" id="skip" type="button">SKIP INTRO</button>
     <button class="btn" id="mute" type="button" aria-pressed="false">SOUND: ON</button>
   </div>
-  <p class="note">Touch the screen, type a name on the board, and the intro runs with sound; these controls replay it (press start shows what drops next): the V-Devil Team boot card with typing blips, then the opening sound with every cut on its beat, then the 8-bit voice tag. Tap the screen to skip ahead.</p>
+  <p class="note">Touch the screen, type a name on the board, and the intro runs with sound; press start then shows what drops next, and tapping the cover replays the intro: the V-Devil Team boot card with typing blips, then the opening sound with every cut on its beat, then the 8-bit voice tag. Tap the screen to skip ahead.</p>
 </main>
 
 <script>
@@ -505,6 +507,7 @@ body {
   function rest() {
     clear();
     clearDrop();
+    delete stage.dataset.playing;
     stopSound();
     cover.dataset.phase = 'rest';
     delete cover.dataset.glitch;
@@ -540,10 +543,11 @@ body {
     at(S + HIT.bass1, () => { delete cover.dataset.glitch; cover.dataset.phase = 'reveal'; hit(); retrigger('punch'); });
     at(S + HIT.bass2, () => { cover.dataset.phase = 'slam'; draw(1); hit(); retrigger('punch'); });
     at(S + HIT.beat3, () => { cover.dataset.phase = 'hud'; flashOnce('blip'); });
-    at(S + HIT.beat3 + 500, () => { cover.dataset.phase = 'rest'; });
+    at(S + HIT.beat3 + 500, () => { cover.dataset.phase = 'rest'; delete stage.dataset.playing; });
     events.sort((x, y) => x[0] - y[0]);
 
     cover.dataset.phase = 'boot';
+    stage.dataset.playing = '';
     delete cover.dataset.glitch;
     clearStars();
     letters().forEach(s => s.classList.remove('on'));

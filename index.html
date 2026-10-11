@@ -9,7 +9,8 @@
   --violet: #3b12d6;      /* the art's backdrop */
   --magenta: #ff2e97;     /* the art's offset kanji */
   --bone: #fbf7ff;        /* pixel white */
-  --gold: #ffc531;        /* ring gold / health bar */
+  --gold: #ffc531;        /* ring gold */
+  --cyan: #22e0ff;        /* glitch split */
   --ink: #000;
   --f-pixel: "Press Start 2P", "Courier New", monospace;
   --f-jp: "DotGothic16", "MS Gothic", "Osaka", monospace;
@@ -110,6 +111,16 @@ body {
 .boot span { visibility: hidden; }
 .boot span.on { visibility: visible; }
 .flash { background: var(--bone); opacity: 0; }
+
+/* beat-synced stutters on the boot card (three hits, then CRT switch-off) */
+.boot > * { transition: none; }
+.cover[data-glitch="a"] .boot > * { transform: translateX(-2.5cqw) skewX(-14deg); text-shadow: .8cqw 0 var(--magenta), -.8cqw 0 var(--cyan); }
+.cover[data-glitch="b"] .boot > * { transform: translateX(2cqw) scale(1.25); text-shadow: -.8cqw 0 var(--magenta), .8cqw 0 var(--cyan); }
+.cover[data-glitch="off"] .boot > * { transform: scale(1.5, .03); filter: brightness(4); }
+.cover[data-glitch="gone"] .boot > * { visibility: hidden; }
+.flash.blip { animation: flash .12s steps(2) both; opacity: 0; }
+.cover.punch canvas { animation: punch .45s steps(6) both; }
+@keyframes punch { from { transform: scale(1.14); } to { transform: none; } }
 
 /* state machine */
 .cover[data-phase="boot"] .boot { opacity: 1; }
@@ -262,18 +273,11 @@ body {
     try { bus.gain.setValueAtTime(0, ac.currentTime); bus.disconnect(); } catch {}
     bus = null;
   }
-  function tone(freq, t, dur, type = 'square', vol = .06) {
-    const o = ac.createOscillator(), g = ac.createGain();
-    o.type = type; o.frequency.value = freq;
-    g.gain.setValueAtTime(vol, t);
-    g.gain.exponentialRampToValueAtTime(.0001, t + dur);
-    o.connect(g).connect(bus);
-    o.start(t); o.stop(t + dur + .02);
-  }
-  const N = f => 440 * Math.pow(2, (f - 69) / 12);
+  // Returns the audio-clock time the intro started at, so the picture can
+  // follow the sound instead of drifting on its own timers.
   function jingle() {
-    if (muted) return;
-    try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); ac.resume(); } catch { return; }
+    if (muted) return null;
+    try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); ac.resume(); } catch { return null; }
     stopSound();
     bus = ac.createGain(); bus.connect(ac.destination);
     const t0 = ac.currentTime + .05;
@@ -293,30 +297,27 @@ body {
     // then the intro sound; its first bass hit lands on the reveal flash
     const s0 = t0 + BOOT / 1000;
     playClip(INTRO_SOUND, s0, .85);
-    // title hit when the logo slams in
-    const h = s0 + 3.15;
-    [57, 64, 69, 72].forEach(m => tone(N(m), h, .7, 'sawtooth', .025));
-    tone(N(33), h, .8, 'triangle', .22);
-    tone(90, h, .25, 'square', .08);
     // 8-bit voice tag 5 seconds into the intro sound, 40% volume
     playClip(VOICE_8BIT, s0 + 5, .4);
+    return t0;
   }
 
   // ---------- timeline ----------
-  let timers = [], raf = 0;
-  const later = (ms, fn) => timers.push(setTimeout(fn, ms));
-  function clear() {
-    timers.forEach(clearTimeout); timers = [];
-    cancelAnimationFrame(raf);
-  }
-  function hit() {
-    flash.classList.remove('go'); void flash.offsetWidth; flash.classList.add('go');
-    cover.classList.remove('shake'); void cover.offsetWidth; cover.classList.add('shake');
-  }
+  // Cut points, in ms after the intro sound starts, taken from its hits:
+  // a triple stutter at 0.70 / 0.82 / 0.94 s, bass hits at 1.57 and 2.55 s,
+  // and one beat (~0.98 s) apart after that.
+  const HIT = { a: 700, b: 820, c: 940, bass1: 1570, bass2: 2550, beat3: 3530 };
+  const LEVELS = [128, 96, 64, 48, 32, 24, 16, 10, 6, 3, 1];
+  let raf = 0;
+  function clear() { cancelAnimationFrame(raf); }
+  function flashOnce(cls) { flash.className = 'flash'; void flash.offsetWidth; flash.classList.add(cls); }
+  function retrigger(cls) { cover.classList.remove(cls); void cover.offsetWidth; cover.classList.add(cls); }
+  function hit() { flashOnce('go'); retrigger('shake'); }
   function rest() {
     clear();
     stopSound();
     cover.dataset.phase = 'rest';
+    delete cover.dataset.glitch;
     letters().forEach(s => s.classList.add('on'));
     draw(1);
   }
@@ -324,26 +325,45 @@ body {
     clear();
     if (reduce) { rest(); return; }
     stopSound();
-    if (withSound) jingle();
+    const audioT0 = withSound ? jingle() : null;
+    const wall0 = performance.now();
+    const clock = () => {
+      // follow the audio clock when sound is running, else wall time
+      if (audioT0 != null && ac && ac.state === 'running')
+        return (ac.currentTime - audioT0 - (ac.outputLatency || 0)) * 1000;
+      return performance.now() - wall0;
+    };
+    const S = BOOT;
+    const events = [];
+    const at = (ms, fn) => events.push([ms, fn]);
+    letters().forEach((s, i) => at(TYPE_START + i * TYPE_STEP, () => s.classList.add('on')));
+    at(S + HIT.a, () => { cover.dataset.glitch = 'a'; flashOnce('blip'); });
+    at(S + HIT.b, () => { cover.dataset.glitch = 'b'; flashOnce('blip'); });
+    at(S + HIT.c, () => { cover.dataset.glitch = 'off'; });
+    at(S + HIT.c + 110, () => { cover.dataset.glitch = 'gone'; });
+    at(S + HIT.bass1, () => { delete cover.dataset.glitch; cover.dataset.phase = 'reveal'; hit(); retrigger('punch'); });
+    at(S + HIT.bass2, () => { cover.dataset.phase = 'slam'; draw(1); hit(); retrigger('punch'); });
+    at(S + HIT.beat3, () => { cover.dataset.phase = 'hud'; flashOnce('blip'); });
+    at(S + HIT.beat3 + 500, () => { cover.dataset.phase = 'rest'; });
+    events.sort((x, y) => x[0] - y[0]);
+
     cover.dataset.phase = 'boot';
+    delete cover.dataset.glitch;
     letters().forEach(s => s.classList.remove('on'));
     ctx.clearRect(0, 0, canvas.width, canvas.width);
-    letters().forEach((s, i) => later(TYPE_START + i * TYPE_STEP, () => s.classList.add('on')));
-    later(BOOT + 1600, () => {
-      cover.dataset.phase = 'reveal'; hit();
-      const t0 = performance.now(), dur = 1300;
-      const step = now => {
-        const p = Math.max(0, Math.min(1, (now - t0) / dur));
-        // big chunky blocks that snap down in discrete steps
-        const levels = [128, 96, 64, 48, 32, 24, 16, 10, 6, 3, 1];
-        draw(levels[Math.min(levels.length - 1, Math.floor(p * levels.length))]);
-        if (p < 1) raf = requestAnimationFrame(step);
-      };
-      raf = requestAnimationFrame(step);
-    });
-    later(BOOT + 3150, () => { cover.dataset.phase = 'slam'; hit(); });
-    later(BOOT + 3900, () => { cover.dataset.phase = 'hud'; });
-    later(BOOT + 5200, () => { cover.dataset.phase = 'rest'; });
+    let next = 0, lastLevel = -1;
+    const tick = () => {
+      const t = clock();
+      while (next < events.length && t >= events[next][0]) events[next++][1]();
+      // pixel reveal snaps one step per 1/16 of the beat between the two bass hits
+      if (cover.dataset.phase === 'reveal') {
+        const p = (t - (S + HIT.bass1)) / (HIT.bass2 - HIT.bass1 - 60);
+        const lv = Math.max(0, Math.min(LEVELS.length - 1, Math.floor(p * LEVELS.length)));
+        if (lv !== lastLevel) { draw(LEVELS[lv]); lastLevel = lv; }
+      }
+      if (next < events.length) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
   }
 
   img.onload = () => { if (cover.dataset.phase === 'rest') draw(1); };

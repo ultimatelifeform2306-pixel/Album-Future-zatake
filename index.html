@@ -152,7 +152,11 @@ body {
 }
 .splash .touch { font-family: var(--f-pixel); font-size: 4.2cqw; letter-spacing: .14em; color: var(--bone); animation: blink 1.05s steps(1) infinite; }
 .splash .sub { font-family: var(--f-pixel); font-size: 2cqw; letter-spacing: .2em; color: var(--purple); }
-.cover[data-phase="splash"] .splash { display: grid; }
+.cover[data-phase="splash"] .splash, .cover[data-phase="fade"] .splash { display: grid; }
+.cover[data-phase="fade"] :is(.vert,.title,.copy,.shade) { visibility: hidden; }
+/* after the touch: a 5-second stepped fade to black, then the intro */
+.cover[data-phase="fade"] .splash > * { animation: fade-out 5s steps(10) forwards; }
+@keyframes fade-out { to { opacity: 0; } }
 .cover[data-phase="splash"] :is(.vert,.title,.copy,.shade) { visibility: hidden; }
 
 /* state machine */
@@ -336,16 +340,13 @@ body {
     try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch {}
     try { keepAlive.currentTime = 0; const p = keepAlive.play(); if (p) p.catch(() => {}); } catch {}
   }
-  function stopSound() {
-    try { keepAlive.pause(); } catch {}
+  function stopSound(releaseSpeaker = true) {
+    if (releaseSpeaker) try { keepAlive.pause(); } catch {}
     if (!bus) return;
     try { bus.gain.setValueAtTime(0, ac.currentTime); bus.disconnect(); } catch {}
     bus = null;
   }
-  // Returns the audio-clock time the intro started at, so the picture can
-  // follow the sound instead of drifting on its own timers.
-  function jingle() {
-    if (muted) return null;
+  function ensureAudio() {
     unlockSpeaker();
     try {
       // a context left 'interrupted' by AirPods connecting or disconnecting
@@ -353,7 +354,13 @@ body {
       if (ac && (ac.state === 'interrupted' || ac.state === 'closed')) { try { ac.close(); } catch {} ac = null; }
       ac = ac || new (window.AudioContext || window.webkitAudioContext)();
       ac.resume();
-    } catch { return null; }
+      return true;
+    } catch { return false; }
+  }
+  // Returns the audio-clock time the intro started at, so the picture can
+  // follow the sound instead of drifting on its own timers.
+  function jingle() {
+    if (muted || !ensureAudio()) return null;
     if (bus) { try { bus.disconnect(); } catch {} bus = null; }
     bus = ac.createGain(); bus.connect(ac.destination);
     const t0 = ac.currentTime + .05;
@@ -388,7 +395,8 @@ body {
   const HIT = { a: 700, b: 820, c: 940, bass1: 1570, bass2: 2550, beat3: 3530 };
   const LEVELS = [128, 96, 64, 48, 32, 24, 16, 10, 6, 3, 1];
   let raf = 0;
-  function clear() { cancelAnimationFrame(raf); }
+  let fadeTimer = 0;
+  function clear() { cancelAnimationFrame(raf); clearTimeout(fadeTimer); }
   function flashOnce(cls) { flash.className = 'flash'; void flash.offsetWidth; flash.classList.add(cls); }
   function retrigger(cls) { cover.classList.remove(cls); void cover.offsetWidth; cover.classList.add(cls); }
   function hit() { flashOnce('go'); retrigger('shake'); }
@@ -404,7 +412,7 @@ body {
   function play(withSound) {
     clear();
     if (reduce) { rest(); return; }
-    stopSound();
+    stopSound(false); // keep the speaker unlocked by the touch
     const audioT0 = withSound ? jingle() : null;
     const wall0 = performance.now();
     const clock = () => {
@@ -460,7 +468,9 @@ body {
   cover.addEventListener('click', () => {
     // the touch that just switched the sound on must not also skip the intro
     if (performance.now() - soundStartedAt < 800) return;
-    cover.dataset.phase === 'rest' ? play(true) : rest();
+    const ph = cover.dataset.phase;
+    if (ph === 'fade') play(true); // tap during the fade: start now
+    else ph === 'rest' ? play(true) : rest();
   });
   const muteBtn = document.getElementById('mute');
   muteBtn.addEventListener('click', () => {
@@ -480,7 +490,11 @@ body {
     UNLOCK.forEach(t => removeEventListener(t, firstTouch, true));
     if (btn) return; // PRESS START, START GAME and SKIP do their own thing
     soundStartedAt = performance.now();
-    play(true);
+    // unlock sound now, while the touch counts; the intro starts after the fade
+    if (!muted) ensureAudio();
+    cover.dataset.phase = 'fade';
+    clearTimeout(fadeTimer);
+    fadeTimer = setTimeout(() => play(true), 5000);
   }
   function boot() {
     let running = false;

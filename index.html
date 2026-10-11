@@ -106,10 +106,9 @@ body {
 }
 .boot .studio { font-family: var(--f-pixel); font-size: 5.4cqw; letter-spacing: .14em; color: var(--bone); }
 .boot .studio em { font-style: normal; color: var(--magenta); }
-.boot .soft { font-family: var(--f-jp); font-size: 3.6cqw; color: var(--gold); letter-spacing: .5em; }
-.boot .pres { font-family: var(--f-pixel); font-size: 2.2cqw; color: #9c8cff; letter-spacing: .3em; }
-.boot .studio span { visibility: hidden; }
-.boot .studio span.on { visibility: visible; }
+.boot .pres { font-family: var(--f-pixel); font-size: 3cqw; color: var(--gold); letter-spacing: .4em; }
+.boot span { visibility: hidden; }
+.boot span.on { visibility: visible; }
 .flash { background: var(--bone); opacity: 0; }
 
 /* state machine */
@@ -170,8 +169,7 @@ body {
 
     <div class="boot" aria-hidden="true">
       <div class="studio" id="studio"></div>
-      <div class="soft">ソフト</div>
-      <div class="pres">PRESENTS</div>
+      <div class="pres" id="pres"></div>
     </div>
     <div class="flash" id="flash"></div>
     <div class="crt"></div>
@@ -183,7 +181,7 @@ body {
     <button class="btn" id="skip" type="button">SKIP INTRO</button>
     <button class="btn" id="mute" type="button" aria-pressed="false">SOUND: ON</button>
   </div>
-  <p class="note">Press start to replay the boot intro with sound: the opening sound and title hit, then an 8-bit voice tag at the 5-second mark. Tap the screen to skip ahead.</p>
+  <p class="note">Press start to replay the boot intro with sound: the V-Devil Team boot card with typing blips, the opening sound and title hit, then the 8-bit voice tag. Tap the screen to skip ahead.</p>
 </main>
 
 <script>
@@ -223,10 +221,15 @@ body {
   }
 
   // Studio logo, typed one letter at a time.
-  const NAME = 'SIGMATISERIE';
-  studio.innerHTML = NAME.split('').map((c, i) => `<span${i >= 5 && i <= 8 ? ' class="x"' : ''}>${c}</span>`).join('');
-  studio.querySelectorAll('.x').forEach(s => { s.outerHTML = `<em><span>${s.textContent}</span></em>`; });
-  const letters = () => studio.querySelectorAll('span');
+  // Boot card: "V-DEVIL TEAM / PRESENTS", typed one letter at a time with an
+  // 8-bit key blip; the intro sound starts once the typing ends.
+  const spans = str => str.split('').map(c => `<span>${c === ' ' ? '&nbsp;' : c}</span>`).join('');
+  studio.innerHTML = `${spans('V-')}<em>${spans('DEVIL')}</em>${spans(' TEAM')}`;
+  document.getElementById('pres').innerHTML = spans('PRESENTS');
+  const letters = () => cover.querySelectorAll('.boot span');
+  const TYPE_START = 80, TYPE_STEP = 70;
+  const TYPED = 'V-DEVIL TEAMPRESENTS';
+  const BOOT = TYPE_START + TYPED.length * TYPE_STEP + 250; // ms until the intro sound
 
   // ---------- sound ----------
   // Everything routes through one bus so SKIP can cut it instantly.
@@ -274,15 +277,29 @@ body {
     stopSound();
     bus = ac.createGain(); bus.connect(ac.destination);
     const t0 = ac.currentTime + .05;
-    // opening sound: its first bass hit lands on the reveal flash at 1.6s
-    playClip(INTRO_SOUND, t0, .85);
+    // 8-bit typing blips, one per letter (none for the space)
+    [...TYPED].forEach((c, i) => {
+      if (c === ' ') return;
+      const t = t0 + (TYPE_START + i * TYPE_STEP) / 1000;
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'square';
+      o.frequency.setValueAtTime(1500 + (i % 4) * 110, t);
+      o.frequency.setValueAtTime(750 + (i % 4) * 55, t + .018);
+      g.gain.setValueAtTime(.05, t);
+      g.gain.setValueAtTime(0, t + .04);
+      o.connect(g).connect(bus);
+      o.start(t); o.stop(t + .05);
+    });
+    // then the intro sound; its first bass hit lands on the reveal flash
+    const s0 = t0 + BOOT / 1000;
+    playClip(INTRO_SOUND, s0, .85);
     // title hit when the logo slams in
-    const h = t0 + 3.15;
+    const h = s0 + 3.15;
     [57, 64, 69, 72].forEach(m => tone(N(m), h, .7, 'sawtooth', .025));
     tone(N(33), h, .8, 'triangle', .22);
     tone(90, h, .25, 'square', .08);
-    // 8-bit voice tag at the 5-second mark, 40% volume
-    playClip(VOICE_8BIT, t0 + 5, .4);
+    // 8-bit voice tag 5 seconds into the intro sound, 40% volume
+    playClip(VOICE_8BIT, s0 + 5, .4);
   }
 
   // ---------- timeline ----------
@@ -311,8 +328,8 @@ body {
     cover.dataset.phase = 'boot';
     letters().forEach(s => s.classList.remove('on'));
     ctx.clearRect(0, 0, canvas.width, canvas.width);
-    letters().forEach((s, i) => later(80 + i * 80, () => s.classList.add('on')));
-    later(1600, () => {
+    letters().forEach((s, i) => later(TYPE_START + i * TYPE_STEP, () => s.classList.add('on')));
+    later(BOOT + 1600, () => {
       cover.dataset.phase = 'reveal'; hit();
       const t0 = performance.now(), dur = 1300;
       const step = now => {
@@ -324,9 +341,9 @@ body {
       };
       raf = requestAnimationFrame(step);
     });
-    later(3150, () => { cover.dataset.phase = 'slam'; hit(); });
-    later(3900, () => { cover.dataset.phase = 'hud'; });
-    later(5200, () => { cover.dataset.phase = 'rest'; });
+    later(BOOT + 3150, () => { cover.dataset.phase = 'slam'; hit(); });
+    later(BOOT + 3900, () => { cover.dataset.phase = 'hud'; });
+    later(BOOT + 5200, () => { cover.dataset.phase = 'rest'; });
   }
 
   img.onload = () => { if (cover.dataset.phase === 'rest') draw(1); };

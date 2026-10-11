@@ -216,7 +216,7 @@ body {
     <button class="btn" id="skip" type="button">SKIP INTRO</button>
     <button class="btn" id="mute" type="button" aria-pressed="false">SOUND: ON</button>
   </div>
-  <p class="note">Press start to replay the boot intro with sound: the V-Devil Team boot card with typing blips, then the opening sound with every cut on its beat, then the 8-bit voice tag. Tap the screen to skip ahead.</p>
+  <p class="note">Touch anywhere to hear the intro with sound, or press start to replay it: the V-Devil Team boot card with typing blips, then the opening sound with every cut on its beat, then the 8-bit voice tag. Tap the screen to skip ahead.</p>
 </main>
 
 <script>
@@ -442,7 +442,12 @@ body {
   // START GAME runs the intro with sound, like an arcade title screen
   document.getElementById('start-game').addEventListener('click', () => play(true));
   document.getElementById('skip').addEventListener('click', rest);
-  cover.addEventListener('click', () => { cover.dataset.phase === 'rest' ? play(true) : rest(); });
+  let soundStartedAt = 0;
+  cover.addEventListener('click', () => {
+    // the touch that just switched the sound on must not also skip the intro
+    if (performance.now() - soundStartedAt < 800) return;
+    cover.dataset.phase === 'rest' ? play(true) : rest();
+  });
   const muteBtn = document.getElementById('mute');
   muteBtn.addEventListener('click', () => {
     muted = !muted;
@@ -451,7 +456,28 @@ body {
     if (muted) stopSound();
   });
 
-  // Attract mode: run the intro silently once on load (sound needs a tap).
-  if (img.complete) play(false); else img.addEventListener('load', () => play(false), { once: true });
+  // On open: play with sound straight away when the browser allows it.
+  // Phones only allow sound after a touch, so until then the intro runs
+  // silently, and the very first touch anywhere restarts it with sound.
+  const UNLOCK = ['pointerup', 'touchend', 'click', 'keydown'];
+  function firstTouch(e) {
+    UNLOCK.forEach(t => removeEventListener(t, firstTouch, true));
+    // a button press does its own thing (PRESS START, SKIP, SOUND)
+    if (e.target.closest && e.target.closest('button')) return;
+    if (muted) return;
+    soundStartedAt = performance.now();
+    play(true);
+  }
+  function boot() {
+    let running = false;
+    try {
+      ac = new (window.AudioContext || window.webkitAudioContext)();
+      running = ac.state === 'running';
+    } catch {}
+    if (running) { soundStartedAt = performance.now(); play(true); return; }
+    play(false);
+    UNLOCK.forEach(t => addEventListener(t, firstTouch, true));
+  }
+  if (img.complete) boot(); else img.addEventListener('load', boot, { once: true });
 })();
 </script>

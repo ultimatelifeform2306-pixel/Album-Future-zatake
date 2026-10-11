@@ -347,7 +347,7 @@ body {
     <button class="btn" id="skip" type="button">SKIP INTRO</button>
     <button class="btn" id="mute" type="button" aria-pressed="false">SOUND: ON</button>
   </div>
-  <p class="note">Touch the screen, type a name on the board, and the intro runs with sound; press start then shows what drops next, and tapping the cover replays the intro: the V-Devil Team boot card with typing blips, then the opening sound with every cut on its beat, then the 8-bit voice tag. Tap the screen to skip ahead.</p>
+  <p class="note">Touch the screen, type a name on the board, and the intro runs with sound; press start then shows what drops next; reload the page to watch it again: the V-Devil Team boot card with typing blips, then the opening sound with every cut on its beat, then the 8-bit voice tag. Tap the screen to skip ahead.</p>
 </main>
 
 <script>
@@ -714,7 +714,9 @@ body {
     const ph = cover.dataset.phase;
     if (["splash","hello","name","ok","fade"].includes(ph)) return; // the start gate runs its own sequence
     if (ph === 'load' || ph === 'drop') { clearDrop(); cover.dataset.phase = 'rest'; return; }
-    ph === 'rest' ? play(true) : rest();
+    if (ph === 'rest') return; // the cover is the finished screen: a tap leaves it alone
+    rest(); // during the intro a tap skips to the cover
+
   });
   const muteBtn = document.getElementById('mute');
   muteBtn.addEventListener('click', () => {

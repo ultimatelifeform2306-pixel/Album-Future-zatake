@@ -358,6 +358,10 @@ body.pick-mode .pads { display: block; }
 }
 .btn:hover { background: var(--violet); }
 .btn:active { transform: translate(4px,4px); box-shadow: none; }
+/* once the announcement starts, PRESS START is dead: no press, no reaction */
+.btn:disabled { cursor: default; }
+.btn:disabled:active { transform: none; box-shadow: 4px 4px 0 var(--purple); }
+.btn:disabled:hover { background: var(--gold); }
 .btn:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
 .btn.primary { color: var(--ink); background: var(--gold); border-color: var(--ink); }
 .btn.primary:hover { background: #ffd866; }
@@ -672,6 +676,7 @@ body.pick-mode .pads { display: block; }
   img.onload = () => { if (cover.dataset.phase === 'rest') draw(1); };
   // ---------- PRESS START arrives when the intro ends ----------
   const startLine = document.getElementById('start-line');
+  const playBtn = document.getElementById('play');
   function starAt(parent, x, y, tone, delay) {
     const el = document.createElement('i');
     el.className = 'star pop' + (tone ? ' ' + tone : '');
@@ -722,6 +727,8 @@ body.pick-mode .pads { display: block; }
   let dropTimers = [];
   const dLater = (ms, fn) => dropTimers.push(setTimeout(fn, ms));
   function clearDrop() {
+    announced = false;
+    if (playBtn) playBtn.disabled = false;
     dropTimers.forEach(clearTimeout); dropTimers = [];
     delete stage.dataset.pick;
     document.body.classList.remove('pick-mode');
@@ -771,8 +778,12 @@ body.pick-mode .pads { display: block; }
       o.connect(g).connect(ac.destination); o.start(t); o.stop(t + .45);
     });
   }
+  let announced = false;
   function announce() {
+    if (announced) return; // the announcement runs once; the button goes dead
     clear(); clearDrop(); stopSound(false);
+    announced = true;
+    playBtn.disabled = true;
     if (!muted) ensureAudio();
     // 1. the head grins and a purple ring validates the press
     startIcons.forEach(i => i.src = HEAD_SMILE);
@@ -820,7 +831,7 @@ body.pick-mode .pads { display: block; }
     });
   }
   // PRESS START shows the drop; START GAME replays the intro
-  document.getElementById('play').addEventListener('click', announce);
+  playBtn.addEventListener('click', announce);
   document.getElementById('start-line').addEventListener('click', e => { e.stopPropagation(); announce(); });
   document.getElementById('start-line').addEventListener('keydown', e => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); announce(); }

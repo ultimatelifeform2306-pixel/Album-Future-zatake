@@ -317,30 +317,58 @@ body.pick-mode .pads { display: block; }
 .pad-r .k2, .pad-r .k3 { pointer-events: auto; cursor: pointer; }
 .pad-r .k2:active, .pad-r .k3:active { transform: scale(.88); filter: brightness(1.4); }
 /* on a computer the whole thing is one widescreen panel filling the page */
-@media (min-width: 901px) {
-  body.pick-mode .pads, .pads, .note { display: none; }
-  body { padding-inline: 0; }
-  .cover { aspect-ratio: 16 / 9; width: min(100%, calc((100vh - 130px) * 16 / 9)); }
-  .cover:is([data-phase="black"],[data-phase="pick"]) {
-    aspect-ratio: 16 / 9; width: min(100%, calc((100vh - 46px) * 16 / 9));
-  }
-  /* the roster has to work in a short, wide screen */
-  .cover[data-phase="pick"] .pick-title { top: 1.4cqw; padding: 1.1cqw 2cqw; font-size: 2.1cqw; }
-  .cover[data-phase="pick"] .col {
-    grid-template-rows: 4.6cqw auto auto; align-content: center;
-    padding: 10cqw 1.2cqw 2cqw; gap: 1.2cqw;
-  }
-  .cover[data-phase="pick"] .frame { height: 32cqw; }
-  .cover[data-phase="pick"] .name { font-size: 1.7cqw; padding: .4cqw .8cqw; border-width: .3cqw; }
-  .cover[data-phase="pick"] .name.long { font-size: 1.2cqw; }
-  .cover[data-phase="pick"] .desc { font-size: 1.1cqw; line-height: 1.7; }
+.pc {
+  --pc: 1;
 }
-@media (max-width: 900px) {
-  /* no room beside a full-width screen, so the pads sit over the empty
-     lower part of the panel where your thumbs fall anyway */
-  .pad { width: min(25vw, 124px); top: 81%; }
-  .pad-l { left: 2vw; } .pad-r { right: 2vw; }
+.pc body.pick-mode .pads, .pc .pads, .pc .note { display: none; }
+.pc body { padding-inline: 0; }
+.pc .cover { aspect-ratio: 16 / 9; width: min(100%, calc((100vh - 130px) * 16 / 9)); }
+.pc .cover:is([data-phase="black"],[data-phase="pick"]) {
+  aspect-ratio: 16 / 9; width: min(100%, calc((100vh - 46px) * 16 / 9));
 }
+/* the roster has to work in a short, wide screen */
+.pc .cover[data-phase="pick"] .pick-title { top: 1.4cqw; padding: 1.1cqw 2cqw; font-size: 2.1cqw; }
+.pc .cover[data-phase="pick"] .col {
+  grid-template-rows: 4.6cqw auto auto; align-content: center;
+  padding: 10cqw 1.2cqw 2cqw; gap: 1.2cqw;
+}
+.pc .cover[data-phase="pick"] .frame { height: 32cqw; }
+.pc .cover[data-phase="pick"] .name { font-size: 1.7cqw; padding: .4cqw .8cqw; border-width: .3cqw; }
+.pc .cover[data-phase="pick"] .name.long { font-size: 1.2cqw; }
+.pc .cover[data-phase="pick"] .desc { font-size: 1.1cqw; line-height: 1.7; }
+/* phone: no room beside a full-width screen, so the pads sit over the empty
+   lower part of the panel where your thumbs fall anyway */
+html:not(.pc) .pad { width: min(25vw, 124px); top: 81%; }
+html:not(.pc) .pad-l { left: 2vw; } html:not(.pc) .pad-r { right: 2vw; }
+
+/* power switch: leaves the console off, screen dead */
+.power {
+  position: fixed; left: max(1.5vw, 10px); top: 50%; transform: translateY(-50%);
+  width: 54px; height: 54px; display: none; place-items: center; z-index: 5;
+  background: #14052b; color: #ff5b6e; border: 3px solid #000;
+  box-shadow: inset 0 0 0 2px #4b1580, 0 6px 0 #000; border-radius: 10px; cursor: pointer;
+}
+.pc .power { display: grid; }
+.power:hover { background: #240a48; }
+.power:active { transform: translateY(-50%) translateY(3px); box-shadow: inset 0 0 0 2px #4b1580; }
+.power:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+.power svg { width: 26px; height: 26px; display: block; }
+html.off .power { color: #6b2030; animation: blink-soft 1.4s steps(1) infinite; }
+/* CRT switch-off: the picture collapses to a line, then a dot, then nothing */
+html.off body { background: #000 !important; }
+html.off .stage { animation: crt-off .5s steps(5) forwards; }
+@keyframes crt-off {
+  0% { transform: scale(1); filter: brightness(1); }
+  55% { transform: scaleY(.012) scaleX(1); filter: brightness(6); }
+  80% { transform: scaleY(.012) scaleX(.04); filter: brightness(6); }
+  100% { transform: scale(0); filter: brightness(0); opacity: 0; }
+}
+html.off .pads { display: none !important; }
+.off-note {
+  position: fixed; inset: auto 0 10vh 0; display: none; text-align: center;
+  font-family: var(--f-pixel); font-size: 12px; letter-spacing: .2em; color: #4b3a6b;
+}
+html.off .off-note { display: block; }
 
 /* CRT glass */
 .crt {
@@ -564,10 +592,19 @@ body.pick-mode .pads { display: block; }
     <div class="pad pad-r"><i class="key k1"></i><i class="key k2"></i><i class="key k3"></i><i class="key k4"></i></div>
   </div>
 </main>
+  <button class="power" id="power" type="button" aria-label="Turn the console off">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" aria-hidden="true">
+      <path d="M7.5 5.5a8 8 0 1 0 9 0"></path><path d="M12 2.5v8"></path>
+    </svg>
+  </button>
+  <p class="off-note" aria-hidden="true">PRESS POWER TO START AGAIN</p>
 
 <script>
 (() => {
   const cover = document.getElementById('cover');
+  // a computer is a mouse, not a wide window: the page often runs in a narrow panel
+  const isPC = matchMedia('(hover: hover) and (pointer: fine)').matches;
+  document.documentElement.classList.toggle('pc', isPC);
   const canvas = document.getElementById('art');
   const ctx = canvas.getContext('2d');
   const flash = document.getElementById('flash');
@@ -1120,6 +1157,15 @@ body.pick-mode .pads { display: block; }
     muteBtn.textContent = muted ? 'SOUND: OFF' : 'SOUND: ON';
     muteBtn.setAttribute('aria-pressed', String(muted));
     if (muted) stopSound();
+  });
+
+  const powerBtn = document.getElementById('power');
+  powerBtn.addEventListener('click', () => {
+    if (document.documentElement.classList.contains('off')) { location.reload(); return; }
+    clear(); clearDrop(); stopSound();
+    try { if (typeof clearKnuxTalk === 'function') clearKnuxTalk(); } catch {}
+    try { ac && ac.close(); ac = null; } catch {}
+    document.documentElement.classList.add('off');
   });
 
   // On open: play with sound straight away when the browser allows it.

@@ -316,6 +316,12 @@ body.pick-mode .pads { display: block; }
 /* only the left and right arrows do anything: they move the roster cursor */
 .pad-r .k2, .pad-r .k3 { pointer-events: auto; cursor: pointer; }
 .pad-r .k2:active, .pad-r .k3:active { transform: scale(.88); filter: brightness(1.4); }
+/* on a computer there is no pad to press: the screen takes the window */
+@media (min-width: 901px) {
+  body.pick-mode .pads, .pads, .note { display: none; }
+  .cover { width: min(100%, 84vh); }
+  .cover:is([data-phase="black"],[data-phase="pick"]) { width: min(100%, calc(96vh * 9 / 16)); }
+}
 @media (max-width: 900px) {
   /* no room beside a full-width screen, so the pads sit over the empty
      lower part of the panel where your thumbs fall anyway */

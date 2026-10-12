@@ -365,14 +365,14 @@ html:not(.pc) .pad-l { left: 2vw; } html:not(.pc) .pad-r { right: 2vw; }
 
 /* power switch: leaves the console off, screen dead */
 .power {
-  position: fixed; left: max(1.5vw, 10px); top: 50%; transform: translateY(-50%);
+  position: fixed; left: max(1.5vw, 10px); top: max(1.5vh, 10px);
   width: 54px; height: 54px; display: none; place-items: center; z-index: 5;
   background: #14052b; color: #ff5b6e; border: 3px solid #000;
   box-shadow: inset 0 0 0 2px #4b1580, 0 6px 0 #000; border-radius: 10px; cursor: pointer;
 }
 .pc .power { display: grid; }
 .power:hover { background: #240a48; }
-.power:active { transform: translateY(-50%) translateY(3px); box-shadow: inset 0 0 0 2px #4b1580; }
+.power:active { transform: translateY(3px); box-shadow: inset 0 0 0 2px #4b1580; }
 .power:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
 .power svg { width: 26px; height: 26px; display: block; }
 html.off .power { color: #6b2030; animation: blink-soft 1.4s steps(1) infinite; }
@@ -1183,7 +1183,17 @@ html.off .off-note { display: block; }
 
   const powerBtn = document.getElementById('power');
   powerBtn.addEventListener('click', () => {
-    if (document.documentElement.classList.contains('off')) { location.reload(); return; }
+    if (document.documentElement.classList.contains('off')) {
+      // switching back on boots straight to the name board
+      document.documentElement.classList.remove('off');
+      clear(); clearDrop(); hideStart();
+      stage.dataset.locked = '';
+      delete stage.dataset.playing;
+      nameInput.value = '';
+      ensureAudio();
+      askName();
+      return;
+    }
     clear(); clearDrop(); stopSound();
     try { if (typeof clearKnuxTalk === 'function') clearKnuxTalk(); } catch {}
     try { ac && ac.close(); ac = null; } catch {}

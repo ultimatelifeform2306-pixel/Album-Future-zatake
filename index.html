@@ -336,6 +336,28 @@ body.pick-mode .pads { display: block; }
 .pc .cover[data-phase="pick"] .name { font-size: 1.7cqw; padding: .4cqw .8cqw; border-width: .3cqw; }
 .pc .cover[data-phase="pick"] .name.long { font-size: 1.2cqw; }
 .pc .cover[data-phase="pick"] .desc { font-size: 1.1cqw; line-height: 1.7; }
+/* a widescreen panel is short: every full-height screen is sized by its height */
+.pc .splash { gap: 2.2cqw; }
+.pc .gate-head { width: 13cqw; }
+.pc .splash .touch { font-size: 2.4cqw; }
+.pc .splash .sub { font-size: 1.2cqw; }
+.pc .gate-board { width: auto; max-width: 92cqw; }
+.pc .gate-board img { height: 31cqw; width: auto; margin: 0 auto; }
+.pc .name-bar { width: 40cqw; padding: .8cqw 1.4cqw; border-width: .3cqw; border-radius: .9cqw; gap: 1.2cqw; margin-top: 1.6cqw; }
+.pc .name-bar label { font-size: 1.3cqw; }
+.pc .name-bar input { font-size: 1.5cqw; }
+.pc .name-bar button { font-size: 1.2cqw; padding: .5cqw .9cqw; border-width: .25cqw; }
+.pc .gate-msg { font-size: 1.4cqw; margin-top: 1.4cqw; }
+.pc .boot { gap: 2cqw; }
+.pc .boot .studio { font-size: 3.1cqw; }
+.pc .boot .pres { font-size: 1.7cqw; }
+.pc .drop { padding: 3cqw 5cqw 2.4cqw; gap: 1.6cqw; }
+.pc .skull { max-width: min(34cqw, 100%); }
+.pc .drop-txt { font-size: 1.5cqw; line-height: 1.7; }
+.pc .drop-again { font-size: 1.2cqw; }
+.pc .load-txt { font-size: 2cqw; }
+.pc .load-bar { width: 32cqw; height: 2.2cqw; border-width: .35cqw; padding: .35cqw; }
+
 /* phone: no room beside a full-width screen, so the pads sit over the empty
    lower part of the panel where your thumbs fall anyway */
 html:not(.pc) .pad { width: min(25vw, 124px); top: 81%; }

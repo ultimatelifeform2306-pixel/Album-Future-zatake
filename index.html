@@ -157,13 +157,27 @@ body {
 .drop-txt .caret { color: #ff4d5e; }
 .drop-again { font-family: var(--f-pixel); font-size: 2.2cqw; color: #b8102a; letter-spacing: .2em; animation: blink-soft 1.05s steps(1) infinite; }
 
+/* the roster plays on a tall 9:16 panel, the pad halves either side of it */
+.cover:is([data-phase="black"],[data-phase="pick"]) {
+  aspect-ratio: 9 / 16;
+  width: min(100%, 400px, 44vh);
+}
+.cover[data-phase="pick"] .col {
+  grid-template-rows: auto auto auto; align-content: center;
+  padding: 24cqw 1.2cqw 10cqw; gap: 2.4cqw;
+}
+.cover[data-phase="pick"] .frame { height: 54cqw; }
+.cover[data-phase="pick"] .name { font-size: 3cqw; }
+.cover[data-phase="pick"] .name.long { font-size: 2.2cqw; }
+.cover[data-phase="pick"] .desc { font-size: 2.1cqw; }
+
 /* black hold, then the character select screen */
 .blackout { position: absolute; inset: 0; background: #000; display: none; }
 .cover:is([data-phase="fadeout"],[data-phase="black"]) .blackout { display: block; }
 .pick { position: absolute; inset: 0; display: none; }
 .cover[data-phase="pick"] .pick { display: block; animation: pick-in .34s steps(4) both; }
 @keyframes pick-in { from { opacity: 0; transform: scale(1.06); } to { opacity: 1; transform: none; } }
-.pick-cols { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(3, 1fr); }
+.pick-cols { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(3, 1fr); overflow: hidden; }
 .col { position: relative; overflow: hidden; }
 .c1 { --tone: #a734d6; --deep: #7312a8; --dark: #3d0a63; }
 .c2 { --tone: #2f78d8; --deep: #1546a8; --dark: #06205e; }
@@ -303,8 +317,10 @@ body.pick-mode .pads { display: block; }
 .pad-r .k2, .pad-r .k3 { pointer-events: auto; cursor: pointer; }
 .pad-r .k2:active, .pad-r .k3:active { transform: scale(.88); filter: brightness(1.4); }
 @media (max-width: 900px) {
-  .pad { top: auto; bottom: 2.5vh; transform: none; width: min(32vw, 150px); }
-  .pad-l { left: 4vw; } .pad-r { right: 4vw; }
+  /* no room beside a full-width screen, so the pads sit over the empty
+     lower part of the panel where your thumbs fall anyway */
+  .pad { width: min(25vw, 124px); top: 81%; }
+  .pad-l { left: 2vw; } .pad-r { right: 2vw; }
 }
 
 /* CRT glass */

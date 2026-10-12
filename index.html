@@ -1227,8 +1227,20 @@ html.off .off-note { display: block; }
     o.connect(g).connect(ac.destination);
     o.start(t); o.stop(t + dur + .02);
   }
-  // phones refuse sound until the page is touched, so the first touch
-  // anywhere - typing a name included - wakes the audio up quietly
+  // phones refuse sound until the page is touched, so they open on the
+  // TOUCH TO START screen and that touch leads to the name board
+  function firstTouch() {
+    UNLOCK.forEach(t => removeEventListener(t, firstTouch, true));
+    soundStartedAt = performance.now();
+    if (!muted) ensureAudio();
+    gateHead.src = HEAD_SMILE;
+    cover.dataset.phase = 'hello';
+    blip(520, 1040, .12, .05);
+    clearTimeout(fadeTimer);
+    fadeTimer = setTimeout(askName, 520);
+  }
+  // on a computer there is nothing to unlock, so the first touch just wakes
+  // the audio up quietly behind the name board
   function unlockOnce() {
     UNLOCK.forEach(t => removeEventListener(t, unlockOnce, true));
     if (!muted) ensureAudio();
@@ -1268,12 +1280,18 @@ html.off .off-note { display: block; }
     }, 700);
   });
   function boot() {
-    // the game opens on the name board, every time
     stage.dataset.locked = '';
     nameInput.value = '';
-    gateHead.src = HEAD_SMILE;
-    UNLOCK.forEach(t => addEventListener(t, unlockOnce, true));
-    askName();
+    if (isPC) {
+      // a computer goes straight to the name board
+      gateHead.src = HEAD_SMILE;
+      UNLOCK.forEach(t => addEventListener(t, unlockOnce, true));
+      askName();
+      return;
+    }
+    gateHead.src = HEAD_PLAIN;
+    cover.dataset.phase = 'splash';
+    UNLOCK.forEach(t => addEventListener(t, firstTouch, true));
   }
   if (img.complete) boot(); else img.addEventListener('load', boot, { once: true });
 })();

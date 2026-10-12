@@ -136,13 +136,15 @@ body {
 }
 .cover:is([data-phase="load"],[data-phase="drop"],[data-phase="fadeout"]) .drop { display: grid; }
 .cover:is([data-phase="load"],[data-phase="drop"],[data-phase="fadeout"],[data-phase="black"],[data-phase="pick"]) :is(.vert,.title,.copy,.shade) { visibility: hidden; }
-.load { display: grid; justify-items: center; gap: 3cqw; grid-row: 1 / 4; align-content: center; }
+/* the skull is already there while it loads, with the bar under him */
+.load { display: grid; justify-items: center; gap: 3cqw; grid-row: 2 / 4; align-content: center; }
 .cover[data-phase="drop"] .load { display: none; }
 .load-txt { font-family: var(--f-pixel); font-size: 3.4cqw; color: #8b0f1c; letter-spacing: .3em; }
 .load-bar { width: 56cqw; height: 4cqw; border: .6cqw solid #8b0f1c; padding: .6cqw; }
 .load-bar i { display: block; height: 100%; width: 0; background: repeating-linear-gradient(90deg, #c41226 0 3cqw, #000 3cqw 3.6cqw); }
 .skull, .drop-txt, .drop-again { display: none; }
-.cover:is([data-phase="drop"],[data-phase="fadeout"]) :is(.skull, .drop-txt, .drop-again) { display: block; }
+.cover:is([data-phase="load"],[data-phase="drop"],[data-phase="fadeout"]) .skull { display: block; }
+.cover:is([data-phase="drop"],[data-phase="fadeout"]) :is(.drop-txt, .drop-again) { display: block; }
 .cover[data-phase="fadeout"] .drop { animation: fade-out .5s steps(4) forwards; }
 .skull {
   display: block; max-width: min(72cqw, 100%); max-height: 100%; width: auto; height: auto;
@@ -155,7 +157,8 @@ body {
 }
 .cover[data-phase="drop"] .drop::after { animation: bleed 6.5s steps(14) forwards; }
 @keyframes bleed { from { opacity: 0; } to { opacity: 1; } }
-.cover[data-phase="drop"] .skull { animation: skull-in .5s steps(5) both, redden 6.5s .5s steps(14) forwards; }
+.cover[data-phase="load"] .skull { animation: skull-in .5s steps(5) both; }
+.cover[data-phase="drop"] .skull { animation: redden 6.5s steps(14) forwards; }
 @keyframes redden { from { filter: none; } to { filter: sepia(1) saturate(5.5) hue-rotate(-32deg) brightness(.92); } }
 .drop-txt, .drop-again { position: relative; z-index: 2; }
 @keyframes skull-in { 0% { opacity: 0; transform: scale(1.3); } 40% { opacity: 1; } 55% { opacity: .2; } 100% { opacity: 1; transform: none; } }

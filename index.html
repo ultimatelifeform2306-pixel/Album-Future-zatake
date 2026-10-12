@@ -242,10 +242,16 @@ body {
 .col.sel .desc { color: #cfe6ff; }
 .pick-cols.chosen .col:not(.sel) { filter: brightness(.72) saturate(.9); }
 
-/* Knuckles stands as tall as Ryu: his wide pose reaches past the frame
-   rather than being shrunk to fit inside it */
-.c3 .frame { overflow: visible; }
-.c3 .frame img { left: -16%; width: 132%; top: 0; height: 100%; }
+/* Knuckles is a sticker on the card, not a picture inside it: when he is
+   picked he grows out of the frame, gloves and quills over the border */
+.c3, .c3 .frame { overflow: visible; }
+.c3 .frame img { left: -16%; width: 132%; top: 0; height: 100%; transform-origin: bottom center; }
+.c3 .name { z-index: 3; }
+.c3.sel .frame img {
+  animation: knux-pop .36s steps(4) both;
+  filter: drop-shadow(.7cqw .7cqw 0 rgba(0,0,0,.6));
+}
+@keyframes knux-pop { from { transform: scale(1); } to { transform: scale(1.16); } }
 
 .desc {
   font-family: var(--f-pixel); font-size: 1.75cqw; line-height: 1.75; letter-spacing: .01em; margin: 0;

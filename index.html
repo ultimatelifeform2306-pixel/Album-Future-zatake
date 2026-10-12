@@ -331,7 +331,8 @@ body.pick-mode .pads { display: block; }
 .pc body { padding-inline: 0; }
 .pc .cover { aspect-ratio: 16 / 9; width: min(100%, calc((100vh - 130px) * 16 / 9)); }
 .pc .cover:is([data-phase="black"],[data-phase="pick"]) {
-  aspect-ratio: 16 / 9; width: min(100%, calc((100vh - 46px) * 16 / 9));
+  /* the roster steps back from the edges so the scenery shows around it */
+  aspect-ratio: 16 / 9; width: min(86%, calc((100vh - 110px) * 16 / 9));
 }
 /* the roster has to work in a short, wide screen */
 .pc .cover[data-phase="pick"] .pick-title { top: 1.4cqw; padding: 1.1cqw 2cqw; font-size: 2.1cqw; }
@@ -384,7 +385,9 @@ html:not(.pc) .pad-l { left: 2vw; } html:not(.pc) .pad-r { right: 2vw; }
 .power svg { width: 26px; height: 26px; display: block; }
 html.off .power { color: #6b2030; animation: blink-soft 1.4s steps(1) infinite; }
 /* CRT switch-off: the picture collapses to a line, then a dot, then nothing */
-html.off body { background: #000 !important; }
+html.off body { background: #000; }
+/* switched off: the console is dead, the scenery behind it is not */
+html.pc.off body { background: linear-gradient(rgba(2,0,8,.74), rgba(2,0,8,.86)), var(--sky) center / cover no-repeat fixed, #000; }
 html.off .stage { animation: crt-off .5s steps(5) forwards; }
 @keyframes crt-off {
   0% { transform: scale(1); filter: brightness(1); }

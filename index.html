@@ -1,4 +1,14 @@
 <title>Panel Sewi — Sigmatiserie</title>
+<!-- home-screen app: name, icon and a standalone window -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Panel Sewi">
+<meta name="application-name" content="Panel Sewi">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#07041a">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&display=swap">
@@ -1334,5 +1344,10 @@ html.off .off-note { display: block; }
     UNLOCK.forEach(t => addEventListener(t, firstTouch, true));
   }
   if (img.complete) boot(); else img.addEventListener('load', boot, { once: true });
+
+  // installed as an app, it should still open with no signal
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
 })();
 </script>

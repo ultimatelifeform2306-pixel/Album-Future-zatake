@@ -1,0 +1,1369 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  /* what the artifact wrapper normally supplies, so the file also stands alone */
+  :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  body { margin: 0; font: 14px system-ui, -apple-system, sans-serif; }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+</style>
+<title>Panel Sewi — Sigmatiserie</title>
+<!-- home-screen app: name, icon and a standalone window -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Panel Sewi">
+<meta name="application-name" content="Panel Sewi">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#07041a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&display=swap">
+<style>
+/* Layout: one square CRT "screen" that boots like a 90s fighting game and settles on the album cover. Single dark arcade look. */
+:root {
+  --void: #07041a;        /* cabinet black, violet bias */
+  --violet: #3b12d6;      /* the art's backdrop */
+  --magenta: #ff2e97;     /* the art's offset kanji */
+  --purple: #a640ff;      /* frame and offset lines */
+  --bone: #fbf7ff;        /* pixel white */
+  --gold: #ffc531;        /* ring gold */
+  --cyan: #22e0ff;        /* glitch split */
+  --ink: #000;
+  --f-pixel: "Press Start 2P", "Courier New", monospace;
+  --f-jp: "DotGothic16", "MS Gothic", "Osaka", monospace;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  background: radial-gradient(120% 90% at 50% 0%, #1a0b4a 0%, var(--void) 60%) fixed, var(--void);
+  color: var(--bone);
+  font-family: var(--f-jp);
+  padding-inline: 16px;
+  padding-block: 24px;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+}
+.stage { display: grid; gap: 18px; justify-items: center; width: 100%; }
+
+/* ---------- the cover ---------- */
+.cover {
+  position: relative;
+  width: min(100%, 640px, 78vh);
+  aspect-ratio: 1;
+  max-width: 100%;
+  container-type: inline-size;
+  overflow: hidden;
+  background: var(--violet);
+  box-shadow: 0 0 0 3px var(--ink), 0 0 0 6px var(--purple), 0 30px 80px -20px rgba(59,18,214,.7);
+  image-rendering: pixelated;
+  cursor: pointer;
+}
+.cover canvas { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+.shade {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(to top, rgba(7,4,26,.92) 0%, rgba(7,4,26,.55) 26%, transparent 46%),
+    linear-gradient(to bottom, rgba(7,4,26,.7) 0%, transparent 18%);
+}
+
+
+/* vertical katakana, echoing the art */
+.vert {
+  position: absolute; right: 3.4cqw; top: 6cqw;
+  writing-mode: vertical-rl; font-family: var(--f-jp);
+  font-size: 6.4cqw; line-height: 1; letter-spacing: .08em;
+  color: var(--bone);
+  text-shadow: .7cqw .7cqw 0 var(--magenta), .3cqw .3cqw 0 var(--ink);
+}
+
+/* title block */
+.title {
+  position: absolute; left: 4.5cqw; right: 4.5cqw; bottom: 4.2cqw;
+  display: grid; gap: 2.2cqw;
+}
+.logo {
+  margin: 0; font-family: var(--f-pixel); font-weight: 400;
+  line-height: .95; color: var(--bone);
+  text-shadow:
+    .9cqw .9cqw 0 var(--magenta),
+    -.4cqw 0 0 var(--ink), .4cqw 0 0 var(--ink), 0 -.4cqw 0 var(--ink), 0 .4cqw 0 var(--ink),
+    1.3cqw 1.3cqw 0 var(--ink);
+  display: grid; gap: 1.6cqw;
+}
+.logo .l1 { font-size: 8.4cqw; letter-spacing: .06em; color: var(--gold); }
+.logo .l2 { font-size: 15.2cqw; letter-spacing: .02em; }
+.series {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.5cqw 3cqw;
+  background: var(--ink); color: var(--bone);
+  padding: 1.6cqw 2.2cqw; box-shadow: .9cqw .9cqw 0 var(--purple);
+}
+.series b { font-family: var(--f-pixel); font-weight: 400; font-size: 3.2cqw; letter-spacing: .28em; }
+.series span { font-size: 3cqw; color: var(--magenta); letter-spacing: .1em; }
+.start {
+  display: flex; align-items: center; gap: 1.4cqw;
+  justify-self: end; font-family: var(--f-pixel); font-size: 2.5cqw; color: var(--bone);
+  text-shadow: .35cqw .35cqw 0 var(--ink); letter-spacing: .12em;
+  animation: blink 1.05s steps(1) infinite;
+}
+/* cut-out head, no box: a light pixel rim keeps the dark blue readable on the dark cover */
+.start-icon {
+  width: 2.8em; height: 2.8em; flex: none; display: block; object-fit: contain;
+  filter: drop-shadow(.12em 0 0 var(--bone)) drop-shadow(-.12em 0 0 var(--bone)) drop-shadow(0 .12em 0 var(--bone)) drop-shadow(0 -.12em 0 var(--bone)) drop-shadow(.25em .25em 0 var(--ink));
+}
+.btn .start-icon { width: 30px; height: 30px; margin-block: -8px; filter: drop-shadow(1px 0 0 var(--ink)) drop-shadow(-1px 0 0 var(--ink)) drop-shadow(0 1px 0 var(--ink)) drop-shadow(0 -1px 0 var(--ink)); }
+.btn.primary { display: inline-flex; align-items: center; gap: 10px; }
+.copy { position: absolute; left: 4.5cqw; bottom: 1.2cqw; font-family: var(--f-pixel); font-size: 1.5cqw; opacity: .7; letter-spacing: .1em; }
+
+/* PRESS START confirm: the head grins, a purple 8-bit ring validates */
+.start { position: relative; cursor: pointer; }
+/* PRESS START is the intro's payoff: it warps in with 8-bit stars */
+.cover:not([data-started]) .start { visibility: hidden; }
+.start.arrive { animation: start-in .5s steps(5) both, blink 1.05s .5s steps(1) infinite; }
+@keyframes start-in {
+  from { transform: scale(0) rotate(-20deg); }
+  55% { transform: scale(1.3) rotate(4deg); }
+  to { transform: none; }
+}
+.stage:not([data-started]) #play { display: none; }
+.cover.validating .start { animation: none; color: var(--purple); }
+.cover.validating .start-icon { animation: validate-pop .42s steps(4) 2 both; }
+@keyframes validate-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.35); filter: drop-shadow(0 0 1cqw var(--purple)) drop-shadow(0 0 2cqw var(--purple)); }
+  100% { transform: scale(1.12); }
+}
+.vfx { position: absolute; left: 1.4cqw; top: 50%; width: 2.8em; height: 2.8em; margin: -1.4em 0 0 -.1em; display: none; }
+.cover.validating .vfx { display: block; }
+.vfx::before, .vfx::after {
+  content: ""; position: absolute; inset: 0; border: .5cqw solid var(--purple);
+  animation: vring .84s steps(4) 1 both;
+}
+.vfx::after { animation-delay: .2s; border-color: #d9a8ff; }
+@keyframes vring { from { transform: scale(.7); opacity: 1; } to { transform: scale(2.6); opacity: 0; } }
+.ok-mark { display: none; margin-left: 1.4cqw; color: var(--purple); }
+.cover.validating .ok-mark { display: inline-block; animation: ok-pop .3s steps(3) both; }
+@keyframes ok-pop { from { transform: scale(0); } to { transform: scale(1); } }
+
+/* drop announcement: loading bar, then the skull and a typed red line */
+.drop {
+  position: absolute; inset: 0; display: none; background: #000;
+  grid-template-rows: 1fr auto auto; place-items: center; padding: 5cqw 5cqw 4cqw; gap: 2.5cqw;
+}
+.cover:is([data-phase="load"],[data-phase="drop"],[data-phase="fadeout"]) .drop { display: grid; }
+.cover:is([data-phase="load"],[data-phase="drop"],[data-phase="fadeout"],[data-phase="black"],[data-phase="pick"]) :is(.vert,.title,.copy,.shade) { visibility: hidden; }
+.load { display: grid; justify-items: center; gap: 3cqw; grid-row: 1 / 4; align-content: center; }
+.cover[data-phase="drop"] .load { display: none; }
+.load-txt { font-family: var(--f-pixel); font-size: 3.4cqw; color: #8b0f1c; letter-spacing: .3em; }
+.load-bar { width: 56cqw; height: 4cqw; border: .6cqw solid #8b0f1c; padding: .6cqw; }
+.load-bar i { display: block; height: 100%; width: 0; background: repeating-linear-gradient(90deg, #c41226 0 3cqw, #000 3cqw 3.6cqw); }
+.skull, .drop-txt, .drop-again { display: none; }
+.cover:is([data-phase="drop"],[data-phase="fadeout"]) :is(.skull, .drop-txt, .drop-again) { display: block; }
+.cover[data-phase="fadeout"] .drop { animation: fade-out .5s steps(4) forwards; }
+.skull {
+  max-width: min(72cqw, 100%); max-height: 100%; width: auto; height: auto;
+  align-self: center; animation: skull-in .5s steps(5) both; image-rendering: pixelated;
+}
+/* he brings the red with him: the screen bleeds while he talks */
+.drop::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0;
+  background: radial-gradient(62% 52% at 50% 36%, rgba(214,12,30,.5), rgba(118,0,12,.72) 62%, rgba(44,0,5,.9));
+}
+.cover[data-phase="drop"] .drop::after { animation: bleed 6.5s steps(14) forwards; }
+@keyframes bleed { from { opacity: 0; } to { opacity: 1; } }
+.cover[data-phase="drop"] .skull { animation: skull-in .5s steps(5) both, redden 6.5s .5s steps(14) forwards; }
+@keyframes redden { from { filter: none; } to { filter: sepia(1) saturate(5.5) hue-rotate(-32deg) brightness(.92); } }
+.drop-txt, .drop-again { position: relative; z-index: 2; }
+@keyframes skull-in { 0% { opacity: 0; transform: scale(1.3); } 40% { opacity: 1; } 55% { opacity: .2; } 100% { opacity: 1; transform: none; } }
+.drop-txt {
+  margin: 0; font-family: var(--f-pixel); font-size: 2.9cqw; line-height: 1.75; text-align: center;
+  color: #e01324; text-shadow: .35cqw .35cqw 0 #350006, 0 0 2cqw rgba(224,19,36,.6);
+  letter-spacing: .06em; min-height: 3em;
+}
+.drop-txt .caret { color: #ff4d5e; }
+.drop-again { font-family: var(--f-pixel); font-size: 2.2cqw; color: #b8102a; letter-spacing: .2em; animation: blink-soft 1.05s steps(1) infinite; }
+
+/* the roster plays on a tall 9:16 panel, the pad halves either side of it */
+.cover:is([data-phase="black"],[data-phase="pick"]) {
+  aspect-ratio: 9 / 16;
+  width: min(100%, 400px, 44vh);
+}
+.cover[data-phase="pick"] .col {
+  grid-template-rows: auto auto auto; align-content: center;
+  padding: 24cqw 1.2cqw 10cqw; gap: 2.4cqw;
+}
+.cover[data-phase="pick"] .frame { height: 54cqw; }
+.cover[data-phase="pick"] .name { font-size: 3cqw; }
+.cover[data-phase="pick"] .name.long { font-size: 2.2cqw; }
+.cover[data-phase="pick"] .desc { font-size: 2.1cqw; }
+
+/* black hold, then the character select screen */
+.blackout { position: absolute; inset: 0; background: #000; display: none; }
+.cover:is([data-phase="fadeout"],[data-phase="black"]) .blackout { display: block; }
+.pick { position: absolute; inset: 0; display: none; }
+.cover[data-phase="pick"] .pick { display: block; animation: pick-in .34s steps(4) both; }
+@keyframes pick-in { from { opacity: 0; transform: scale(1.06); } to { opacity: 1; transform: none; } }
+.pick-cols { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(3, 1fr); overflow: hidden; }
+.col { position: relative; overflow: hidden; }
+.c1 { --tone: #a734d6; --deep: #7312a8; --dark: #3d0a63; }
+.c2 { --tone: #2f78d8; --deep: #1546a8; --dark: #06205e; }
+.c3 { --tone: #dc2a2c; --deep: #a81014; --dark: #5c0508; }
+.col { background: linear-gradient(170deg, var(--tone) 0%, var(--deep) 62%, var(--dark) 100%); }
+/* halftone dots, heavier toward the middle, like a printed arcade panel */
+.col::before {
+  content: ""; position: absolute; inset: 0;
+  background-image: radial-gradient(circle, var(--dark) 26%, transparent 27%);
+  background-size: 1.5cqw 1.5cqw; opacity: .55;
+  -webkit-mask-image: linear-gradient(to bottom, #000 10%, rgba(0,0,0,.25) 55%, transparent 85%);
+  mask-image: linear-gradient(to bottom, #000 10%, rgba(0,0,0,.25) 55%, transparent 85%);
+}
+/* pixel checker rail down the left edge of every column */
+.col::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 3.4cqw;
+  background-image: repeating-conic-gradient(var(--dark) 0% 25%, var(--tone) 0% 50%);
+  background-size: 1.7cqw 1.7cqw;
+}
+.pick-title {
+  position: absolute; left: 0; right: 0; top: 3cqw; margin: 0; padding: 2.2cqw 3cqw;
+  background: var(--ink); color: var(--bone); text-align: center;
+  font-family: var(--f-pixel); font-weight: 400; font-size: 3.4cqw; line-height: 1.5; letter-spacing: .04em;
+  text-wrap: balance; z-index: 1;
+}
+
+/* one roster slot per column: name plate, framed portrait, what they bring */
+.col { display: grid; grid-template-rows: auto auto 1fr; align-content: start; justify-items: center;
+  grid-template-rows: 7.6cqw auto 1fr;
+  gap: 1.8cqw; padding: 19cqw 1.2cqw 2.5cqw; box-sizing: border-box; min-height: 0; }
+.col > * { position: relative; z-index: 1; }
+.name {
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  font-family: var(--f-pixel); font-size: 2.6cqw; letter-spacing: .08em; color: var(--bone); line-height: 1.35;
+  background: var(--ink); border: .5cqw solid var(--bone); padding: .6cqw 1.2cqw;
+  transform: scale(0);
+}
+/* the full name only fits on two lines, so it drops a size when it appears */
+.name.long { font-size: 1.85cqw; letter-spacing: .04em; }
+.col.swap .name { animation: swap-card .4s steps(5) both; }
+/* the cursor swapping to another fighter: the card squashes and comes back */
+.col.swap .frame { animation: swap-card .4s steps(5) both; }
+@keyframes swap-card { 0% { transform: scaleX(1); } 45%, 55% { transform: scaleX(.06); } 100% { transform: scaleX(1); } }
+.cover[data-phase="pick"] .name { animation: name-pop .36s steps(4) both; }
+.c1 .name { animation-delay: .25s; } .c2 .name { animation-delay: .45s; } .c3 .name { animation-delay: .65s; }
+@keyframes name-pop { 0% { transform: scale(0); } 60% { transform: scale(1.3); } 100% { transform: scale(1); } }
+.frame {
+  height: 46cqw; aspect-ratio: 520 / 930; box-sizing: border-box; overflow: hidden; position: relative;
+  /* 16-bit blue card instead of white, two flat bands and a scanline grain */
+  background:
+    repeating-linear-gradient(to bottom, rgba(255,255,255,.07) 0 2px, transparent 2px 4px),
+    linear-gradient(to bottom, #2f63ef 0 46%, #1a3fc4 46% 78%, #112a8e 78%);
+  border: 3cqw solid transparent; border-image: url("assets/frame.png") 130 stretch;
+  display: grid; place-items: end center; padding: .6cqw;
+}
+.frame img {
+  position: absolute; left: 4%; top: 3%; width: 92%; height: 95%;
+  object-fit: contain; object-position: bottom center;
+  display: block; image-rendering: pixelated;
+}
+.frame.art { border: 0; background: none; padding: 0; }
+.frame.art img { position: absolute; inset: 0; left: 0; top: 0; width: 100%; height: 100%; object-fit: fill; }
+/* Kirikou is picked for you a beat after the screen lands */
+.col.sel .frame { animation: sel-pop .22s steps(3) 4 both; }
+@keyframes sel-pop { 0% { transform: none; } 50% { transform: scale(1.07); } 100% { transform: none; } }
+.col.sel .frame::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  box-shadow: inset 0 0 0 .8cqw #8fd0ff;
+  animation: sel-ring .22s steps(1) 4 both;
+}
+@keyframes sel-ring { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+.col.sel .frame img { animation: sel-step .4s steps(4) both; }
+@keyframes sel-step { from { transform: none; } to { transform: scale(1.08); } }
+.col.sel .name { transform: none; background: #1a3fc4; border-color: #8fd0ff; animation: sel-plate .22s steps(1) 4 both; }
+@keyframes sel-plate { 0%, 49% { color: var(--bone); } 50%, 100% { color: #8fd0ff; } }
+.col.sel .desc { color: #cfe6ff; }
+.pick-cols.chosen .col:not(.sel) { filter: brightness(.72) saturate(.9); }
+
+/* Knuckles is a sticker on the card, not a picture inside it: when he is
+   picked he grows out of the frame, gloves and quills over the border */
+.c3, .c3 .frame { overflow: visible; }
+.c3 .frame img { left: -16%; width: 132%; top: 0; height: 100%; transform-origin: bottom center; }
+.c3 .name { z-index: 3; }
+.c3.sel .frame img {
+  animation: knux-pop .36s steps(4) both;
+  filter: drop-shadow(.7cqw .7cqw 0 rgba(0,0,0,.6));
+}
+@keyframes knux-pop { from { transform: scale(1); } to { transform: scale(1.16); } }
+
+.desc {
+  font-family: var(--f-pixel); font-size: 1.75cqw; line-height: 1.75; letter-spacing: .01em; margin: 0;
+  color: var(--bone); text-align: center; text-shadow: .25cqw .25cqw 0 rgba(0,0,0,.75);
+}
+
+/* character select locks the page: nothing to press, nothing moving */
+.stage[data-pick] :is(.controls, .note) { display: none; }
+body.pick-mode { background: radial-gradient(125% 95% at 50% 0%, #2d0a52 0%, #11021f 48%, #000 100%) fixed, #000; }
+/* on a computer the page behind the panel follows the clock */
+.pc body[data-sky], .pc body.pick-mode[data-sky] {
+  background:
+    linear-gradient(rgba(6,2,16,.3), rgba(6,2,16,.55)),
+    var(--sky) center / cover no-repeat fixed,
+    #07041a;
+}
+
+/* 16-bit gamepad around the screen: button cluster left, d-pad right */
+.pads { position: fixed; inset: 0; display: none; pointer-events: none; z-index: 2; }
+body.pick-mode .pads { display: block; }
+.pad {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: min(23vw, 168px); aspect-ratio: 1;
+  display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+  place-items: center;
+  background: linear-gradient(150deg, #2b0a4a, #16042b 70%, #090011);
+  border: .5vmin solid #000; border-radius: 14%;
+  box-shadow: inset 0 0 0 .4vmin #4b1580, 0 1vmin 0 #000;
+  box-sizing: border-box; padding: 1.4vmin;
+}
+.pad-l { left: 3vw; }
+.pad-r { right: 3vw; }
+.key {
+  width: 86%; aspect-ratio: 1; position: relative;
+  background: radial-gradient(circle at 34% 30%, #c77bff 0%, #9333ea 38%, #5b1296 70%, #330861 100%);
+  border: .45vmin solid #000;
+  box-shadow: inset -.25vmin -.35vmin 0 #2a0550, inset .3vmin .3vmin 0 #d9a8ff;
+}
+/* left cluster: four round face buttons */
+.pad-l .key { border-radius: 50%; }
+.pad-l .k1 { grid-area: 1 / 2; } .pad-l .k2 { grid-area: 2 / 1; }
+.pad-l .k3 { grid-area: 2 / 3; } .pad-l .k4 { grid-area: 3 / 2; }
+/* right cluster: a four-way pad with pixel arrows */
+.pad-r .key { border-radius: 22%; }
+.pad-r .k1 { grid-area: 1 / 2; } .pad-r .k2 { grid-area: 2 / 1; }
+.pad-r .k3 { grid-area: 2 / 3; } .pad-r .k4 { grid-area: 3 / 2; }
+.key::after {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 0; height: 0;
+  border: .9vmin solid transparent;
+}
+.pad-r .k1::after { transform: translate(-50%, -70%); border-bottom-color: #efe2ff; }
+.pad-r .k2::after { transform: translate(-70%, -50%); border-right-color: #efe2ff; }
+.pad-r .k3::after { transform: translate(-30%, -50%); border-left-color: #efe2ff; }
+.pad-r .k4::after { transform: translate(-50%, -30%); border-top-color: #efe2ff; }
+/* only the left and right arrows do anything: they move the roster cursor */
+.pad-r .k2, .pad-r .k3 { pointer-events: auto; cursor: pointer; }
+.pad-r .k2:active, .pad-r .k3:active { transform: scale(.88); filter: brightness(1.4); }
+/* on a computer the whole thing is one widescreen panel filling the page */
+.pc {
+  --pc: 1;
+}
+.pc body.pick-mode .pads, .pc .pads, .pc .note { display: none; }
+.pc body { padding-inline: 0; }
+.pc .cover { aspect-ratio: 16 / 9; width: min(100%, calc((100vh - 130px) * 16 / 9)); }
+.pc .cover:is([data-phase="black"],[data-phase="pick"]) {
+  /* the roster steps back from the edges so the scenery shows around it */
+  aspect-ratio: 16 / 9; width: min(86%, calc((100vh - 110px) * 16 / 9));
+}
+/* the roster has to work in a short, wide screen */
+.pc .cover[data-phase="pick"] .pick-title { top: 1.4cqw; padding: 1.1cqw 2cqw; font-size: 2.1cqw; }
+.pc .cover[data-phase="pick"] .col {
+  grid-template-rows: 4.6cqw auto auto; align-content: center;
+  padding: 10cqw 1.2cqw 2cqw; gap: 1.2cqw;
+}
+.pc .cover[data-phase="pick"] .frame { height: 32cqw; }
+.pc .cover[data-phase="pick"] .name { font-size: 1.7cqw; padding: .4cqw .8cqw; border-width: .3cqw; }
+.pc .cover[data-phase="pick"] .name.long { font-size: 1.2cqw; }
+.pc .cover[data-phase="pick"] .desc { font-size: 1.1cqw; line-height: 1.7; }
+/* a widescreen panel is short: every full-height screen is sized by its height */
+.pc .splash { gap: 2.2cqw; }
+.pc .gate-head { width: 13cqw; }
+.pc .splash .touch { font-size: 2.4cqw; }
+.pc .splash .sub { font-size: 1.2cqw; }
+.pc .gate-board { width: auto; max-width: 92cqw; }
+.pc .gate-board img { height: 31cqw; width: auto; margin: 0 auto; }
+.pc .name-bar { width: 40cqw; padding: .8cqw 1.4cqw; border-width: .3cqw; border-radius: .9cqw; gap: 1.2cqw; margin-top: 1.6cqw; }
+.pc .name-bar label { font-size: 1.3cqw; }
+.pc .name-bar input { font-size: 1.5cqw; }
+.pc .name-bar button { font-size: 1.2cqw; padding: .5cqw .9cqw; border-width: .25cqw; }
+.pc .gate-msg { font-size: 1.4cqw; margin-top: 1.4cqw; }
+.pc .boot { gap: 2cqw; }
+.pc .boot .studio { font-size: 3.1cqw; }
+.pc .boot .pres { font-size: 1.7cqw; }
+.pc .drop { padding: 3cqw 5cqw 2.4cqw; gap: 1.6cqw; }
+.pc .skull { max-width: min(34cqw, 100%); }
+.pc .drop-txt { font-size: 1.5cqw; line-height: 1.7; }
+.pc .drop-again { font-size: 1.2cqw; }
+.pc .load-txt { font-size: 2cqw; }
+.pc .load-bar { width: 32cqw; height: 2.2cqw; border-width: .35cqw; padding: .35cqw; }
+
+/* phone: no room beside a full-width screen, so the pads sit over the empty
+   lower part of the panel where your thumbs fall anyway */
+html:not(.pc) .pad { width: min(25vw, 124px); top: 81%; }
+html:not(.pc) .pad-l { left: 2vw; } html:not(.pc) .pad-r { right: 2vw; }
+
+/* power switch: leaves the console off, screen dead */
+.power {
+  position: fixed; left: max(1.5vw, 10px); top: max(1.5vh, 10px);
+  width: 54px; height: 54px; display: none; place-items: center; z-index: 5;
+  background: #14052b; color: #ff5b6e; border: 3px solid #000;
+  box-shadow: inset 0 0 0 2px #4b1580, 0 6px 0 #000; border-radius: 10px; cursor: pointer;
+}
+.pc .power { display: grid; }
+.power:hover { background: #240a48; }
+.power:active { transform: translateY(3px); box-shadow: inset 0 0 0 2px #4b1580; }
+.power:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+.power svg { width: 26px; height: 26px; display: block; }
+html.off .power { color: #6b2030; animation: blink-soft 1.4s steps(1) infinite; }
+/* CRT switch-off: the picture collapses to a line, then a dot, then nothing */
+html.off body { background: #000; }
+/* switched off: the console is dead, the scenery behind it is not */
+html.pc.off body { background: linear-gradient(rgba(2,0,8,.74), rgba(2,0,8,.86)), var(--sky) center / cover no-repeat fixed, #000; }
+html.off .stage { animation: crt-off .5s steps(5) forwards; }
+@keyframes crt-off {
+  0% { transform: scale(1); filter: brightness(1); }
+  55% { transform: scaleY(.012) scaleX(1); filter: brightness(6); }
+  80% { transform: scaleY(.012) scaleX(.04); filter: brightness(6); }
+  100% { transform: scale(0); filter: brightness(0); opacity: 0; }
+}
+html.off .pads { display: none !important; }
+.off-note {
+  position: fixed; inset: auto 0 10vh 0; display: none; text-align: center;
+  font-family: var(--f-pixel); font-size: 12px; letter-spacing: .2em; color: #4b3a6b;
+}
+html.off .off-note { display: block; }
+
+/* CRT glass */
+.crt {
+  position: absolute; inset: 0; pointer-events: none; mix-blend-mode: multiply;
+  background:
+    repeating-linear-gradient(to bottom, rgba(0,0,0,.22) 0 1px, transparent 1px 3px),
+    radial-gradient(130% 120% at 50% 50%, transparent 60%, rgba(0,0,0,.55) 100%);
+}
+.glare { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(160deg, rgba(255,255,255,.08), transparent 35%); }
+
+/* ---------- intro layers ---------- */
+.boot, .flash { position: absolute; inset: 0; pointer-events: none; }
+.boot {
+  background: var(--ink); display: grid; place-content: center; justify-items: center; gap: 3.4cqw;
+  text-align: center; opacity: 0;
+}
+.boot .studio { font-family: var(--f-pixel); font-size: 5.4cqw; letter-spacing: .14em; color: var(--bone); }
+.boot .studio em { font-style: normal; color: var(--purple); position: relative; display: inline-block; }
+/* DEVIL: letters drop in, then 8-bit pixel stars twinkle around the word */
+.boot .studio em span.on { animation: devil-drop .32s steps(4) both; }
+@keyframes devil-drop { from { transform: translateY(-5cqw); } 75% { transform: translateY(.6cqw); } to { transform: none; } }
+.star {
+  position: absolute; width: .6cqw; height: .6cqw; margin: -.3cqw 0 0 -.3cqw;
+  background: currentColor; color: var(--bone); pointer-events: none;
+  box-shadow: 0 -.6cqw, 0 -1.2cqw, 0 .6cqw, 0 1.2cqw, -.6cqw 0, -1.2cqw 0, .6cqw 0, 1.2cqw 0;
+  animation: twinkle .72s steps(1) infinite;
+}
+.star.gold { color: var(--gold); }
+.star.purple { color: #d9a8ff; }
+.star.pop { animation: star-pop .36s steps(3) both, twinkle .72s .36s steps(1) infinite; }
+@keyframes twinkle { 0% { transform: scale(1); } 25% { transform: scale(.5); } 50% { transform: scale(1.5); } 75% { transform: scale(.5) rotate(45deg); } }
+@keyframes star-pop { from { transform: scale(0); } 66% { transform: scale(2); } to { transform: scale(1); } }
+.boot .pres { font-family: var(--f-pixel); font-size: 3cqw; color: var(--gold); letter-spacing: .4em; }
+.boot span { visibility: hidden; }
+.boot span.on { visibility: visible; }
+.flash { background: var(--bone); opacity: 0; }
+
+/* beat-synced stutters on the boot card (three hits, then CRT switch-off) */
+.boot > * { transition: none; }
+.cover[data-glitch="a"] .boot > * { transform: translateX(-2.5cqw) skewX(-14deg); text-shadow: .8cqw 0 var(--magenta), -.8cqw 0 var(--cyan); }
+.cover[data-glitch="b"] .boot > * { transform: translateX(2cqw) scale(1.25); text-shadow: -.8cqw 0 var(--magenta), .8cqw 0 var(--cyan); }
+.cover[data-glitch="off"] .boot > * { transform: scale(1.5, .03); filter: brightness(4); }
+.cover[data-glitch="gone"] .boot > * { visibility: hidden; }
+.flash.blip { animation: flash .12s steps(2) both; opacity: 0; }
+.cover.punch canvas { animation: punch .45s steps(6) both; }
+@keyframes punch { from { transform: scale(1.14); } to { transform: none; } }
+
+/* tap-to-start screen: phones allow sound only after a touch */
+.splash {
+  position: absolute; inset: 0; display: none; background: var(--ink);
+  place-content: center; justify-items: center; gap: 4cqw; text-align: center;
+}
+.splash .touch { font-family: var(--f-pixel); font-size: 4.2cqw; letter-spacing: .14em; color: var(--bone); animation: blink-soft 1.05s steps(1) infinite; }
+@keyframes blink-soft { 50% { opacity: .3; } }
+.splash .sub { font-family: var(--f-pixel); font-size: 2cqw; letter-spacing: .2em; color: var(--purple); }
+.cover:is([data-phase="splash"],[data-phase="hello"],[data-phase="name"],[data-phase="ok"],[data-phase="fade"]) .splash { display: grid; }
+.cover:is([data-phase="splash"],[data-phase="hello"],[data-phase="name"],[data-phase="ok"],[data-phase="fade"]) :is(.vert,.title,.copy,.shade) { visibility: hidden; }
+/* last beat before the intro: a quick stepped fade to black */
+.cover[data-phase="fade"] .splash > * { animation: fade-out .28s steps(3) forwards; }
+@keyframes fade-out { to { opacity: 0; } }
+
+/* press start -> the head grins -> a board asks for a name -> thumbs up */
+.gate-head { width: 26cqw; height: auto; display: block; image-rendering: pixelated; }
+.cover[data-phase="hello"] .gate-head { animation: head-pop .5s steps(5) both; }
+@keyframes head-pop { 0% { transform: scale(1); } 45% { transform: scale(1.4) rotate(-7deg); } 100% { transform: scale(1.18); } }
+.cover:is([data-phase="name"],[data-phase="ok"]) .gate-head,
+.cover:is([data-phase="hello"],[data-phase="name"],[data-phase="ok"]) .gate-text { display: none; }
+.gate-board { display: none; width: min(92cqw, 100%); }
+.cover:is([data-phase="name"],[data-phase="ok"]) .gate-board { display: block; animation: board-in .28s steps(3) both; }
+@keyframes board-in { from { transform: scale(.7) translateY(6cqw); opacity: 0; } to { transform: none; opacity: 1; } }
+.gate-board img { width: 100%; height: auto; display: block; image-rendering: pixelated; }
+.name-bar {
+  display: flex; align-items: center; gap: 2cqw; margin: 2.6cqw auto 0; width: 76cqw; max-width: 100%;
+  background: #170019; border: .5cqw solid var(--magenta); border-radius: 1.6cqw; padding: 1.5cqw 2.2cqw;
+  box-shadow: 0 0 2.4cqw rgba(255,46,151,.5), inset 0 0 1.6cqw rgba(255,46,151,.3);
+}
+.name-bar label { font-family: var(--f-pixel); font-size: 2.4cqw; color: var(--magenta); letter-spacing: .1em; }
+.name-bar input {
+  flex: 1; min-width: 0; background: none; border: 0; outline: none; padding: 0;
+  font-family: var(--f-pixel); font-size: 2.8cqw; color: #ffc2e6; letter-spacing: .16em;
+  text-transform: uppercase; caret-color: var(--magenta);
+}
+.name-bar button {
+  font-family: var(--f-pixel); font-size: 2.2cqw; letter-spacing: .1em; cursor: pointer;
+  color: var(--ink); background: var(--magenta); border: .4cqw solid var(--ink); padding: .9cqw 1.6cqw;
+}
+.name-bar button:focus-visible, .name-bar input:focus-visible { outline: .4cqw solid var(--bone); outline-offset: .4cqw; }
+.cover[data-phase="ok"] .name-bar { display: none; }
+.gate-msg { font-family: var(--f-pixel); font-size: 2.6cqw; letter-spacing: .12em; color: var(--gold); min-height: 1.2em; margin-top: 2.4cqw; }
+.gate-msg.err { color: var(--magenta); }
+.name-bar.shake { animation: shake .3s steps(6); }
+
+/* state machine */
+.cover[data-phase="boot"] .boot { opacity: 1; }
+.cover[data-phase="boot"] :is(.vert,.title,.copy,.shade) { visibility: hidden; }
+.cover[data-phase="reveal"] :is(.vert,.title,.copy) { visibility: hidden; }
+.cover[data-phase="slam"] .copy { visibility: hidden; }
+.cover[data-phase="slam"] .logo .l2 { animation: slam .55s steps(6) both; }
+.cover[data-phase="slam"] .logo .l1 { animation: slide .4s steps(5) both; }
+.cover[data-phase="slam"] .series { animation: slide .4s .2s steps(5) both; }
+.cover[data-phase="slam"] .vert { animation: drop .5s .15s steps(7) both; }
+.cover[data-phase="slam"] .start { visibility: hidden; }
+.cover[data-phase="hud"] .copy { animation: slide .35s steps(4) both; }
+.flash.go { animation: flash .38s steps(3) both; }
+
+@keyframes blink { 50% { opacity: 0; } }
+@keyframes slam { 0% { transform: scale(3.2); opacity: 0; } 60% { transform: scale(.94); opacity: 1; } 100% { transform: scale(1); } }
+@keyframes slide { from { transform: translateX(-110%); } to { transform: none; } }
+@keyframes drop { from { transform: translateY(-60cqw); } to { transform: none; } }
+@keyframes flash { 0% { opacity: .95; } 100% { opacity: 0; } }
+.cover.shake { animation: shake .3s steps(6); }
+@keyframes shake { 25% { transform: translate(1.2cqw,-.6cqw); } 50% { transform: translate(-1cqw,.8cqw); } 75% { transform: translate(.6cqw,.4cqw); } }
+
+/* ---------- controls ---------- */
+.controls { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+.btn {
+  font-family: var(--f-pixel); font-size: 11px; letter-spacing: .12em;
+  color: var(--bone); background: var(--ink);
+  border: 3px solid var(--bone); padding: 12px 16px; cursor: pointer;
+  box-shadow: 4px 4px 0 var(--purple);
+}
+.btn:hover { background: var(--violet); }
+.btn:active { transform: translate(4px,4px); box-shadow: none; }
+/* once the announcement starts, PRESS START is dead: no press, no reaction */
+.btn:disabled { cursor: default; }
+.btn:disabled:active { transform: none; box-shadow: 4px 4px 0 var(--purple); }
+.btn:disabled:hover { background: var(--gold); }
+.btn:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+.btn.primary { color: var(--ink); background: var(--gold); border-color: var(--ink); }
+.btn.primary:hover { background: #ffd866; }
+/* nothing behind the touch screen is reachable until it is tapped */
+.stage[data-locked] :is(.controls, .note) { visibility: hidden; pointer-events: none; }
+/* skipping and starting the intro only make sense while it runs */
+.stage:not([data-playing]) #skip { display: none; }
+.note { margin: 0; font-size: 13px; color: #a99ee0; text-align: center; max-width: 52ch; line-height: 1.6; }
+
+@media (prefers-reduced-motion: reduce) {
+  .start { animation: none; }
+}
+</style>
+
+<main class="stage" id="stage" data-locked="1">
+  <div class="cover" id="cover" data-phase="rest" role="img" aria-label="Album cover: Panel Sewi, Sigmatiserie. A rapper in a black durag and hoodie throws a ringed fist toward the viewer on a violet background, framed as a 1990s game title screen. © 2026 V-Devil Entertainment.">
+    <canvas id="art" width="1024" height="1024"></canvas>
+    <div class="shade"></div>
+
+
+    <div class="vert" aria-hidden="true">パネル・セウィ</div>
+
+    <div class="title">
+      <h1 class="logo"><span class="l1">PANEL</span><span class="l2">SEWI</span></h1>
+      <div class="series"><b>SIGMATISERIE</b><span>シグマティセリー</span></div>
+      <div class="start" id="start-line" role="button" tabindex="0"><span class="vfx" aria-hidden="true"></span><img class="start-icon" aria-hidden="true" src="assets/start-icon.png" alt="">PRESS START<span class="ok-mark" aria-hidden="true">OK</span></div>
+    </div>
+    <div class="copy" aria-hidden="true">© 2026 V-DEVIL ENTERTAINMENT</div>
+
+    <div class="boot" aria-hidden="true">
+      <div class="studio" id="studio"></div>
+      <div class="pres" id="pres"></div>
+    </div>
+    <div class="splash">
+      <img class="gate-head" id="gate-head" src="assets/start-icon.png" alt="">
+      <div class="gate-text" aria-hidden="true">
+        <div class="touch">TOUCH TO START</div>
+        <div class="sub">PANEL SEWI EP</div>
+      </div>
+      <div class="gate-board">
+        <img id="board-img" src="assets/name-board.png" alt="Type your name to continue the game">
+        <form class="name-bar" id="name-form">
+          <label for="player">NAME:</label>
+          <input id="player" name="player" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go">
+          <button type="submit">OK</button>
+        </form>
+        <div class="gate-msg" id="gate-msg" role="status"></div>
+      </div>
+    </div>
+    <div class="drop" id="drop">
+      <div class="load" aria-hidden="true">
+        <div class="load-txt">LOADING</div>
+        <div class="load-bar"><i id="load-fill"></i></div>
+      </div>
+      <img class="skull" id="skull" src="assets/skull.png" alt="Skull of Death">
+      <p class="drop-txt" id="drop-txt" role="status"></p>
+      <div class="drop-again" id="drop-wait" aria-hidden="true">WAIT 5 SECONDS</div>
+    </div>
+    <div class="blackout" aria-hidden="true"></div>
+    <div class="pick">
+      <div class="pick-cols" aria-hidden="true">
+        <div class="col c1">
+          <div class="name">KIRIKOU</div>
+          <div class="frame"><img id="kiri-img" src="assets/kirikou.png" alt="Kirikou"></div>
+          <p class="desc">KIRIKOU GIVE YOU SPEED, HEALTH AND COURAGE</p>
+        </div>
+        <div class="col c2">
+          <div class="name">RYU</div>
+          <div class="frame art"><img id="ryu-img" src="assets/ryu-card-stance.png" alt="Ryu"></div>
+          <p class="desc">RYU GIVE YOU STRENGHT, DEFENSE AND ENDURANCE</p>
+        </div>
+        <div class="col c3">
+          <div class="name" id="knux-name">KNUCKLES</div>
+          <div class="frame"><img id="knux-img" src="assets/knuckles-idle.png" alt="Knuckles"></div>
+          <p class="desc">KNUCKLES GIVE YOU STRENGHT, HEALTH, ABILITY TO FLY AND GIRLS~</p>
+        </div>
+      </div>
+      <h2 class="pick-title">CHOOSE YOUR FAVORITE CHARACTER</h2>
+    </div>
+    <div class="flash" id="flash"></div>
+    <div class="crt"></div>
+    <div class="glare"></div>
+  </div>
+
+  <div class="controls">
+    <button class="btn primary" id="play" type="button"><img class="start-icon" id="start-icon-btn" alt="">PRESS START</button>
+    <button class="btn" id="skip" type="button">SKIP INTRO</button>
+  </div>
+  <p class="note">Type a name on the board and the intro runs with sound; press start then shows what drops next; reload the page to watch it again. the V-Devil Team boot card with typing blips, then the opening sound with every cut on its beat, then the 8-bit voice tag. Tap the screen to skip ahead.</p>
+  <div class="pads" aria-hidden="true">
+    <div class="pad pad-l"><i class="key k1"></i><i class="key k2"></i><i class="key k3"></i><i class="key k4"></i></div>
+    <div class="pad pad-r"><i class="key k1"></i><i class="key k2"></i><i class="key k3"></i><i class="key k4"></i></div>
+  </div>
+</main>
+  <button class="power" id="power" type="button" aria-label="Turn the console off">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" aria-hidden="true">
+      <path d="M7.5 5.5a8 8 0 1 0 9 0"></path><path d="M12 2.5v8"></path>
+    </svg>
+  </button>
+  <p class="off-note" aria-hidden="true">PRESS POWER TO START AGAIN</p>
+
+<script>
+(() => {
+  const cover = document.getElementById('cover');
+  // a computer is a mouse, not a wide window: the page often runs in a narrow panel
+  const isPC = matchMedia('(hover: hover) and (pointer: fine)').matches;
+  document.documentElement.classList.toggle('pc', isPC);
+  const canvas = document.getElementById('art');
+  const ctx = canvas.getContext('2d');
+  const flash = document.getElementById('flash');
+  const studio = document.getElementById('studio');
+  document.getElementById('start-icon-btn').src = cover.querySelector('.start-icon').src;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const img = new Image();
+  img.src = "assets/sewi-art.jpg";
+
+  // Square crop around the fist and face (source is 1179x685).
+  function screenRatio() {
+    const w = cover.clientWidth, h = cover.clientHeight;
+    return w && h ? w / h : 1;
+  }
+  function sizeCanvas() {
+    const W = 1024, H = Math.max(1, Math.round(W / screenRatio()));
+    if (canvas.width !== W || canvas.height !== H) { canvas.width = W; canvas.height = H; }
+  }
+  // crop the art to whatever shape the screen is, keeping the fist in frame
+  function crop() {
+    const iw = img.naturalWidth, ih = img.naturalHeight, r = screenRatio();
+    let sw, sh;
+    if (iw / ih > r) { sh = ih; sw = ih * r; } else { sw = iw; sh = iw / r; }
+    return { sx: Math.round((iw - sw) * 0.62), sy: Math.round((ih - sh) * 0.1), sw, sh };
+  }
+  // Pixelate: draw tiny, then scale up with smoothing off.
+  const tiny = document.createElement('canvas');
+  const tctx = tiny.getContext('2d');
+  function draw(block) {
+    if (!img.complete || !img.naturalWidth) return;
+    sizeCanvas();
+    const { sx, sy, sw, sh } = crop();
+    const W = canvas.width, H = canvas.height;
+    if (block <= 1) {
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
+      return;
+    }
+    const nx = Math.max(2, Math.round(W / block)), ny = Math.max(2, Math.round(H / block));
+    tiny.width = nx; tiny.height = ny;
+    tctx.imageSmoothingEnabled = true;
+    tctx.drawImage(img, sx, sy, sw, sh, 0, 0, nx, ny);
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(tiny, 0, 0, nx, ny, 0, 0, W, H);
+  }
+  addEventListener('resize', () => { if (cover.dataset.phase === 'rest') draw(1); });
+
+  // Studio logo, typed one letter at a time.
+  // Boot card: "V-DEVIL TEAM / PRESENTS", typed one letter at a time with an
+  // 8-bit key blip; the intro sound starts once the typing ends.
+  const spans = str => str.split('').map(c => `<span>${c === ' ' ? '&nbsp;' : c}</span>`).join('');
+  studio.innerHTML = `${spans('V-')}<em>${spans('DEVIL')}</em>${spans(' TEAM')}`;
+  document.getElementById('pres').innerHTML = spans('PRESENTS');
+  const letters = () => cover.querySelectorAll('.boot span');
+  const devil = studio.querySelector('em');
+  const devilLetters = [...devil.querySelectorAll('span')];
+  // pixel star placed in % of the DEVIL word's box
+  function star(x, y, tone, delay = 0) {
+    const el = document.createElement('i');
+    el.className = 'star pop' + (tone ? ' ' + tone : '');
+    el.style.left = x + '%'; el.style.top = y + '%';
+    el.style.animationDelay = `0s, ${.36 + delay}s`;
+    devil.appendChild(el);
+  }
+  function clearStars() { devil.querySelectorAll('.star').forEach(el => el.remove()); }
+  const BURST = [[-8, -30, 'gold'], [22, -55, ''], [50, -38, 'purple'], [80, -60, 'gold'], [108, -25, ''],
+                 [104, 120, 'purple'], [70, 145, ''], [30, 135, 'gold'], [-6, 110, 'purple']];
+  function devilLanded(i) {
+    // a spark on each letter as it lands, then a burst around the word
+    star((i + .5) / devilLetters.length * 100, i % 2 ? 128 : -32, i % 2 ? 'purple' : 'gold');
+    if (i === devilLetters.length - 1) BURST.forEach(([x, y, t], k) => star(x, y, t, k * .08));
+  }
+  const TYPE_START = 60, TYPE_STEP = 50;
+  const TYPED = 'V-DEVIL TEAMPRESENTS';
+  const BOOT = TYPE_START + TYPED.length * TYPE_STEP + 120; // ms until the intro sound
+
+  // ---------- sound ----------
+  // Everything routes through one bus so SKIP can cut it instantly.
+  // The sound clips go through Web Audio too: the context is unlocked by the
+  // START tap, so the clip can be scheduled mid-intro (phones block
+  // <audio>.play() called later from a timer).
+  let ac = null, bus = null, muted = false;
+  const clips = {};
+  const VOICE_8BIT = "assets/voice-8bit.wav";
+  const INTRO_SOUND = "assets/intro-sound.mp3";
+  // a clip is either baked into this file or a file next to it
+  function clipBytes(uri) {
+    if (uri.startsWith('data:')) {
+      const bin = atob(uri.split(',')[1]);
+      const buf = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+      return Promise.resolve(buf.buffer);
+    }
+    return fetch(uri).then(r => r.arrayBuffer());
+  }
+  function loadClip(uri) {
+    if (clips[uri]) return clips[uri];
+    return clips[uri] = clipBytes(uri)
+      .then(bytes => new Promise((ok, bad) => ac.decodeAudioData(bytes, ok, bad)));
+  }
+  function playClip(uri, at, vol) {
+    const myBus = bus;
+    loadClip(uri).then(b => {
+      if (bus !== myBus) return;
+      const src = ac.createBufferSource(), g = ac.createGain();
+      src.buffer = b; g.gain.value = vol;
+      src.connect(g).connect(myBus);
+      src.start(Math.max(ac.currentTime, at));
+    }).catch(() => {});
+  }
+  // iPhones send Web Audio to the ringer channel, so with the silent switch on
+  // it only plays through headphones. Declaring a playback session (iOS 17+),
+  // or keeping a silent <audio> element playing (older iOS), moves it onto
+  // the media channel so it plays through the speaker too.
+  const keepAlive = new Audio('data:audio/wav;base64,UklGRsQPAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YaAPAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA');
+  keepAlive.loop = true;
+  keepAlive.setAttribute('playsinline', '');
+  function unlockSpeaker() {
+    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch {}
+    try { keepAlive.currentTime = 0; const p = keepAlive.play(); if (p) p.catch(() => {}); } catch {}
+  }
+  function stopSound(releaseSpeaker = true) {
+    if (releaseSpeaker) try { keepAlive.pause(); } catch {}
+    if (!bus) return;
+    try { bus.gain.setValueAtTime(0, ac.currentTime); bus.disconnect(); } catch {}
+    bus = null;
+  }
+  function ensureAudio() {
+    unlockSpeaker();
+    try {
+      // a context left 'interrupted' by AirPods connecting or disconnecting
+      // never comes back on its own; start a fresh one
+      if (ac && (ac.state === 'interrupted' || ac.state === 'closed')) { try { ac.close(); } catch {} ac = null; }
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      ac.resume();
+      return true;
+    } catch { return false; }
+  }
+  // Returns the audio-clock time the intro started at, so the picture can
+  // follow the sound instead of drifting on its own timers.
+  function jingle() {
+    if (muted || !ensureAudio()) return null;
+    if (bus) { try { bus.disconnect(); } catch {} bus = null; }
+    bus = ac.createGain(); bus.connect(ac.destination);
+    const t0 = ac.currentTime + .05;
+    // 8-bit typing blips, one per letter (none for the space)
+    [...TYPED].forEach((c, i) => {
+      if (c === ' ') return;
+      const t = t0 + (TYPE_START + i * TYPE_STEP) / 1000;
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'square';
+      o.frequency.setValueAtTime(1500 + (i % 4) * 110, t);
+      o.frequency.setValueAtTime(750 + (i % 4) * 55, t + .018);
+      g.gain.setValueAtTime(.05, t);
+      g.gain.setValueAtTime(0, t + .04);
+      o.connect(g).connect(bus);
+      o.start(t); o.stop(t + .05);
+    });
+    // then the intro sound; its first bass hit lands on the reveal flash
+    const s0 = t0 + BOOT / 1000;
+    playClip(INTRO_SOUND, s0, .85);
+    // 8-bit voice tag 5 seconds into the intro sound, 40% volume
+    playClip(VOICE_8BIT, s0 + 5, .4);
+    // release the speaker once the voice tag has finished
+    const myBus = bus;
+    setTimeout(() => { if (bus === myBus) try { keepAlive.pause(); } catch {} }, (s0 - ac.currentTime + 8) * 1000);
+    return t0;
+  }
+
+  // ---------- timeline ----------
+  // Cut points, in ms after the intro sound starts, taken from its hits:
+  // a triple stutter at 0.70 / 0.82 / 0.94 s, bass hits at 1.57 and 2.55 s,
+  // and one beat (~0.98 s) apart after that.
+  const HIT = { a: 700, b: 820, c: 940, bass1: 1570, bass2: 2550, beat3: 3530 };
+  const LEVELS = [128, 96, 64, 48, 32, 24, 16, 10, 6, 3, 1];
+  let raf = 0;
+  let fadeTimer = 0;
+  function clear() { cancelAnimationFrame(raf); clearTimeout(fadeTimer); }
+  function flashOnce(cls) { flash.className = 'flash'; void flash.offsetWidth; flash.classList.add(cls); }
+  function retrigger(cls) { cover.classList.remove(cls); void cover.offsetWidth; cover.classList.add(cls); }
+  function hit() { flashOnce('go'); retrigger('shake'); }
+  function rest() {
+    clear();
+    clearDrop();
+    delete stage.dataset.playing;
+    revealStart();
+    stopSound();
+    cover.dataset.phase = 'rest';
+    delete cover.dataset.glitch;
+    clearStars();
+    letters().forEach(s => s.classList.add('on'));
+    draw(1);
+  }
+  function play(withSound) {
+    clear();
+    clearDrop();
+    if (reduce) { rest(); return; }
+    stopSound(false); // keep the speaker unlocked by the touch
+    const audioT0 = withSound ? jingle() : null;
+    const wall0 = performance.now();
+    const clock = () => {
+      // follow the audio clock when sound is running, else wall time
+      if (audioT0 != null && ac && ac.state === 'running')
+        return (ac.currentTime - audioT0 - (ac.outputLatency || 0)) * 1000;
+      return performance.now() - wall0;
+    };
+    const S = BOOT;
+    const events = [];
+    const at = (ms, fn) => events.push([ms, fn]);
+    letters().forEach((s, i) => at(TYPE_START + i * TYPE_STEP, () => {
+      s.classList.add('on');
+      const d = devilLetters.indexOf(s);
+      if (d >= 0) setTimeout(() => devilLanded(d), 240);
+    }));
+    at(S + HIT.a, () => { cover.dataset.glitch = 'a'; flashOnce('blip'); });
+    at(S + HIT.b, () => { cover.dataset.glitch = 'b'; flashOnce('blip'); });
+    at(S + HIT.c, () => { cover.dataset.glitch = 'off'; });
+    at(S + HIT.c + 110, () => { cover.dataset.glitch = 'gone'; });
+    at(S + HIT.bass1, () => { delete cover.dataset.glitch; cover.dataset.phase = 'reveal'; hit(); retrigger('punch'); });
+    at(S + HIT.bass2, () => { cover.dataset.phase = 'slam'; draw(1); hit(); retrigger('punch'); });
+    at(S + HIT.beat3, () => { cover.dataset.phase = 'hud'; flashOnce('blip'); });
+    at(S + HIT.beat3 + 500, () => { cover.dataset.phase = 'rest'; delete stage.dataset.playing; revealStart(); });
+    events.sort((x, y) => x[0] - y[0]);
+
+    cover.dataset.phase = 'boot';
+    stage.dataset.playing = '';
+    hideStart();
+    delete cover.dataset.glitch;
+    clearStars();
+    letters().forEach(s => s.classList.remove('on'));
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let next = 0, lastLevel = -1;
+    const tick = () => {
+      const t = clock();
+      while (next < events.length && t >= events[next][0]) events[next++][1]();
+      // pixel reveal snaps one step per 1/16 of the beat between the two bass hits
+      if (cover.dataset.phase === 'reveal') {
+        const p = (t - (S + HIT.bass1)) / (HIT.bass2 - HIT.bass1 - 60);
+        const lv = Math.max(0, Math.min(LEVELS.length - 1, Math.floor(p * LEVELS.length)));
+        if (lv !== lastLevel) { draw(LEVELS[lv]); lastLevel = lv; }
+      }
+      if (next < events.length) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+  }
+
+  img.onload = () => { if (cover.dataset.phase === 'rest') draw(1); };
+  // ---------- PRESS START arrives when the intro ends ----------
+  const startLine = document.getElementById('start-line');
+  const playBtn = document.getElementById('play');
+  function starAt(parent, x, y, tone, delay) {
+    const el = document.createElement('i');
+    el.className = 'star pop' + (tone ? ' ' + tone : '');
+    el.style.left = x + '%'; el.style.top = y + '%';
+    el.style.animationDelay = delay + 's, ' + (delay + .36) + 's';
+    parent.appendChild(el);
+  }
+  const START_STARS = [[-7, -45], [13, -78], [38, -58], [64, -80], [90, -42], [106, -14],
+                       [104, 128], [76, 148], [46, 132], [18, 150], [-5, 114]];
+  let starTimer = 0;
+  function hideStart() {
+    clearTimeout(starTimer);
+    delete cover.dataset.started;
+    delete stage.dataset.started;
+    startLine.classList.remove('arrive');
+    startLine.querySelectorAll('.star').forEach(el => el.remove());
+  }
+  function sparkle() {
+    if (muted || !ac) return;
+    const t0 = ac.currentTime + .02;
+    [1318, 1760, 2093, 2637, 3136, 2637, 3520].forEach((f, i) => {
+      const t = t0 + i * .065;
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'square'; o.frequency.setValueAtTime(f, t);
+      g.gain.setValueAtTime(.04, t);
+      g.gain.exponentialRampToValueAtTime(.0001, t + .2);
+      o.connect(g).connect(ac.destination);
+      o.start(t); o.stop(t + .22);
+    });
+  }
+  function revealStart() {
+    hideStart();
+    cover.dataset.started = '';
+    stage.dataset.started = '';
+    void startLine.offsetWidth;
+    startLine.classList.add('arrive');
+    START_STARS.forEach(([x, y], i) => starAt(startLine, x, y, i % 2 ? 'gold' : 'purple', i * .06));
+    sparkle();
+    // the sparkle is an arrival, not decoration: clear it once it has landed
+    starTimer = setTimeout(() => startLine.querySelectorAll('.star').forEach(el => el.remove()), 1700);
+  }
+
+  // ---------- PRESS START after the intro: the drop announcement ----------
+  const DROP_LINE = 'SKULL OF DEATH FROM MADARA GONNA DROP OUT TOO THE 19 OCTOBER';
+  const dropTxt = document.getElementById('drop-txt');
+  const loadFill = document.getElementById('load-fill');
+  const startIcons = [...document.querySelectorAll('.start-icon')];
+  let dropTimers = [];
+  const dLater = (ms, fn) => dropTimers.push(setTimeout(fn, ms));
+  function clearDrop() {
+    announced = false;
+    if (playBtn) playBtn.disabled = false;
+    dropTimers.forEach(clearTimeout); dropTimers = [];
+    delete stage.dataset.pick;
+    document.body.classList.remove('pick-mode');
+    document.querySelectorAll('.col.sel').forEach(c => c.classList.remove('sel'));
+    document.querySelector('.pick-cols').classList.remove('chosen');
+    clearTimeout(swapTimer);
+    clearKnuxTalk();
+    pickReady = false; cursor = -1;
+    if (ryuImg) ryuImg.src = RYU_STANCE;
+    if (kiriImg) kiriImg.src = KIRI_IDLE;
+    if (knuxImg) { knuxImg.src = KNUX_IDLE; knuxName.textContent = 'KNUCKLES'; knuxName.classList.remove('long'); }
+    cover.classList.remove('validating');
+    startIcons.forEach(i => i.src = HEAD_PLAIN);
+    dropTxt.textContent = '';
+    dropWait.textContent = 'WAIT 5 SECONDS';
+    loadFill.style.width = '0';
+  }
+  // low, nasty blip for the typing
+  function typeBlip(i) {
+    if (muted || !ac) return;
+    const t = ac.currentTime + .01;
+    const o = ac.createOscillator(), g = ac.createGain(), f = ac.createBiquadFilter();
+    o.type = 'square';
+    o.frequency.setValueAtTime(150 + (i % 3) * 18, t);
+    o.frequency.exponentialRampToValueAtTime(70, t + .05);
+    f.type = 'lowpass'; f.frequency.value = 900;
+    g.gain.setValueAtTime(.045, t);
+    g.gain.setValueAtTime(0, t + .05);
+    o.connect(f).connect(g).connect(ac.destination);
+    o.start(t); o.stop(t + .07);
+  }
+  function drone(dur) {
+    if (muted || !ac) return;
+    const t = ac.currentTime + .02;
+    [41, 41.6].forEach(fr => {
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'sawtooth'; o.frequency.value = fr;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(.12, t + .8);
+      g.gain.setValueAtTime(.12, t + dur - .9);
+      g.gain.linearRampToValueAtTime(0, t + dur);
+      o.connect(g).connect(ac.destination);
+      o.start(t); o.stop(t + dur + .05);
+    });
+  }
+  const dropWait = document.getElementById('drop-wait');
+  function selectSfx() {
+    if (muted || !ac) return;
+    const t0 = ac.currentTime + .02;
+    // two rising blips, then a bright shimmer: the arcade "character locked in"
+    [[784, .0], [1046, .09], [1568, .2]].forEach(([f, d]) => {
+      const o = ac.createOscillator(), g = ac.createGain(); const t = t0 + d;
+      o.type = 'square'; o.frequency.setValueAtTime(f, t);
+      g.gain.setValueAtTime(.055, t); g.gain.setValueAtTime(0, t + (d === .2 ? .34 : .08));
+      o.connect(g).connect(ac.destination); o.start(t); o.stop(t + .4);
+    });
+    for (let i = 0; i < 6; i++) {
+      const t = t0 + .2 + i * .045;
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'square'; o.frequency.setValueAtTime(2093 + i * 180, t);
+      g.gain.setValueAtTime(.025, t); g.gain.setValueAtTime(0, t + .04);
+      o.connect(g).connect(ac.destination); o.start(t); o.stop(t + .06);
+    }
+  }
+  // clips the roster screen plays, each decoded once and reused
+  const SWIPE_SND = "assets/swipe.mp3";
+  // the announcer line, bitcrushed to a 16-bit console voice
+  const VOICE_CHOOSE = "assets/voice-choose.mp3";
+  const clipCache = {};
+  function playSnd(uri, vol) {
+    if (muted || !ensureAudio()) return;
+    const fire = buf => {
+      const src = ac.createBufferSource(), g = ac.createGain();
+      src.buffer = buf; g.gain.value = vol;
+      src.connect(g).connect(ac.destination);
+      src.start();
+    };
+    if (clipCache[uri]) { fire(clipCache[uri]); return; }
+    clipBytes(uri)
+      .then(bytes => ac.decodeAudioData(bytes, b => { clipCache[uri] = b; fire(b); }, () => {}))
+      .catch(() => {});
+  }
+  const swipeSfx = () => playSnd(SWIPE_SND, .4);
+  // each fighter calls his own name when the cursor lands on him, once a clip
+  // for him exists; a slot without one simply stays quiet
+  const KNUX_V1 = "assets/voice-knux-1.mp3";
+  const KNUX_V2 = "assets/voice-knux-2.mp3";
+  const KNUX_GAP = 2000;        // pause between repeats of his line
+  let knuxTimers = [];
+  function clearKnuxTalk() { knuxTimers.forEach(clearTimeout); knuxTimers = []; }
+  function knuxTalk() {
+    // his line follows his name a second later, then repeats while he is the pick
+    clearKnuxTalk();
+    const line = 2130;
+    knuxTimers.push(setTimeout(function again() {
+      playSnd(KNUX_V2, .85);
+      knuxTimers.push(setTimeout(again, line + KNUX_GAP));
+    }, 1000));
+  }
+  const NAME_VOICE = ["assets/voice-kirikou.mp3", "assets/voice-ryu.mp3", KNUX_V1];
+  function nameSfx(i) { if (NAME_VOICE[i]) playSnd(NAME_VOICE[i], .85); }
+  function onLand(i) {
+    clearKnuxTalk();
+    nameSfx(i);
+    if (i === 2) knuxTalk();
+  }
+  function pickSfx() {
+    if (muted || !ac) return;
+    const t0 = ac.currentTime + .02;
+    [523, 659, 784, 1047].forEach((f, i) => {
+      const t = t0 + i * .09;
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'square'; o.frequency.setValueAtTime(f, t);
+      g.gain.setValueAtTime(.05, t); g.gain.setValueAtTime(0, t + (i === 3 ? .4 : .08));
+      o.connect(g).connect(ac.destination); o.start(t); o.stop(t + .45);
+    });
+  }
+  let announced = false;
+  // ---------- roster cursor: Kirikou <-> Ryu, driven by the d-pad ----------
+  const RYU_STANCE = document.getElementById('ryu-img').src;
+  const kiriImg = document.getElementById('kiri-img');
+  const knuxImg = document.getElementById('knux-img');
+  const knuxName = document.getElementById('knux-name');
+  const KNUX_IDLE = knuxImg.src;
+  const KNUX_SEL = "assets/knuckles-sel.png";
+  const KIRI_SEL = kiriImg.src;
+  const KIRI_IDLE = "assets/kirikou-idle.png";
+  const RYU_IDLE = "assets/ryu-card-idle.png";
+  const slots = [...document.querySelectorAll('.pick-cols .col')];
+  const ryuImg = document.getElementById('ryu-img');
+  let cursor = -1, pickReady = false, swapTimer = 0;
+  function poses(i) {
+    // each fighter stands differently depending on whether they are the pick
+    ryuImg.src = i === 1 ? RYU_IDLE : RYU_STANCE;
+    kiriImg.src = i === 0 ? KIRI_SEL : KIRI_IDLE;
+    knuxImg.src = i === 2 ? KNUX_SEL : KNUX_IDLE;
+    // and Knuckles gives his full name once he is the pick
+    knuxName.textContent = i === 2 ? 'KNUCKLES THE ECHIDNA' : 'KNUCKLES';
+    knuxName.classList.toggle('long', i === 2);
+  }
+  function setCursor(i, animate) {
+    cursor = i;
+    slots.forEach((c, k) => c.classList.toggle('sel', k === i));
+    clearTimeout(swapTimer);
+    if (animate) {
+      const col = slots[i];
+      col.classList.remove('swap'); void col.offsetWidth; col.classList.add('swap');
+      swapTimer = setTimeout(() => col.classList.remove('swap'), 420);
+      // Ryu stands ready when he is the pick, and guards when he is not
+      setTimeout(() => poses(i), 170);
+    } else {
+      poses(i);
+    }
+  }
+  function moveCursor(dir) {
+    if (!pickReady) return;
+    const next = cursor + dir;
+    if (next < 0 || next > 2) return; // the roster ends here
+    setCursor(next, true);
+    swipeSfx();
+    setTimeout(() => onLand(next), 220);
+  }
+  const dpad = document.querySelector('.pad-r');
+  dpad.querySelector('.k3').addEventListener('click', () => moveCursor(1));
+  dpad.querySelector('.k2').addEventListener('click', () => moveCursor(-1));
+  // on a computer, Space and Enter are the START button
+  addEventListener('keydown', e => {
+    if (!isPC || e.repeat) return;
+    if (e.key !== ' ' && e.key !== 'Spacebar' && e.key !== 'Enter') return;
+    const el = document.activeElement;
+    if (el && el.closest && el.closest('input, button, textarea, [contenteditable]')) return;
+    if (cover.dataset.phase !== 'rest' || announced) return;
+    e.preventDefault();
+    announce();
+  });
+  addEventListener('keydown', e => {
+    if (!pickReady) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); moveCursor(1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); moveCursor(-1); }
+  });
+
+  function announce() {
+    if (announced) return; // the announcement runs once; the button goes dead
+    clear(); clearDrop(); stopSound(false);
+    announced = true;
+    playBtn.disabled = true;
+    if (!muted) ensureAudio();
+    // 1. the head grins and a purple ring validates the press
+    startIcons.forEach(i => i.src = HEAD_SMILE);
+    cover.classList.add('validating');
+    blip(440, 880, .08, .05); dLater(90, () => blip(880, 1320, .16, .05));
+    // 2. loading bar
+    dLater(950, () => {
+      cover.classList.remove('validating');
+      cover.dataset.phase = 'load';
+      for (let i = 1; i <= 10; i++) dLater(950 + i * 120, () => {
+        loadFill.style.width = i * 10 + '%';
+        blip(260 + i * 30, 200 + i * 30, .04, .035);
+      });
+    });
+    // 3. the skull, then the line types itself out
+    dLater(2400, () => {
+      cover.dataset.phase = 'drop';
+      drone(DROP_LINE.length * .055 + 3);
+      if (!muted && ac) {
+        const t = ac.currentTime + .02;
+        const o = ac.createOscillator(), g = ac.createGain();
+        o.type = 'sawtooth'; o.frequency.setValueAtTime(320, t);
+        o.frequency.exponentialRampToValueAtTime(48, t + .7);
+        g.gain.setValueAtTime(.14, t); g.gain.exponentialRampToValueAtTime(.0001, t + .8);
+        o.connect(g).connect(ac.destination); o.start(t); o.stop(t + .85);
+      }
+      [...DROP_LINE].forEach((c, i) => dLater(700 + i * 55, () => {
+        dropTxt.textContent = DROP_LINE.slice(0, i + 1);
+        if (c !== ' ') typeBlip(i);
+      }));
+      // 4. five-second wait, fade to black, hold, then the character select
+      const typed = 700 + DROP_LINE.length * 55 + 200;
+      for (let k = 5; k >= 1; k--) dLater(typed + (5 - k) * 1000, () => {
+        dropWait.textContent = 'WAIT ' + k + (k === 1 ? ' SECOND' : ' SECONDS');
+        blip(520, 420, .05, .035);
+      });
+      dLater(typed + 5000, () => { cover.dataset.phase = 'fadeout'; });
+      dLater(typed + 5500, () => { cover.dataset.phase = 'black'; });
+      dLater(typed + 10500, () => {
+        cover.dataset.phase = 'pick';
+        stage.dataset.pick = '';
+        document.body.classList.add('pick-mode');
+        pickSfx();
+        playSnd(VOICE_CHOOSE, .85); // the announcer line, in time with the pop
+      });
+      // Kirikou locks in on his own; after that the d-pad arrows move the cursor
+      dLater(typed + 12300, () => {
+        setCursor(0, false);
+        document.querySelector('.pick-cols').classList.add('chosen');
+        selectSfx();
+        setTimeout(() => onLand(0), 260);
+        pickReady = true;
+      });
+    });
+  }
+  // PRESS START shows the drop announcement
+  playBtn.addEventListener('click', announce);
+  document.getElementById('start-line').addEventListener('click', e => { e.stopPropagation(); announce(); });
+  document.getElementById('start-line').addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); announce(); }
+  });
+  document.getElementById('skip').addEventListener('click', rest);
+  let soundStartedAt = 0;
+  cover.addEventListener('click', () => {
+    // the touch that just switched the sound on must not also skip the intro
+    if (performance.now() - soundStartedAt < 800) return;
+    const ph = cover.dataset.phase;
+    if (["splash","hello","name","ok","fade"].includes(ph)) return; // the start gate runs its own sequence
+    // the announcement runs on its own clock: taps do not cut it short
+    if (["load","drop","fadeout","black","pick"].includes(ph)) return;
+    if (ph === 'rest') return; // the cover is the finished screen: a tap leaves it alone
+    rest(); // during the intro a tap skips to the cover
+
+  });
+
+  // the page behind the panel follows the clock on a computer
+  const SKY = {"bg-night": "assets/bg/bg-night.jpg", "bg-dawn": "assets/bg/bg-dawn.jpg", "bg-grey": "assets/bg/bg-grey.jpg", "bg-base": "assets/bg/bg-base.jpg", "bg-city-day": "assets/bg/bg-city-day.jpg", "bg-city-night": "assets/bg/bg-city-night.jpg"};
+  function skyFor(h) {
+    if (h >= 1 && h <= 5) return SKY['bg-night'];
+    if (h >= 6 && h <= 9) return SKY['bg-dawn'];
+    if (h >= 10 && h <= 12) return SKY['bg-grey'];
+    if (h >= 13 && h <= 15) return SKY['bg-base'];
+    if (h >= 16 && h <= 19) return SKY['bg-city-day'];
+    return SKY['bg-city-night']; // 20:00 through midnight
+  }
+  function paintSky() {
+    if (!isPC) return;
+    const h = new Date().getHours();
+    if (document.body.dataset.sky === String(h)) return;
+    document.body.dataset.sky = String(h);
+    document.body.style.setProperty('--sky', 'url("' + skyFor(h) + '")');
+  }
+  paintSky();
+  setInterval(paintSky, 60000);
+
+  const powerBtn = document.getElementById('power');
+  powerBtn.addEventListener('click', () => {
+    if (document.documentElement.classList.contains('off')) {
+      // switching back on boots straight to the name board
+      document.documentElement.classList.remove('off');
+      clear(); clearDrop(); hideStart();
+      stage.dataset.locked = '';
+      delete stage.dataset.playing;
+      nameInput.value = '';
+      ensureAudio();
+      askName();
+      return;
+    }
+    clear(); clearDrop(); stopSound();
+    try { if (typeof clearKnuxTalk === 'function') clearKnuxTalk(); } catch {}
+    try { ac && ac.close(); ac = null; } catch {}
+    document.documentElement.classList.add('off');
+  });
+
+  // On open: play with sound straight away when the browser allows it.
+  // Phones only allow sound after a touch, so they open on a black
+  // TOUCH TO START screen and the first touch anywhere starts the intro.
+  const UNLOCK = ['pointerup', 'touchend', 'click', 'keydown'];
+  const stage = document.getElementById('stage');
+  // ---------- start gate: grin -> name board -> thumbs up -> intro ----------
+  const HEAD_PLAIN = document.getElementById('gate-head').src;
+  const HEAD_SMILE = "assets/start-icon-smile.png", BOARD_OK = "assets/name-ok.png";
+  const gateHead = document.getElementById('gate-head');
+  const boardImg = document.getElementById('board-img');
+  const nameForm = document.getElementById('name-form');
+  const nameInput = document.getElementById('player');
+  const gateMsg = document.getElementById('gate-msg');
+  const nameBar = nameForm;
+  let playerName = '';
+  function blip(f1, f2, dur = .07, vol = .05, type = 'square') {
+    if (muted || !ac) return;
+    const t = ac.currentTime + .01;
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(f1, t);
+    o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+    g.gain.setValueAtTime(vol, t);
+    g.gain.setValueAtTime(0, t + dur);
+    o.connect(g).connect(ac.destination);
+    o.start(t); o.stop(t + dur + .02);
+  }
+  // phones refuse sound until the page is touched, so they open on the
+  // TOUCH TO START screen and that touch leads to the name board
+  function firstTouch() {
+    UNLOCK.forEach(t => removeEventListener(t, firstTouch, true));
+    soundStartedAt = performance.now();
+    if (!muted) ensureAudio();
+    gateHead.src = HEAD_SMILE;
+    cover.dataset.phase = 'hello';
+    blip(520, 1040, .12, .05);
+    clearTimeout(fadeTimer);
+    fadeTimer = setTimeout(askName, 520);
+  }
+  // on a computer there is nothing to unlock, so the first touch just wakes
+  // the audio up quietly behind the name board
+  function unlockOnce() {
+    UNLOCK.forEach(t => removeEventListener(t, unlockOnce, true));
+    if (!muted) ensureAudio();
+  }
+  function askName() {
+    boardImg.src = "assets/name-board.png";
+    cover.dataset.phase = 'name';
+    gateMsg.textContent = '';
+    gateMsg.classList.remove('err');
+    blip(880, 1320, .1, .04);
+    try { nameInput.focus({ preventScroll: true }); } catch {}
+  }
+  nameInput.addEventListener('input', () => blip(1400, 760, .03, .035));
+  nameForm.addEventListener('submit', e => {
+    e.preventDefault();
+    if (!muted) ensureAudio(); // this press is the gesture that frees the sound
+    const n = nameInput.value.replace(/\s+/g, ' ').trim();
+    if (!n) {
+      gateMsg.textContent = 'ENTER A NAME';
+      gateMsg.classList.add('err');
+      nameBar.classList.remove('shake'); void nameBar.offsetWidth; nameBar.classList.add('shake');
+      blip(300, 90, .18, .06, 'sawtooth');
+      try { nameInput.focus({ preventScroll: true }); } catch {}
+      return;
+    }
+    playerName = n.toUpperCase();
+    nameInput.blur();
+    boardImg.src = BOARD_OK;
+    cover.dataset.phase = 'ok';
+    gateMsg.classList.remove('err');
+    gateMsg.textContent = 'WELCOME ' + playerName;
+    blip(660, 660, .09, .05); setTimeout(() => blip(990, 990, .16, .05), 110);
+    clearTimeout(fadeTimer);
+    fadeTimer = setTimeout(() => {
+      cover.dataset.phase = 'fade';
+      fadeTimer = setTimeout(() => { delete stage.dataset.locked; play(true); }, 280);
+    }, 700);
+  });
+  function boot() {
+    stage.dataset.locked = '';
+    nameInput.value = '';
+    if (isPC) {
+      // a computer goes straight to the name board
+      gateHead.src = HEAD_SMILE;
+      UNLOCK.forEach(t => addEventListener(t, unlockOnce, true));
+      askName();
+      return;
+    }
+    gateHead.src = HEAD_PLAIN;
+    cover.dataset.phase = 'splash';
+    UNLOCK.forEach(t => addEventListener(t, firstTouch, true));
+  }
+  if (img.complete) boot(); else img.addEventListener('load', boot, { once: true });
+
+  // installed as an app, it should still open with no signal
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
+})();
+</script>

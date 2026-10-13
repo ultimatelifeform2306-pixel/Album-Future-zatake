@@ -544,7 +544,7 @@ html.off .off-note { display: block; }
 /* nothing behind the touch screen is reachable until it is tapped */
 .stage[data-locked] :is(.controls, .note) { visibility: hidden; pointer-events: none; }
 /* skipping and starting the intro only make sense while it runs */
-.stage:not([data-playing]) :is(#skip, #start-game) { display: none; }
+.stage:not([data-playing]) #skip { display: none; }
 .note { margin: 0; font-size: 13px; color: #a99ee0; text-align: center; max-width: 52ch; line-height: 1.6; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -624,11 +624,9 @@ html.off .off-note { display: block; }
 
   <div class="controls">
     <button class="btn primary" id="play" type="button"><img class="start-icon" id="start-icon-btn" alt="">PRESS START</button>
-    <button class="btn" id="start-game" type="button">START GAME</button>
     <button class="btn" id="skip" type="button">SKIP INTRO</button>
-    <button class="btn" id="mute" type="button" aria-pressed="false">SOUND: ON</button>
   </div>
-  <p class="note">Touch the screen, type a name on the board, and the intro runs with sound; press start then shows what drops next; reload the page to watch it again: the V-Devil Team boot card with typing blips, then the opening sound with every cut on its beat, then the 8-bit voice tag. Tap the screen to skip ahead.</p>
+  <p class="note">Type a name on the board and the intro runs with sound; press start then shows what drops next; reload the page to watch it again. the V-Devil Team boot card with typing blips, then the opening sound with every cut on its beat, then the 8-bit voice tag. Tap the screen to skip ahead.</p>
   <div class="pads" aria-hidden="true">
     <div class="pad pad-l"><i class="key k1"></i><i class="key k2"></i><i class="key k3"></i><i class="key k4"></i></div>
     <div class="pad pad-r"><i class="key k1"></i><i class="key k2"></i><i class="key k3"></i><i class="key k4"></i></div>
@@ -1183,13 +1181,12 @@ html.off .off-note { display: block; }
       });
     });
   }
-  // PRESS START shows the drop; START GAME replays the intro
+  // PRESS START shows the drop announcement
   playBtn.addEventListener('click', announce);
   document.getElementById('start-line').addEventListener('click', e => { e.stopPropagation(); announce(); });
   document.getElementById('start-line').addEventListener('keydown', e => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); announce(); }
   });
-  document.getElementById('start-game').addEventListener('click', () => play(true));
   document.getElementById('skip').addEventListener('click', rest);
   let soundStartedAt = 0;
   cover.addEventListener('click', () => {
@@ -1202,13 +1199,6 @@ html.off .off-note { display: block; }
     if (ph === 'rest') return; // the cover is the finished screen: a tap leaves it alone
     rest(); // during the intro a tap skips to the cover
 
-  });
-  const muteBtn = document.getElementById('mute');
-  muteBtn.addEventListener('click', () => {
-    muted = !muted;
-    muteBtn.textContent = muted ? 'SOUND: OFF' : 'SOUND: ON';
-    muteBtn.setAttribute('aria-pressed', String(muted));
-    if (muted) stopSound();
   });
 
   // the page behind the panel follows the clock on a computer

@@ -297,14 +297,19 @@ body {
    holding the landing stance before he goes up again */
 .shoryu { display: none; }
 .c2.go #ryu-img { display: none; }
+/* he is tall enough to punch out of the top of his card, the way Knuckles
+   grows out of his, so the uppercut has somewhere to go */
+.c2.go, .c2.go .frame { overflow: visible; }
+.c2.go .name { z-index: 3; }
 .c2.go .shoryu {
   display: block; position: absolute; left: 50%; bottom: 1%; transform: translateX(-50%);
-  width: 180%; aspect-ratio: 260 / 272; overflow: hidden;
+  width: 210%; aspect-ratio: 260 / 272;
+  overflow: hidden; /* the window is one cell wide: the rest of the strip stays out */
 }
 .c2.go .shoryu img {
   position: absolute; left: 0; top: 0; right: auto; bottom: auto;
   width: 1000%; max-width: none; height: 100%; object-fit: fill;
-  image-rendering: pixelated; animation: shoryu 1.2s steps(10) infinite;
+  image-rendering: pixelated; animation: shoryu .8s steps(10) infinite;
 }
 @keyframes shoryu { from { transform: translateX(0); } to { transform: translateX(-100%); } }
 

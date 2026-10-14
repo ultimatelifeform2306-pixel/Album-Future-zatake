@@ -1,6 +1,6 @@
 // Keeps Voice Lab openable with no signal: fetch fresh when the network is
 // there, fall back to the last copy when it is not.
-const CACHE = 'voice-lab-v5';
+const CACHE = 'voice-lab-v6';
 const SHELL = ['./', './index.html', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
 

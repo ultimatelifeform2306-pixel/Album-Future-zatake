@@ -227,6 +227,24 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
   <!-- 4. studio -->
   <section class="panel" aria-labelledby="h-studio">
     <h2 id="h-studio">4. STUDIO</h2>
+    <h3 style="margin-top:0">BACKGROUND NOISE REMOVER</h3>
+    <div class="row presets" role="group" aria-label="Background noise remover">
+      <button type="button" data-bg="off">OFF</button>
+      <button type="button" data-bg="light">LIGHT</button>
+      <button type="button" data-bg="medium">MEDIUM</button>
+      <button type="button" data-bg="strong">STRONG</button>
+      <button type="button" data-bg="voice">VOICE ONLY</button>
+    </div>
+    <div class="grid" style="margin-top:12px">
+      <div class="ctl"><label for="clean">NOISE REMOVE <output id="o-clean"></output></label><input id="clean" type="range" min="0" max="100" step="1"></div>
+      <div class="ctl"><label for="focus">VOICE FOCUS <output id="o-focus"></output></label><input id="focus" type="range" min="0" max="100" step="1"></div>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <button id="btnHearNoise" type="button" aria-pressed="false" disabled>&#9654; HEAR REMOVED</button>
+      <span class="tag" id="bgInfo">REMOVES FANS, HISS, HUM, TRAFFIC</span>
+    </div>
+    <p class="hint">VOICE FOCUS FOLLOWS YOUR NOTES AND PUSHES DOWN EVERYTHING BETWEEN THEM: MUSIC, TV, PEOPLE TALKING.<br>HEAR REMOVED PLAYS ONLY WHAT WAS TAKEN OUT. IF YOU HEAR YOUR WORDS IN IT, GO ONE LEVEL LOWER.</p>
+    <h3>EQUALISER PRESETS</h3>
     <div class="row presets" role="group" aria-label="Equaliser presets">
       <button type="button" data-eq="studio">STUDIO</button>
       <button type="button" data-eq="warm">WARM</button>
@@ -238,13 +256,12 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     <canvas id="eq" tabindex="0" aria-label="Equaliser: drag a dot up or down to boost or cut, left or right to move it"></canvas>
     <div class="cap"><i id="eqInfo">DRAG A DOT &#9656; UP = BOOST, DOWN = CUT</i><i><span class="k2">&#9632; EQ</span> &nbsp; <span class="k3">&#9632; LIVE SOUND</span></i></div>
     <div class="grid">
-      <div class="ctl"><label for="clean">NOISE CLEAN <output id="o-clean"></output></label><input id="clean" type="range" min="0" max="100" step="1"></div>
       <div class="ctl"><label for="deess">DE-ESS <output id="o-deess"></output></label><input id="deess" type="range" min="0" max="100" step="1"></div>
       <div class="ctl"><label for="warmth">WARMTH <output id="o-warmth"></output></label><input id="warmth" type="range" min="0" max="100" step="1"></div>
       <div class="ctl"><label for="polish">COMPRESS <output id="o-polish"></output></label><input id="polish" type="range" min="0" max="100" step="1"></div>
       <div class="ctl"><label for="reverb">STUDIO REVERB <output id="o-reverb"></output></label><input id="reverb" type="range" min="0" max="100" step="1"></div>
     </div>
-    <p class="hint">SET LOW FOR A NATURAL VOICE. NOISE CLEAN REMOVES HISS AND ROOM HUM. DE-ESS SOFTENS SHARP "SSS". WARMTH ADDS TAPE GLOW.<br>EVERY TAKE IS MASTERED TO SONG LOUDNESS WITH A LIMITER, SO IT NEVER CLIPS.</p>
+    <p class="hint">SET LOW FOR A NATURAL VOICE. DE-ESS SOFTENS SHARP "SSS". WARMTH ADDS TAPE GLOW.<br>EVERY TAKE IS MASTERED TO SONG LOUDNESS WITH A LIMITER, SO IT NEVER CLIPS.</p>
   </section>
 
   <!-- 5. save -->
@@ -277,6 +294,13 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     bit:     { speed: 0, amount: 100, crush: 60 },
     raw:     { speed: 50, amount: 0, crush: 0, transpose: 0 },
   };
+  const BG = {
+    off:    { clean: 0, focus: 0 },
+    light:  { clean: 30, focus: 0 },
+    medium: { clean: 55, focus: 30 },
+    strong: { clean: 80, focus: 60 },
+    voice:  { clean: 100, focus: 100 },
+  };
   // equaliser bands: type, frequency range, default
   const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
   const BANDS = [
@@ -299,14 +323,15 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
   // ---------- state ----------
   const S = {
     dry: null, sr: 48000, an: null,       // mono take, its rate, pitch analysis
-    clean: null, cleanAmt: -1,            // noise-cleaned take, cached by amount
+    clean: null, cleanKey: '',            // noise-cleaned take, cached by its settings
+    hearNoise: false,
     out: null,                            // studio render {L, R}
     trimA: 0, trimB: 0, pos: 0,
     tuneOn: true, playing: null,
     notes: new Array(12).fill(true),
     eq: EQ_PRESETS.studio.map(([f, g]) => ({ f, g })),
     p: { key: 0, scale: 'major', speed: 70, amount: 80, transpose: 0, crush: 0,
-         clean: 30, deess: 30, warmth: 10, polish: 35, reverb: 12 },
+         clean: 30, focus: 0, deess: 30, warmth: 10, polish: 35, reverb: 12 },
   };
   // the web-audio engine is used only while the mic records; it is closed afterwards
   let actx;
@@ -319,7 +344,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
   const player = new Audio();
   player.setAttribute('playsinline', '');
   player.preload = 'auto';
-  const urls = { mix: null, raw: null };
+  const urls = { mix: null, raw: null, noise: null };
   function setUrl(key, chans, sr) {
     if (urls[key]) { const old = urls[key]; setTimeout(() => URL.revokeObjectURL(old), 15000); }
     urls[key] = chans ? URL.createObjectURL(wav(chans, sr, 16)) : null;
@@ -397,7 +422,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     }
     srcNode.connect(tap); tap.connect(sink);
     pcm = []; pcmLen = 0; live = []; liveAcc = 0; liveN = 0;
-    S.dry = null; S.out = null; S.an = null; S.clean = null; S.cleanAmt = -1;
+    S.dry = null; S.out = null; S.an = null; S.clean = null; S.cleanKey = '';
     recState = 'rec';
     try { wake = await navigator.wakeLock.request('screen'); } catch { wake = null; }
     setRecUI();
@@ -485,7 +510,8 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     let pk = 0; for (let i = 0; i < mono.length; i += 7) { const v = Math.abs(mono[i]); if (v > pk) pk = v; }
     if (pk < 1e-5) { status('THAT FILE HAS NO SOUND IN IT. TRY ANOTHER RECORDING.', true); return; }
     S.dry = mono; S.sr = sr; S.trimA = 0; S.trimB = mono.length / sr; S.pos = 0;
-    S.out = null; S.mix = null; S.clean = null; S.cleanAmt = -1;
+    S.out = null; S.mix = null; S.clean = null; S.cleanKey = ''; S.noiseN = null;
+    setUrl('noise', null);
     S.dryN = normalize(mono.slice());
     setUrl('mix', null); setUrl('raw', [S.dryN], sr);
     const t = mono.length / sr;
@@ -638,45 +664,82 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
       }
     };
   }
-  async function denoise(x, amount, progress) {
-    if (amount <= 0) return x;
+  // background remover: learns the background (and follows it as it changes), lifts the voice
+  // with a smoothed Wiener gain, and with voice focus keeps your harmonics while sinking what lies between them
+  async function denoise(x, sr, amount, focus, an, progress) {
+    if (amount <= 0 && focus <= 0) return x;
     const N = 2048, H = 512, B = N / 2 + 1, fft = makeFFT(N), L = x.length;
     const win = new Float32Array(N);
     for (let i = 0; i < N; i++) win[i] = Math.sqrt(0.5 - 0.5 * Math.cos(2 * Math.PI * i / N));
     const frames = Math.ceil((L + N) / H);
     const at = i => (i >= 0 && i < L ? x[i] : 0);
-    // learn the noise from the quietest tenth of the take
+    const re = new Float32Array(N), im = new Float32Array(N);
+    // a first picture of the background from the quietest tenth of the take
     const cand = [];
     for (let f = 0; f < frames; f++) {
       const st = f * H - N; if (st < 0 || st + N > L) continue;
-      let s = 0; for (let j = 0; j < N; j += 4) s += x[st + j] * x[st + j];
-      if (s > 1e-12) cand.push([s, st]);
+      let e = 0; for (let j = 0; j < N; j += 4) e += x[st + j] * x[st + j];
+      if (e > 1e-12) cand.push([e, st]);
     }
-    if (cand.length < 4) return x;
-    cand.sort((p, q) => p[0] - q[0]);
-    const pick = cand.slice(0, Math.max(4, Math.floor(cand.length * 0.1)));
-    const noise = new Float64Array(B), re = new Float32Array(N), im = new Float32Array(N);
-    for (const [, st] of pick) {
-      for (let j = 0; j < N; j++) { re[j] = x[st + j] * win[j]; im[j] = 0; }
-      fft(re, im, false);
-      for (let k = 0; k < B; k++) noise[k] += re[k] * re[k] + im[k] * im[k];
+    const base = new Float64Array(B);
+    if (cand.length >= 4) {
+      cand.sort((p, q) => p[0] - q[0]);
+      const pick = cand.slice(0, Math.max(4, Math.floor(cand.length * 0.1)));
+      for (const [, st] of pick) {
+        for (let j = 0; j < N; j++) { re[j] = x[st + j] * win[j]; im[j] = 0; }
+        fft(re, im, false);
+        for (let k = 0; k < B; k++) base[k] += re[k] * re[k] + im[k] * im[k];
+      }
+      for (let k = 0; k < B; k++) base[k] /= pick.length;
     }
-    for (let k = 0; k < B; k++) noise[k] /= pick.length;
-    const out = new Float32Array(L), g = new Float32Array(B), gp = new Float32Array(B).fill(1), gs = new Float32Array(B);
-    const floor = Math.pow(10, -(6 + amount * 16) / 20), alpha = 1 + amount * 2.5;
+    // background that changes: the lowest smoothed level per band over the last ~2 s
+    const span = Math.max(8, Math.round(2 * sr / H / 4));          // four sub-windows make the 2 s window
+    const sm = new Float64Array(B), curMin = new Float64Array(B).fill(Infinity);
+    const subMins = [0, 1, 2, 3].map(() => new Float64Array(B).fill(Infinity));
+    let sub = 0, subCount = 0;
+    const noise = new Float64Array(B), prevClean = new Float64Array(B);
+    const out = new Float32Array(L), g = new Float32Array(B), gs = new Float32Array(B);
+    const over = 1 + amount * 2, floor = Math.pow(10, -(4 + amount * 22 + focus * 6) / 20);
+    const binHz = sr / N, voiceTop = Math.min(8000, sr / 2);
+    const f0At = pos => {
+      if (!an) return 0;
+      const c = fIdx(an, pos);
+      for (const d of [0, -1, 1, -2, 2]) { const v = an.f0[c + d]; if (v) return v; }
+      return 0;
+    };
     let last = performance.now();
     for (let f = 0; f < frames; f++) {
       const st = f * H - N;
       for (let j = 0; j < N; j++) { re[j] = at(st + j) * win[j]; im[j] = 0; }
       fft(re, im, false);
+      const f0 = focus > 0 ? f0At(st + N / 2) : 0;
       for (let k = 0; k < B; k++) {
         const P = re[k] * re[k] + im[k] * im[k];
-        let v = 1 - alpha * noise[k] / (P + 1e-12);
-        v = v > 0 ? Math.sqrt(v) : 0;
+        sm[k] = f ? sm[k] * 0.8 + P * 0.2 : P;
+        if (sm[k] < subMins[sub][k]) subMins[sub][k] = sm[k];
+        let m = Infinity; for (let q = 0; q < 4; q++) if (subMins[q][k] < m) m = subMins[q][k];
+        curMin[k] = m;
+        noise[k] = Math.max(base[k], isFinite(m) ? m * 1.6 : 0);
+        // decision-directed Wiener gain: smooth, no warbly leftovers
+        const post = P / (noise[k] + 1e-20);
+        const prio = 0.96 * prevClean[k] / (noise[k] + 1e-20) + 0.04 * Math.max(post - 1, 0);
+        let v = amount > 0 ? prio / (prio + over) : 1;
+        // voice focus: keep the harmonics of the note being sung, sink what lies between them
+        if (focus > 0) {
+          const hz = k * binHz;
+          if (f0) {
+            if (hz < voiceTop && hz > f0 * 0.6) {
+              const h = hz / f0, d = Math.abs(h - Math.round(h));
+              const keep = d < 0.14 ? 1 : d < 0.24 ? 1 - (d - 0.14) / 0.1 : 0;
+              v *= 1 - focus * 0.85 * (1 - keep);
+            } else if (hz <= f0 * 0.6) v *= 1 - focus * 0.9;
+          } else if (hz < 2500) v *= 1 - focus * 0.8;          // no voice here: sink the low and middle; keep "s" and "t"
+        }
         if (v < floor) v = floor;
-        v = v >= gp[k] ? v : gp[k] * 0.55 + v * 0.45;   // fast open, slow close: no warble
-        gp[k] = v; g[k] = v;
+        g[k] = v;
+        prevClean[k] = v * v * P;
       }
+      if (++subCount >= span) { sub = (sub + 1) % 4; subMins[sub].fill(Infinity); subCount = 0; }
       for (let k = 0; k < B; k++) gs[k] = (g[Math.max(0, k - 1)] + 2 * g[k] + g[Math.min(B - 1, k + 1)]) / 4;
       for (let k = 0; k < B; k++) {
         re[k] *= gs[k]; im[k] *= gs[k];
@@ -852,11 +915,12 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     const { shift, target } = corrections();
     S.target = target;
     drawPitch();
-    if (S.cleanAmt !== S.p.clean) {
-      const amt = S.p.clean;
-      const c = await denoise(S.dry, amt / 100, pct => status(`CLEANING NOISE... ${pct}%`));
+    const ck = S.p.clean + ':' + S.p.focus;
+    if (S.cleanKey !== ck) {
+      const c = await denoise(S.dry, S.sr, S.p.clean / 100, S.p.focus / 100, S.an, pct => status(`REMOVING BACKGROUND NOISE... ${pct}%`));
       if (id !== renderId) return;
-      S.clean = c; S.cleanAmt = amt;
+      S.clean = c; S.cleanKey = ck;
+      buildRemoved();
     }
     status('MIXING IN THE STUDIO...');
     await tick();
@@ -873,6 +937,30 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     if (wasPlaying) swapSource();
   }
   const renderSoon = () => { clearTimeout(renderTimer); renderTimer = setTimeout(render, 260); };
+
+  // what the remover took out, at the same loudness as the raw take so you hear it truthfully
+  function buildRemoved() {
+    const n = S.dry.length;
+    if (S.clean === S.dry) { S.noiseN = null; setUrl('noise', null); updateBgInfo(0); setEditUI(); return; }
+    let pk = 0; for (let i = 0; i < n; i++) { const v = Math.abs(S.dry[i]); if (v > pk) pk = v; }
+    const gain = pk > 1e-5 ? 0.89 / pk : 1, r = new Float32Array(n);
+    for (let i = 0; i < n; i++) r[i] = (S.dry[i] - S.clean[i]) * gain;
+    S.noiseN = r; setUrl('noise', [r], S.sr);
+    // how much quieter the background got, read from the quietest quarter of the take (where you are not singing)
+    const blk = Math.floor(S.sr * 0.05), bl = [];
+    for (let s0 = 0; s0 + blk <= n; s0 += blk) {
+      let ed = 0, ec = 0;
+      for (let i = s0; i < s0 + blk; i++) { ed += S.dry[i] * S.dry[i]; ec += S.clean[i] * S.clean[i]; }
+      if (ed > 1e-12) bl.push([ed, ec]);
+    }
+    bl.sort((p, q) => p[0] - q[0]);
+    let sd = 0, sc = 0; bl.slice(0, Math.max(1, Math.floor(bl.length / 4))).forEach(([d, c]) => { sd += d; sc += c; });
+    updateBgInfo(bl.length ? 10 * Math.log10(sd / Math.max(sc, 1e-20)) : 0);
+    setEditUI();
+  }
+  function updateBgInfo(db) {
+    $('#bgInfo').textContent = S.p.clean || S.p.focus ? `BACKGROUND ${Math.max(0, db).toFixed(0)} DB QUIETER` : 'REMOVER OFF';
+  }
 
   // the equaliser and the final master, rendered offline exactly as it will be saved
   let mixId = 0, mixTimer;
@@ -900,7 +988,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     if (!S.out) return;
     clearTimeout(mixTimer);
     mixTimer = setTimeout(async () => {
-      const playing = !!S.playing && S.tuneOn;
+      const playing = !!S.playing && studioOn();
       await buildMix();
       if (playing && S.playing) swapSource();
     }, 220);
@@ -911,7 +999,10 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     if (!S.playing) return S.pos;
     return player.currentTime;
   }
-  const studioOn = () => S.tuneOn && !!S.mix;
+  const studioOn = () => S.tuneOn && !S.hearNoise && !!S.mix;
+  const hearingNoise = () => S.hearNoise && !!urls.noise;
+  const curUrl = () => hearingNoise() ? urls.noise : studioOn() ? urls.mix : urls.raw;
+  const curChans = () => hearingNoise() ? [S.noiseN, S.noiseN] : studioOn() ? [S.mix.L, S.mix.R] : [S.dryN, S.dryN];
   function endSec() {
     const tail = studioOn() ? (S.mix.L.length - S.dry.length) / S.sr : 0;
     return S.trimB + (S.trimB >= S.dry.length / S.sr - 0.01 ? tail : 0);
@@ -924,7 +1015,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     if (!S.dry) return;
     speakerOn();
     if (S.pos < S.trimA || S.pos >= S.trimB - 0.05) S.pos = S.trimA;
-    const url = studioOn() ? urls.mix : urls.raw;
+    const url = curUrl();
     if (!url) return;
     if (player.src !== url) player.src = url;
     seekTo(S.pos);
@@ -938,7 +1029,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
   function swapSource() {
     if (!S.playing) return;
     const at = playPos();
-    const url = studioOn() ? urls.mix : urls.raw;
+    const url = curUrl();
     if (!url || player.src === url) return;
     player.src = url; seekTo(at);
     S.playing = { url };
@@ -1104,7 +1195,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
   const specOut = new Uint8Array(SPEC_N / 2), specSm = new Float32Array(SPEC_N / 2);
   function spectrumAt(t) {
     const st = Math.floor(t * S.sr) - SPEC_N / 2;
-    const L = studioOn() ? S.mix.L : S.dryN, R = studioOn() ? S.mix.R : S.dryN;
+    const [L, R] = curChans();
     for (let j = 0; j < SPEC_N; j++) {
       const i = st + j, w = 0.5 - 0.5 * Math.cos(2 * Math.PI * j / SPEC_N);
       specRe[j] = i >= 0 && i < L.length ? (L[i] + R[i]) * 0.5 * w : 0; specIm[j] = 0;
@@ -1150,7 +1241,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     });
     g.textAlign = 'start';
     // live spectrum while playing
-    if (S.playing && (studioOn() ? S.mix : S.dryN)) {
+    if (S.playing && curChans()[0]) {
       spec = spectrumAt(playPos());
       const nyq = S.sr / 2, bw = Math.max(2, Math.round(3 * dpr));
       g.fillStyle = 'rgba(34,224,255,.45)';
@@ -1278,6 +1369,11 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     $('#btnResetTrim').disabled = !has || (S.trimA === 0 && S.trimB === S.dry.length / S.sr);
     $('#btnSave').disabled = !has || !S.mix;
     $('#btnSaveRaw').disabled = !has;
+    $('#btnHearNoise').disabled = !has || !urls.noise;
+    if (!urls.noise && S.hearNoise) {
+      S.hearNoise = false;
+      const b = $('#btnHearNoise'); b.classList.remove('on'); b.setAttribute('aria-pressed', 'false'); b.innerHTML = '&#9654; HEAR REMOVED';
+    }
   }
   const keySel = $('#key');
   NOTE.forEach((n, i) => keySel.add(new Option(n, i)));
@@ -1301,9 +1397,13 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
   const sliders = {
     speed: v => v == 0 ? 'ROBOT' : v + 'MS',
     amount: pct, transpose: v => (v > 0 ? '+' : '') + v + ' ST', crush: offPct,
-    clean: offPct, deess: offPct, warmth: offPct, polish: offPct, reverb: offPct,
+    clean: offPct, focus: offPct, deess: offPct, warmth: offPct, polish: offPct, reverb: offPct,
   };
   const TUNE_KEYS = ['speed', 'amount', 'transpose', 'crush'];
+  const BG_KEYS = ['clean', 'focus'];
+  const syncBg = () => document.querySelectorAll('[data-bg]').forEach(b => {
+    const v = BG[b.dataset.bg]; b.classList.toggle('on', v.clean === S.p.clean && v.focus === S.p.focus);
+  });
   function syncControls() {
     keySel.value = S.p.key; $('#scale').value = S.p.scale;
     Object.keys(sliders).forEach(k => { $('#' + k).value = S.p[k]; $('#o-' + k).textContent = sliders[k](S.p[k]); });
@@ -1313,6 +1413,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     $('#' + k).addEventListener('input', e => {
       S.p[k] = +e.target.value; $('#o-' + k).textContent = sliders[k](S.p[k]);
       if (TUNE_KEYS.includes(k)) document.querySelectorAll('[data-preset]').forEach(b => b.classList.remove('on'));
+      if (BG_KEYS.includes(k)) syncBg();
       renderSoon();
     });
   });
@@ -1323,6 +1424,18 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     document.querySelectorAll('[data-preset]').forEach(x => x.classList.toggle('on', x === b));
     syncControls(); renderSoon();
   }));
+
+  document.querySelectorAll('[data-bg]').forEach(b => b.addEventListener('click', () => {
+    Object.assign(S.p, BG[b.dataset.bg]);
+    syncControls(); syncBg(); renderSoon();
+  }));
+  $('#btnHearNoise').addEventListener('click', () => {
+    S.hearNoise = !S.hearNoise;
+    const b = $('#btnHearNoise'); b.classList.toggle('on', S.hearNoise); b.setAttribute('aria-pressed', S.hearNoise);
+    b.innerHTML = S.hearNoise ? '&#9632; BACK TO VOICE' : '&#9654; HEAR REMOVED';
+    if (S.hearNoise && !S.playing) startPlay(); else swapSource();
+    drawEq();
+  });
 
   // guess the key from what was sung (Krumhansl profiles)
   $('#btnAutoKey').addEventListener('click', () => {
@@ -1418,6 +1531,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
   applyScale(); syncControls(); applyEq();
   document.querySelector('[data-preset="natural"]').classList.add('on');
   document.querySelector('[data-eq="studio"]').classList.add('on');
+  syncBg();
   const redraw = () => { if (recState === 'idle') { drawTape(S.dry ? S.dry.length / S.sr : 0); drawWave(); } drawPitch(); drawEq(); };
   addEventListener('resize', redraw);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(redraw);

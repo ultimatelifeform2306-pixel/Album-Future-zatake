@@ -1220,9 +1220,22 @@ html.off .off-note { display: block; }
   const modeOpts = [...modeBoard.querySelectorAll('.mb-opt')];
   let boardOpen = false;
   function closeBoard() { boardOpen = false; modeBoard.classList.remove('on'); }
+  // Ryu's send-off, on the beats of his animation: he speaks over the breath
+  // and the thumbs up, and the teleport lands on the frame he starts to go.
+  // His line runs at a 16-bit machine's sample rate, the teleport at an 8-bit one.
+  const RYU_VOICE = "assets/voice-ryu-win.mp3";
+  const RYU_TELE = "assets/ryu-teleport.mp3";
+  let ryuTimers = [];
+  function clearRyuSfx() { ryuTimers.forEach(clearTimeout); ryuTimers = []; }
+  function ryuSfx() {
+    clearRyuSfx();
+    playSnd(RYU_VOICE, .9);                                   // 0.00s, with the first frame
+    ryuTimers.push(setTimeout(() => playSnd(RYU_TELE, .85), 1200)); // 1.20s, as he breaks up
+  }
   function dropPose() {
     slots.forEach(c => c.classList.remove('go'));
     ryuFrame.classList.add('art');
+    clearRyuSfx();
   }
   function openBoard() {
     if (boardOpen || !pickReady || cursor < 0) return;
@@ -1237,7 +1250,7 @@ html.off .off-note { display: block; }
     closeBoard();
     if (cursor < 0) return;
     slots[cursor].classList.add('go');
-    if (cursor === 1) ryuFrame.classList.remove('art');
+    if (cursor === 1) { ryuFrame.classList.remove('art'); ryuSfx(); }
     pickSfx();
   }
   modeOpts.forEach(b => b.addEventListener('click', e => { e.stopPropagation(); celebrate(); }));

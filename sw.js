@@ -1,7 +1,7 @@
 // Keeps Panel Sewi openable with no signal: fetch fresh when the network is
 // there, fall back to the last copy when it is not.
-const CACHE = 'panel-sewi-v1';
-const SHELL = ['./', './index.html', './manifest.webmanifest',
+const CACHE = 'panel-sewi-v2';
+const SHELL = ['./', './index.html', './recorder.html', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
 
 self.addEventListener('install', e => {

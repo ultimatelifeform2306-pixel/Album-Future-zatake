@@ -278,6 +278,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     raw:     { speed: 50, amount: 0, crush: 0, transpose: 0 },
   };
   // equaliser bands: type, frequency range, default
+  const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
   const BANDS = [
     { type: 'highpass',  name: 'LOW CUT',  f: 90,    min: 20,   max: 400,   q: 0.71 },
     { type: 'lowshelf',  name: 'BASS',     f: 140,   min: 60,   max: 400 },
@@ -307,33 +308,24 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     p: { key: 0, scale: 'major', speed: 70, amount: 80, transpose: 0, crush: 0,
          clean: 30, deess: 30, warmth: 10, polish: 35, reverb: 12 },
   };
-  let actx, eqNodes, safety, analyser;
+  // the web-audio engine is used only while the mic records; it is closed afterwards
+  let actx;
   const ac = () => {
-    if (!actx) {
-      actx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'playback' });
-      eqNodes = BANDS.map(b => { const n = actx.createBiquadFilter(); n.type = b.type; if (b.q) n.Q.value = b.q; return n; });
-      for (let i = 0; i < eqNodes.length - 1; i++) eqNodes[i].connect(eqNodes[i + 1]);
-      safety = actx.createDynamicsCompressor();
-      safety.threshold.value = -1.5; safety.knee.value = 0; safety.ratio.value = 20; safety.attack.value = 0.001; safety.release.value = 0.08;
-      analyser = actx.createAnalyser(); analyser.fftSize = 4096; analyser.smoothingTimeConstant = 0.82;
-      eqNodes[eqNodes.length - 1].connect(safety); safety.connect(analyser); analyser.connect(actx.destination);
-      applyEq();
-    }
+    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
     if (actx.state !== 'running') actx.resume().catch(() => {});
     return actx;
   };
-  // iPhone: play through the loudspeaker even with the silent switch on, and after the mic was used
-  let unlockEl = null;
+  // playback goes through a plain audio player: phones always let it sound, silent switch or not
+  const player = new Audio();
+  player.setAttribute('playsinline', '');
+  player.preload = 'auto';
+  const urls = { mix: null, raw: null };
+  function setUrl(key, chans, sr) {
+    if (urls[key]) { const old = urls[key]; setTimeout(() => URL.revokeObjectURL(old), 15000); }
+    urls[key] = chans ? URL.createObjectURL(wav(chans, sr, 16)) : null;
+  }
   function speakerOn() {
     try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch {}
-    try {
-      if (!unlockEl) {
-        unlockEl = new Audio(URL.createObjectURL(wav([new Float32Array(2205)], 22050)));
-        unlockEl.setAttribute('playsinline', '');
-      }
-      unlockEl.currentTime = 0;
-      const pr = unlockEl.play(); if (pr && pr.catch) pr.catch(() => {});
-    } catch {}
   }
   // a silent copy of the equaliser just for drawing its curve, so the page never starts audio before a tap
   const dispNodes = (() => {
@@ -342,9 +334,8 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     return BANDS.map(b => { const n = oc.createBiquadFilter(); n.type = b.type; if (b.q) n.Q.value = b.q; return n; });
   })();
   function applyEq() {
-    [dispNodes, eqNodes].forEach(list => list && S.eq.forEach((b, i) => {
-      list[i].frequency.value = b.f; if (BANDS[i].type !== 'highpass') list[i].gain.value = b.g;
-    }));
+    S.eq.forEach((b, i) => { dispNodes[i].frequency.value = b.f; if (BANDS[i].type !== 'highpass') dispNodes[i].gain.value = b.g; });
+    mixSoon();
   }
   const status = (msg, err) => { const el = $('#status'); el.textContent = msg; el.classList.toggle('err', !!err); };
   const fmt = (s, tenths) => {
@@ -453,6 +444,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     if (wake) { wake.release().catch(() => {}); wake = null; }
     $('#meter').style.width = '0%';
     try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch {}
+    if (actx) { actx.close().catch(() => {}); actx = null; workletReady = null; }
     setRecUI();
     if (!pcmLen) { status('NOTHING WAS RECORDED. CHECK THE MIC AND TRY AGAIN.', true); return; }
     const mono = new Float32Array(pcmLen);
@@ -474,7 +466,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
 
   // ---------- loading a take ----------
   async function loadArrayBuffer(ab) {
-    const a = ac();
+    const a = new OAC(1, 1, 48000);
     const audio = await new Promise((res, rej) => {
       const p = a.decodeAudioData(ab, res, rej);
       if (p && p.then) p.then(res, rej);
@@ -493,7 +485,9 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     let pk = 0; for (let i = 0; i < mono.length; i += 7) { const v = Math.abs(mono[i]); if (v > pk) pk = v; }
     if (pk < 1e-5) { status('THAT FILE HAS NO SOUND IN IT. TRY ANOTHER RECORDING.', true); return; }
     S.dry = mono; S.sr = sr; S.trimA = 0; S.trimB = mono.length / sr; S.pos = 0;
-    S.out = null; S.clean = null; S.cleanAmt = -1; S.dryN = null;
+    S.out = null; S.mix = null; S.clean = null; S.cleanAmt = -1;
+    S.dryN = normalize(mono.slice());
+    setUrl('mix', null); setUrl('raw', [S.dryN], sr);
     const t = mono.length / sr;
     drawTape(t);
     $('#timer').innerHTML = `${fmt(t)} <small>/ 10:00</small>`;
@@ -761,7 +755,6 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     }
     return (irCache[key] = d);
   }
-  const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
   async function renderCtx(oc) {
     return new Promise((res, rej) => {
       oc.oncomplete = e => res(e.renderedBuffer);
@@ -873,52 +866,100 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     const out = await studio(smooth, S.sr);
     if (id !== renderId) return;
     S.out = out;
-    if (!S.dryN) S.dryN = normalize(S.dry.slice());
+    await buildMix(id);
+    if (id !== renderId) return;
     setEditUI();
     status('READY! PRESS PLAY. SHAPE IT IN AUTOTUNE AND STUDIO.');
-    if (wasPlaying) { const at = playPos(); stopPlay(); S.pos = at; startPlay(); }
+    if (wasPlaying) swapSource();
   }
   const renderSoon = () => { clearTimeout(renderTimer); renderTimer = setTimeout(render, 260); };
+
+  // the equaliser and the final master, rendered offline exactly as it will be saved
+  let mixId = 0, mixTimer;
+  async function buildMix(rid) {
+    if (!S.out) return;
+    const id = ++mixId, n = S.out.L.length;
+    const oc = new OAC(2, n, S.sr);
+    const buf = oc.createBuffer(2, n, S.sr);
+    buf.getChannelData(0).set(S.out.L); buf.getChannelData(1).set(S.out.R);
+    const src = oc.createBufferSource(); src.buffer = buf;
+    let node = src;
+    S.eq.forEach((e, i) => {
+      const f = oc.createBiquadFilter(); f.type = BANDS[i].type; f.frequency.value = e.f;
+      if (BANDS[i].q) f.Q.value = BANDS[i].q;
+      if (BANDS[i].type !== 'highpass') f.gain.value = e.g;
+      node.connect(f); node = f;
+    });
+    node.connect(oc.destination); src.start();
+    const r = await renderCtx(oc);
+    if (id !== mixId || (rid != null && rid !== renderId)) return;
+    S.mix = master(r.getChannelData(0).slice(), r.getChannelData(1).slice(), S.sr);
+    setUrl('mix', [S.mix.L, S.mix.R], S.sr);
+  }
+  function mixSoon() {
+    if (!S.out) return;
+    clearTimeout(mixTimer);
+    mixTimer = setTimeout(async () => {
+      const playing = !!S.playing && S.tuneOn;
+      await buildMix();
+      if (playing && S.playing) swapSource();
+    }, 220);
+  }
 
   // ---------- playback ----------
   function playPos() {
     if (!S.playing) return S.pos;
-    return S.playing.from + (actx.currentTime - S.playing.t0);
+    return player.currentTime;
   }
-  const studioOn = () => S.tuneOn && !!S.out;
+  const studioOn = () => S.tuneOn && !!S.mix;
   function endSec() {
-    const tail = studioOn() ? (S.out.L.length - S.dry.length) / S.sr : 0;
+    const tail = studioOn() ? (S.mix.L.length - S.dry.length) / S.sr : 0;
     return S.trimB + (S.trimB >= S.dry.length / S.sr - 0.01 ? tail : 0);
+  }
+  function seekTo(t) {
+    if (player.readyState >= 1) { player.currentTime = t; return; }
+    player.addEventListener('loadedmetadata', () => { player.currentTime = t; }, { once: true });
   }
   function startPlay() {
     if (!S.dry) return;
-    const a = ac();
+    speakerOn();
     if (S.pos < S.trimA || S.pos >= S.trimB - 0.05) S.pos = S.trimA;
-    const src = a.createBufferSource();
-    if (studioOn()) {
-      const b = a.createBuffer(2, S.out.L.length, S.sr);
-      b.getChannelData(0).set(S.out.L); b.getChannelData(1).set(S.out.R);
-      src.buffer = b; src.connect(eqNodes[0]);
-    } else {
-      const d = S.dryN || S.dry, b = a.createBuffer(1, d.length, S.sr);
-      b.getChannelData(0).set(d);
-      src.buffer = b; src.connect(analyser);
-    }
-    src.start(0, S.pos, Math.max(0.01, endSec() - S.pos));
-    S.playing = { src, from: S.pos, t0: a.currentTime };
-    src.onended = () => { if (S.playing && S.playing.src === src) { S.playing = null; S.pos = S.trimA; setEditUI(); drawWave(); drawPitch(); drawEq(); } };
+    const url = studioOn() ? urls.mix : urls.raw;
+    if (!url) return;
+    if (player.src !== url) player.src = url;
+    seekTo(S.pos);
+    S.playing = { url };
+    const pr = player.play();
+    if (pr && pr.catch) pr.catch(() => { S.playing = null; setEditUI(); status('TAP PLAY AGAIN TO HEAR IT.', true); });
     setEditUI();
     requestAnimationFrame(playLoop);
+  }
+  // change what is playing (studio on/off, a new mix) without losing the spot
+  function swapSource() {
+    if (!S.playing) return;
+    const at = playPos();
+    const url = studioOn() ? urls.mix : urls.raw;
+    if (!url || player.src === url) return;
+    player.src = url; seekTo(at);
+    S.playing = { url };
+    const pr = player.play(); if (pr && pr.catch) pr.catch(() => {});
   }
   function stopPlay() {
     if (!S.playing) return;
     S.pos = Math.min(playPos(), S.trimB);
-    const src = S.playing.src; S.playing = null;
-    try { src.stop(); } catch {}
+    S.playing = null;
+    player.pause();
     setEditUI();
   }
+  function endPlay() {
+    if (!S.playing) return;
+    S.playing = null; player.pause(); S.pos = S.trimA;
+    setEditUI(); drawWave(); drawPitch(); drawEq();
+  }
+  player.addEventListener('ended', endPlay);
   function playLoop() {
     if (!S.playing) return;
+    if (playPos() >= endSec()) { endPlay(); return; }
     $('#playTime').textContent = fmt(playPos() - S.trimA, true);
     drawWave(); drawPitch(); drawEq();
     requestAnimationFrame(playLoop);
@@ -1059,6 +1100,24 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
   // ---------- equaliser display ----------
   const FMIN = 20, FMAX = 20000, GMAX = 15;
   let eqSel = 4, eqFreqs, eqMag, eqPh, spec;
+  const SPEC_N = 4096, specFFT = makeFFT(SPEC_N), specRe = new Float32Array(SPEC_N), specIm = new Float32Array(SPEC_N);
+  const specOut = new Uint8Array(SPEC_N / 2), specSm = new Float32Array(SPEC_N / 2);
+  function spectrumAt(t) {
+    const st = Math.floor(t * S.sr) - SPEC_N / 2;
+    const L = studioOn() ? S.mix.L : S.dryN, R = studioOn() ? S.mix.R : S.dryN;
+    for (let j = 0; j < SPEC_N; j++) {
+      const i = st + j, w = 0.5 - 0.5 * Math.cos(2 * Math.PI * j / SPEC_N);
+      specRe[j] = i >= 0 && i < L.length ? (L[i] + R[i]) * 0.5 * w : 0; specIm[j] = 0;
+    }
+    specFFT(specRe, specIm, false);
+    for (let k = 0; k < SPEC_N / 2; k++) {
+      const db = 20 * Math.log10(Math.hypot(specRe[k], specIm[k]) / (SPEC_N / 4) + 1e-9);
+      const v = Math.max(0, Math.min(255, (db + 90) / 80 * 255));
+      specSm[k] = v > specSm[k] ? v : specSm[k] * 0.8 + v * 0.2;
+      specOut[k] = specSm[k];
+    }
+    return specOut;
+  }
   function eqGeom(w, h, dpr) {
     const padL = Math.round(30 * dpr), padB = Math.round(16 * dpr), padT = Math.round(8 * dpr);
     const W = w - padL - Math.round(6 * dpr), H = h - padB - padT;
@@ -1091,10 +1150,9 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     });
     g.textAlign = 'start';
     // live spectrum while playing
-    if (S.playing && analyser) {
-      if (!spec || spec.length !== analyser.frequencyBinCount) spec = new Uint8Array(analyser.frequencyBinCount);
-      analyser.getByteFrequencyData(spec);
-      const nyq = actx.sampleRate / 2, bw = Math.max(2, Math.round(3 * dpr));
+    if (S.playing && (studioOn() ? S.mix : S.dryN)) {
+      spec = spectrumAt(playPos());
+      const nyq = S.sr / 2, bw = Math.max(2, Math.round(3 * dpr));
       g.fillStyle = 'rgba(34,224,255,.45)';
       for (let x = G.padL; x < G.padL + G.W; x += bw + 1) {
         const f0 = G.F(x), f1 = G.F(x + bw);
@@ -1197,7 +1255,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     moveDrag(e);
   });
   CV.wave.addEventListener('pointermove', e => { if (drag) moveDrag(e); });
-  const endDrag = () => { if (drag === 'seek' && S.playing) { const at = S.pos; stopPlay(); S.pos = at; startPlay(); } drag = null; };
+  const endDrag = () => { if (drag === 'seek' && S.playing) seekTo(S.pos); drag = null; };
   CV.wave.addEventListener('pointerup', endDrag);
   CV.wave.addEventListener('pointercancel', endDrag);
   function moveDrag(e) {
@@ -1216,9 +1274,9 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     const has = !!S.dry && recState === 'idle';
     $('#btnPlay').disabled = !has;
     $('#btnPlay').innerHTML = S.playing ? '&#9632; STOP' : '&#9654; PLAY';
-    $('#btnTune').disabled = !has || !S.out;
+    $('#btnTune').disabled = !has || !S.mix;
     $('#btnResetTrim').disabled = !has || (S.trimA === 0 && S.trimB === S.dry.length / S.sr);
-    $('#btnSave').disabled = !has || !S.out;
+    $('#btnSave').disabled = !has || !S.mix;
     $('#btnSaveRaw').disabled = !has;
   }
   const keySel = $('#key');
@@ -1292,16 +1350,15 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
   $('#btnRec').addEventListener('click', startRec);
   $('#btnPause').addEventListener('click', pauseRec);
   $('#btnStopRec').addEventListener('click', stopRec);
-  $('#btnPlay').addEventListener('click', () => { speakerOn(); ac(); S.playing ? stopPlay() : startPlay(); drawWave(); drawEq(); });
+  $('#btnPlay').addEventListener('click', () => { S.playing ? stopPlay() : startPlay(); drawWave(); drawEq(); });
   $('#btnTune').addEventListener('click', () => {
     S.tuneOn = !S.tuneOn;
     const b = $('#btnTune'); b.classList.toggle('on', S.tuneOn); b.setAttribute('aria-pressed', S.tuneOn);
     b.textContent = S.tuneOn ? 'STUDIO: ON' : 'STUDIO: OFF';
-    if (S.playing) { const at = playPos(); stopPlay(); S.pos = at; startPlay(); }
+    swapSource();
     drawPitch();
   });
   $('#btnResetTrim').addEventListener('click', () => { stopPlay(); S.trimA = 0; S.trimB = S.dry.length / S.sr; S.pos = 0; setEditUI(); drawWave(); drawPitch(); });
-  $('#btnLoad').addEventListener('click', () => { speakerOn(); ac(); });
   $('#btnLoad').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#file').click(); } });
   $('#file').addEventListener('change', async e => {
     const f = e.target.files[0]; e.target.value = '';
@@ -1312,18 +1369,19 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
   });
 
   // ---------- save as 24-bit wav ----------
-  function wav(chans, sr) {
-    const nc = chans.length, n = chans[0].length, bps = 3, buf = new ArrayBuffer(44 + n * nc * bps), v = new DataView(buf);
+  function wav(chans, sr, bits = 24) {
+    const nc = chans.length, n = chans[0].length, bps = bits / 8, buf = new ArrayBuffer(44 + n * nc * bps), v = new DataView(buf);
     const str = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
     str(0, 'RIFF'); v.setUint32(4, 36 + n * nc * bps, true); str(8, 'WAVE'); str(12, 'fmt ');
     v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, nc, true);
-    v.setUint32(24, sr, true); v.setUint32(28, sr * nc * bps, true); v.setUint16(32, nc * bps, true); v.setUint16(34, 24, true);
+    v.setUint32(24, sr, true); v.setUint32(28, sr * nc * bps, true); v.setUint16(32, nc * bps, true); v.setUint16(34, bits, true);
     str(36, 'data'); v.setUint32(40, n * nc * bps, true);
     let o = 44;
     for (let i = 0; i < n; i++) {
       for (let c = 0; c < nc; c++) {
         const s = Math.max(-1, Math.min(1, chans[c][i]));
-        let q = Math.round(s < 0 ? s * 0x800000 : s * 0x7fffff);
+        if (bps === 2) { v.setInt16(o, s < 0 ? s * 0x8000 : s * 0x7fff, true); o += 2; continue; }
+        const q = Math.round(s < 0 ? s * 0x800000 : s * 0x7fffff);
         v.setUint8(o, q & 255); v.setUint8(o + 1, (q >> 8) & 255); v.setUint8(o + 2, (q >> 16) & 255); o += 3;
       }
     }
@@ -1335,24 +1393,11 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     if (studioMix) {
       status('MASTERING YOUR TRACK...');
       await tick();
-      const tail = S.trimB >= S.dry.length / S.sr - 0.01 ? S.out.L.length - S.dry.length : 0;
-      const b = Math.min(S.out.L.length, Math.floor(S.trimB * S.sr) + tail);
-      // the equaliser, rendered offline exactly as you hear it
-      const oc = new OAC(2, b - a, S.sr);
-      const buf = oc.createBuffer(2, b - a, S.sr);
-      buf.getChannelData(0).set(S.out.L.subarray(a, b)); buf.getChannelData(1).set(S.out.R.subarray(a, b));
-      const src = oc.createBufferSource(); src.buffer = buf;
-      let node = src;
-      S.eq.forEach((e, i) => {
-        const f = oc.createBiquadFilter(); f.type = BANDS[i].type; f.frequency.value = e.f;
-        if (BANDS[i].q) f.Q.value = BANDS[i].q;
-        if (BANDS[i].type !== 'highpass') f.gain.value = e.g;
-        node.connect(f); node = f;
-      });
-      node.connect(oc.destination); src.start();
-      const r = await renderCtx(oc);
-      const m = master(r.getChannelData(0).slice(), r.getChannelData(1).slice(), S.sr);
-      chans = [m.L, m.R];
+      clearTimeout(mixTimer);
+      await buildMix();
+      const tail = S.trimB >= S.dry.length / S.sr - 0.01 ? S.mix.L.length - S.dry.length : 0;
+      const b = Math.min(S.mix.L.length, Math.floor(S.trimB * S.sr) + tail);
+      chans = [S.mix.L.slice(a, b), S.mix.R.slice(a, b)];
     } else {
       const d = (S.dryN || S.dry).slice(a, Math.floor(S.trimB * S.sr));
       chans = [d];
@@ -1370,7 +1415,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
 
   // ---------- boot ----------
   Object.assign(S.p, PRESETS.natural);
-  applyScale(); syncControls();
+  applyScale(); syncControls(); applyEq();
   document.querySelector('[data-preset="natural"]').classList.add('on');
   document.querySelector('[data-eq="studio"]').classList.add('on');
   const redraw = () => { if (recState === 'idle') { drawTape(S.dry ? S.dry.length / S.sr : 0); drawWave(); } drawPitch(); drawEq(); };

@@ -280,6 +280,14 @@ body {
 @keyframes sel-ring { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
 .col.sel .frame img { animation: sel-step .4s steps(4) both; }
 @keyframes sel-step { from { transform: none; } to { transform: scale(1.08); } }
+/* Kirikou celebrates the moment he is the pick: two frames, arms down and
+   fists up, flipped on a hard step like a 16-bit victory pose */
+.frame img.cheer { display: none; }
+.c1.sel .frame img#kiri-img { visibility: hidden; }
+.c1.sel .frame img.cheer { display: block; animation: cheer-down .44s steps(1) infinite; }
+.c1.sel .frame img.cheer.cb { animation-name: cheer-up; }
+@keyframes cheer-down { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes cheer-up { 0%, 49% { opacity: 0; transform: none; } 50%, 100% { opacity: 1; transform: translateY(-6%); } }
 .col.sel .name { transform: none; background: #1a3fc4; border-color: #8fd0ff; animation: sel-plate .22s steps(1) 4 both; }
 @keyframes sel-plate { 0%, 49% { color: var(--bone); } 50%, 100% { color: #8fd0ff; } }
 .col.sel .desc { color: #cfe6ff; }
@@ -620,7 +628,7 @@ html.off .off-note { display: block; }
       <div class="pick-cols" aria-hidden="true">
         <div class="col c1">
           <div class="name">KIRIKOU</div>
-          <div class="frame"><img id="kiri-img" src="assets/kirikou.png" alt="Kirikou"></div>
+          <div class="frame"><img id="kiri-img" src="assets/kirikou.png" alt="Kirikou"><img class="cheer ca" src="assets/kirikou-cheer-a.png" alt=""><img class="cheer cb" src="assets/kirikou-cheer-b.png" alt=""></div>
           <p class="desc">KIRIKOU GIVE YOU SPEED, HEALTH AND COURAGE</p>
         </div>
         <div class="col c2">
@@ -1131,6 +1139,18 @@ html.off .off-note { display: block; }
   const dpad = document.querySelector('.pad-r');
   dpad.querySelector('.k3').addEventListener('click', () => moveCursor(1));
   dpad.querySelector('.k2').addEventListener('click', () => moveCursor(-1));
+  // on a phone the roster itself is the controller: a tap on a fighter picks him
+  if (!isPC) {
+    slots.forEach((col, i) => {
+      col.addEventListener('click', e => {
+        e.stopPropagation(); // the pick screen stays put; only the cursor moves
+        if (!pickReady || i === cursor) return;
+        setCursor(i, true);
+        swipeSfx();
+        setTimeout(() => onLand(i), 220);
+      });
+    });
+  }
   // on a computer, Space and Enter are the START button
   addEventListener('keydown', e => {
     if (!isPC || e.repeat) return;

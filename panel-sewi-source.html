@@ -299,8 +299,9 @@ body {
 .vanish { display: none; }
 .c2.go #ryu-img { display: none; }
 .c2.go .vanish {
-  display: block; position: absolute; left: 4%; bottom: 2%;
-  width: 92%; aspect-ratio: 72 / 133;
+  /* sized by the card's height, not its width, so he stands its full height */
+  display: block; position: absolute; left: 50%; bottom: 2%; transform: translateX(-50%);
+  height: 96%; aspect-ratio: 72 / 133;
   overflow: hidden; /* the window is one cell wide: the rest of the strip stays out */
 }
 .c2.go .vanish img {

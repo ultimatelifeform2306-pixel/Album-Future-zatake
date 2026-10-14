@@ -280,14 +280,58 @@ body {
 @keyframes sel-ring { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
 .col.sel .frame img { animation: sel-step .4s steps(4) both; }
 @keyframes sel-step { from { transform: none; } to { transform: scale(1.08); } }
-/* Kirikou celebrates the moment he is the pick: two frames, arms down and
-   fists up, flipped on a hard step like a 16-bit victory pose */
+/* only once the viewer has locked him in on the mode board: Kirikou
+   celebrates with two frames, arms down and fists up, flipped on a hard
+   step like a 16-bit victory pose */
 .frame img.cheer { display: none; }
-.c1.sel .frame img#kiri-img { visibility: hidden; }
-.c1.sel .frame img.cheer { display: block; animation: cheer-down .44s steps(1) infinite; }
-.c1.sel .frame img.cheer.cb { animation-name: cheer-up; }
+.c1.go .frame img#kiri-img { visibility: hidden; }
+.c1.go .frame img.cheer { display: block; animation: cheer-down .44s steps(1) infinite; }
+.c1.go .frame img.cheer.cb { animation-name: cheer-up; }
 @keyframes cheer-down { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
 @keyframes cheer-up { 0%, 49% { opacity: 0; transform: none; } 50%, 100% { opacity: 1; transform: translateY(-6%); } }
+/* the other two have no victory frames of their own yet, so they hop */
+.c2.go .frame img { animation: win-hop .44s steps(1) infinite; }
+.c3.go .frame img { animation: knux-hop .44s steps(1) infinite; }
+@keyframes win-hop { 0%, 49% { transform: none; } 50%, 100% { transform: translateY(-4%); } }
+@keyframes knux-hop { 0%, 49% { transform: scale(1.16); } 50%, 100% { transform: scale(1.16) translateY(-4%); } }
+
+/* locking a fighter in brings up the mode board: a 16-bit panel ringed by a
+   chain of diamonds, with the two modes on it */
+.mode-board { position: absolute; inset: 0; display: none; place-items: center; z-index: 4; }
+.mode-board.on { display: grid; }
+.mode-board::before { content: ""; position: absolute; inset: 0; background: rgba(4, 2, 16, .74); }
+.mb-panel {
+  position: relative; display: grid; gap: 3cqw; justify-items: center;
+  padding: 7cqw 5cqw; min-width: 54cqw; box-sizing: border-box;
+  background: linear-gradient(to bottom, #2a1270 0 46%, #150835 46%);
+  box-shadow: 0 0 0 .9cqw #07041a, 1cqw 1cqw 0 .9cqw rgba(0, 0, 0, .55);
+  animation: mb-in .26s steps(4) both;
+}
+@keyframes mb-in { from { transform: scale(.25); } to { transform: scale(1); } }
+/* the diamond chain running right around the board */
+@supports ((mask-composite: exclude) or (-webkit-mask-composite: xor)) {
+  .mb-panel::before {
+    content: ""; position: absolute; inset: -3.2cqw; box-sizing: border-box; padding: 3.2cqw;
+    background-image: repeating-conic-gradient(from 45deg, #8fd0ff 0% 25%, #2f63ef 0% 50%);
+    background-size: 3.2cqw 3.2cqw;
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask-composite: exclude;
+  }
+}
+.mb-opt {
+  position: relative; font-family: var(--f-pixel); font-size: 3.6cqw; letter-spacing: .08em;
+  color: var(--bone); background: none; border: 0; padding: .8cqw 6cqw; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+/* a diamond marks the entry under the finger */
+.mb-opt::before { content: "\25C6"; position: absolute; left: .6cqw; color: #ffd84a; opacity: 0; }
+.mb-opt:is(:hover, :focus, :active) { color: #ffd84a; outline: none; }
+.mb-opt:is(:hover, :focus, :active)::before { opacity: 1; animation: mb-blink .36s steps(1) infinite; }
+/* a phone has no focus ring to follow, so both entries wear their diamond */
+html:not(.pc) .mb-opt::before { opacity: 1; }
+@keyframes mb-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: .1; } }
 .col.sel .name { transform: none; background: #1a3fc4; border-color: #8fd0ff; animation: sel-plate .22s steps(1) 4 both; }
 @keyframes sel-plate { 0%, 49% { color: var(--bone); } 50%, 100% { color: #8fd0ff; } }
 .col.sel .desc { color: #cfe6ff; }
@@ -372,6 +416,9 @@ body.pick-mode .pads { display: block; }
   aspect-ratio: 16 / 9; width: min(86%, calc((100vh - 110px) * 16 / 9));
 }
 /* the roster has to work in a short, wide screen */
+.pc .mb-panel { min-width: 32cqw; padding: 4cqw 3cqw; gap: 1.8cqw; }
+.pc .mb-opt { font-size: 2.2cqw; padding: .5cqw 4cqw; }
+.pc .mb-panel::before { inset: -1.9cqw; padding: 1.9cqw; background-size: 1.9cqw 1.9cqw; }
 .pc .cover[data-phase="pick"] .pick-title { top: 1.4cqw; padding: 1.1cqw 2cqw; font-size: 2.1cqw; }
 .pc .cover[data-phase="pick"] .col {
   grid-template-rows: 4.6cqw auto auto; align-content: center;
@@ -643,6 +690,12 @@ html.off .off-note { display: block; }
         </div>
       </div>
       <h2 class="pick-title">CHOOSE YOUR FAVORITE CHARACTER</h2>
+      <div class="mode-board" id="mode-board">
+        <div class="mb-panel">
+          <button class="mb-opt" type="button">TUTO MODE</button>
+          <button class="mb-opt" type="button">BATTLE TEST</button>
+        </div>
+      </div>
     </div>
     <div class="flash" id="flash"></div>
     <div class="crt"></div>
@@ -978,6 +1031,8 @@ html.off .off-note { display: block; }
     delete stage.dataset.pick;
     document.body.classList.remove('pick-mode');
     document.querySelectorAll('.col.sel').forEach(c => c.classList.remove('sel'));
+    document.querySelectorAll('.col.go').forEach(c => c.classList.remove('go'));
+    closeBoard();
     document.querySelector('.pick-cols').classList.remove('chosen');
     clearTimeout(swapTimer);
     clearKnuxTalk();
@@ -1116,6 +1171,8 @@ html.off .off-note { display: block; }
   }
   function setCursor(i, animate) {
     cursor = i;
+    slots.forEach(c => c.classList.remove('go')); // a new pick drops the old pose
+    closeBoard();
     slots.forEach((c, k) => c.classList.toggle('sel', k === i));
     clearTimeout(swapTimer);
     if (animate) {
@@ -1139,15 +1196,44 @@ html.off .off-note { display: block; }
   const dpad = document.querySelector('.pad-r');
   dpad.querySelector('.k3').addEventListener('click', () => moveCursor(1));
   dpad.querySelector('.k2').addEventListener('click', () => moveCursor(-1));
-  // on a phone the roster itself is the controller: a tap on a fighter picks him
+  // ---- locking a fighter in: the mode board first, his victory pose after ----
+  const modeBoard = document.getElementById('mode-board');
+  const modeOpts = [...modeBoard.querySelectorAll('.mb-opt')];
+  let boardOpen = false;
+  function closeBoard() { boardOpen = false; modeBoard.classList.remove('on'); }
+  function openBoard() {
+    if (boardOpen || !pickReady || cursor < 0) return;
+    boardOpen = true;
+    slots.forEach(c => c.classList.remove('go'));
+    modeBoard.classList.add('on');
+    selectSfx();
+    if (isPC) modeOpts[0].focus({ preventScroll: true });
+  }
+  // the mode chosen, the fighter the viewer locked in celebrates
+  function celebrate() {
+    closeBoard();
+    if (cursor < 0) return;
+    slots[cursor].classList.add('go');
+    pickSfx();
+  }
+  modeOpts.forEach(b => b.addEventListener('click', e => { e.stopPropagation(); celebrate(); }));
+  // a tap off the board backs out of it
+  modeBoard.addEventListener('click', e => { e.stopPropagation(); closeBoard(); });
+
+  // on a phone the roster itself is the controller: a tap moves the cursor to
+  // that fighter, and a tap on the one already under the cursor locks him in
   if (!isPC) {
     slots.forEach((col, i) => {
       col.addEventListener('click', e => {
         e.stopPropagation(); // the pick screen stays put; only the cursor moves
-        if (!pickReady || i === cursor) return;
-        setCursor(i, true);
-        swipeSfx();
-        setTimeout(() => onLand(i), 220);
+        if (!pickReady || boardOpen) return;
+        if (i !== cursor) {
+          setCursor(i, true);
+          swipeSfx();
+          setTimeout(() => onLand(i), 220);
+          return;
+        }
+        openBoard();
       });
     });
   }
@@ -1165,6 +1251,7 @@ html.off .off-note { display: block; }
     if (!pickReady) return;
     if (e.key === 'ArrowRight') { e.preventDefault(); moveCursor(1); }
     if (e.key === 'ArrowLeft') { e.preventDefault(); moveCursor(-1); }
+    if ((e.key === 'Enter' || e.key === ' ') && !boardOpen) { e.preventDefault(); openBoard(); }
   });
 
   function announce() {

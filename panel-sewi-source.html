@@ -292,32 +292,25 @@ body {
 /* Knuckles has no victory frames of his own yet, so he hops */
 .c3.go .frame img { animation: knux-hop .44s steps(1) infinite; }
 @keyframes knux-hop { 0%, 49% { transform: scale(1.16); } 50%, 100% { transform: scale(1.16) translateY(-4%); } }
-/* Ryu takes it standing. His card art steps aside for a sticker on the blue
-   card: one strip of fourteen cells walked a cell at a time, played once —
-   he looks at you, gives you the thumbs up, charges, and teleports out. The
-   last cell is empty, so the card is left bare where he was standing */
+/* Ryu takes it standing, drawn as a pixel animation: his card art steps aside
+   for a 72x133 sprite on the blue card, and the strip is walked a cell at a
+   time — he breathes with the thumbs up, gathers it, and goes up in streaks.
+   The cell it stops on is empty, so the card is left bare where he stood */
 .vanish { display: none; }
 .c2.go #ryu-img { display: none; }
 .c2.go .vanish {
   display: block; position: absolute; left: 4%; bottom: 2%;
-  width: 92%; aspect-ratio: 300 / 554;
+  width: 92%; aspect-ratio: 72 / 133;
   overflow: hidden; /* the window is one cell wide: the rest of the strip stays out */
 }
 .c2.go .vanish img {
   position: absolute; left: 0; top: 0; right: auto; bottom: auto;
-  width: 600%; max-width: none; height: 100%; object-fit: fill;
-  image-rendering: pixelated; animation: vanish 1.4s steps(1, end) 1 both;
+  width: 1900%; max-width: none; height: 100%; object-fit: fill;
+  image-rendering: pixelated; animation: vanish 1.9s steps(19) 1 both;
 }
-/* one stop per pose, so each is held for as long as it is worth: he looks at
-   you, smirks, holds the thumbs up, charges, fades, gone */
-@keyframes vanish {
-  0%          { transform: translateX(0); }
-  12.9%       { transform: translateX(-16.667%); }
-  25.7%       { transform: translateX(-33.333%); }
-  64.3%       { transform: translateX(-50%); }
-  78.6%       { transform: translateX(-66.667%); }
-  92.9%, 100% { transform: translateX(-83.333%); }
-}
+/* nineteen cells at a tenth of a second each: he breathes with the thumbs up,
+   charges, then goes. The cell it stops on is empty */
+@keyframes vanish { from { transform: translateX(0); } to { transform: translateX(-100%); } }
 
 /* locking a fighter in brings up the mode board: a 16-bit panel ringed by a
    chain of diamonds, with the two modes on it */

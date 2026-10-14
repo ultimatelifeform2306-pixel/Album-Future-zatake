@@ -292,26 +292,32 @@ body {
 /* Knuckles has no victory frames of his own yet, so he hops */
 .c3.go .frame img { animation: knux-hop .44s steps(1) infinite; }
 @keyframes knux-hop { 0%, 49% { transform: scale(1.16); } 50%, 100% { transform: scale(1.16) translateY(-4%); } }
-/* Ryu answers with a shoryuken. His card art steps aside for a sticker on the
-   blue card: one strip of ten cells, walked a cell at a time, the last three
-   holding the landing stance before he goes up again */
-.shoryu { display: none; }
+/* Ryu takes it standing. His card art steps aside for a sticker on the blue
+   card: one strip of fourteen cells walked a cell at a time, played once —
+   he looks at you, gives you the thumbs up, charges, and teleports out. The
+   last cell is empty, so the card is left bare where he was standing */
+.vanish { display: none; }
 .c2.go #ryu-img { display: none; }
-/* he is tall enough to punch out of the top of his card, the way Knuckles
-   grows out of his, so the uppercut has somewhere to go */
-.c2.go, .c2.go .frame { overflow: visible; }
-.c2.go .name { z-index: 3; }
-.c2.go .shoryu {
-  display: block; position: absolute; left: 50%; bottom: 1%; transform: translateX(-50%);
-  width: 210%; aspect-ratio: 260 / 272;
+.c2.go .vanish {
+  display: block; position: absolute; left: 4%; bottom: 2%;
+  width: 92%; aspect-ratio: 300 / 554;
   overflow: hidden; /* the window is one cell wide: the rest of the strip stays out */
 }
-.c2.go .shoryu img {
+.c2.go .vanish img {
   position: absolute; left: 0; top: 0; right: auto; bottom: auto;
-  width: 1000%; max-width: none; height: 100%; object-fit: fill;
-  image-rendering: pixelated; animation: shoryu .8s steps(10) infinite;
+  width: 600%; max-width: none; height: 100%; object-fit: fill;
+  image-rendering: pixelated; animation: vanish 1.4s steps(1, end) 1 both;
 }
-@keyframes shoryu { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+/* one stop per pose, so each is held for as long as it is worth: he looks at
+   you, smirks, holds the thumbs up, charges, fades, gone */
+@keyframes vanish {
+  0%          { transform: translateX(0); }
+  12.9%       { transform: translateX(-16.667%); }
+  25.7%       { transform: translateX(-33.333%); }
+  64.3%       { transform: translateX(-50%); }
+  78.6%       { transform: translateX(-66.667%); }
+  92.9%, 100% { transform: translateX(-83.333%); }
+}
 
 /* locking a fighter in brings up the mode board: a 16-bit panel ringed by a
    chain of diamonds, with the two modes on it */
@@ -698,7 +704,7 @@ html.off .off-note { display: block; }
         </div>
         <div class="col c2">
           <div class="name">RYU</div>
-          <div class="frame art"><img id="ryu-img" src="assets/ryu-card-stance.png" alt="Ryu"><span class="shoryu" aria-hidden="true"><img src="assets/ryu-shoryu.png" alt=""></span></div>
+          <div class="frame art"><img id="ryu-img" src="assets/ryu-card-stance.png" alt="Ryu"><span class="vanish" aria-hidden="true"><img src="assets/ryu-vanish.png" alt=""></span></div>
           <p class="desc">RYU GIVE YOU STRENGTH, DEFENSE AND ENDURANCE</p>
         </div>
         <div class="col c3">

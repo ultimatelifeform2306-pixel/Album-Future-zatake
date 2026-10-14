@@ -185,6 +185,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
       <span class="spacer"></span>
       <div class="timer" id="playTime" style="font-size:14px">0:00.0</div>
     </div>
+    <p class="hint">NO SOUND? TURN YOUR VOLUME UP. ON IPHONE, FLIP OFF THE SILENT SWITCH ON THE SIDE.</p>
   </section>
 
   <!-- 3. autotune -->
@@ -318,12 +319,32 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
       eqNodes[eqNodes.length - 1].connect(safety); safety.connect(analyser); analyser.connect(actx.destination);
       applyEq();
     }
-    if (actx.state === 'suspended') actx.resume();
+    if (actx.state !== 'running') actx.resume().catch(() => {});
     return actx;
   };
+  // iPhone: play through the loudspeaker even with the silent switch on, and after the mic was used
+  let unlockEl = null;
+  function speakerOn() {
+    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch {}
+    try {
+      if (!unlockEl) {
+        unlockEl = new Audio(URL.createObjectURL(wav([new Float32Array(2205)], 22050)));
+        unlockEl.setAttribute('playsinline', '');
+      }
+      unlockEl.currentTime = 0;
+      const pr = unlockEl.play(); if (pr && pr.catch) pr.catch(() => {});
+    } catch {}
+  }
+  // a silent copy of the equaliser just for drawing its curve, so the page never starts audio before a tap
+  const dispNodes = (() => {
+    const C = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    const oc = new C(1, 1, 44100);
+    return BANDS.map(b => { const n = oc.createBiquadFilter(); n.type = b.type; if (b.q) n.Q.value = b.q; return n; });
+  })();
   function applyEq() {
-    if (!eqNodes) return;
-    S.eq.forEach((b, i) => { eqNodes[i].frequency.value = b.f; if (BANDS[i].type !== 'highpass') eqNodes[i].gain.value = b.g; });
+    [dispNodes, eqNodes].forEach(list => list && S.eq.forEach((b, i) => {
+      list[i].frequency.value = b.f; if (BANDS[i].type !== 'highpass') list[i].gain.value = b.g;
+    }));
   }
   const status = (msg, err) => { const el = $('#status'); el.textContent = msg; el.classList.toggle('err', !!err); };
   const fmt = (s, tenths) => {
@@ -357,6 +378,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
   async function startRec() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { status('THIS BROWSER CANNOT USE THE MIC. OPEN IN SAFARI OR CHROME, OR USE LOAD FILE.', true); return; }
     stopPlay();
+    try { if (navigator.audioSession) navigator.audioSession.type = 'play-and-record'; } catch {}
     const a = ac();
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: {
@@ -430,6 +452,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     stream.getTracks().forEach(t => t.stop());
     if (wake) { wake.release().catch(() => {}); wake = null; }
     $('#meter').style.width = '0%';
+    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch {}
     setRecUI();
     if (!pcmLen) { status('NOTHING WAS RECORDED. CHECK THE MIC AND TRY AGAIN.', true); return; }
     const mono = new Float32Array(pcmLen);
@@ -467,6 +490,8 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     await loadMono(mono, sr, cut);
   }
   async function loadMono(mono, sr, cut) {
+    let pk = 0; for (let i = 0; i < mono.length; i += 7) { const v = Math.abs(mono[i]); if (v > pk) pk = v; }
+    if (pk < 1e-5) { status('THAT FILE HAS NO SOUND IN IT. TRY ANOTHER RECORDING.', true); return; }
     S.dry = mono; S.sr = sr; S.trimA = 0; S.trimB = mono.length / sr; S.pos = 0;
     S.out = null; S.clean = null; S.cleanAmt = -1; S.dryN = null;
     const t = mono.length / sr;
@@ -1080,14 +1105,13 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
       }
     }
     // response curve from the real filters
-    ac.peek();
     const n = Math.max(64, Math.floor(G.W / dpr));
     if (!eqFreqs || eqFreqs.length !== n) {
       eqFreqs = new Float32Array(n); eqMag = new Float32Array(n); eqPh = new Float32Array(n);
       for (let i = 0; i < n; i++) eqFreqs[i] = FMIN * Math.pow(FMAX / FMIN, i / (n - 1));
     }
     const tot = new Float32Array(n);
-    eqNodes.forEach(nd => { nd.getFrequencyResponse(eqFreqs, eqMag, eqPh); for (let i = 0; i < n; i++) tot[i] += 20 * Math.log10(eqMag[i] + 1e-9); });
+    dispNodes.forEach(nd => { nd.getFrequencyResponse(eqFreqs, eqMag, eqPh); for (let i = 0; i < n; i++) tot[i] += 20 * Math.log10(eqMag[i] + 1e-9); });
     g.beginPath();
     for (let i = 0; i < n; i++) {
       const x = G.X(eqFreqs[i]), y = G.Y(Math.max(-GMAX - 2, Math.min(GMAX + 2, tot[i])));
@@ -1114,7 +1138,6 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     const fs = b.f >= 1000 ? (b.f / 1000).toFixed(b.f >= 10000 ? 0 : 1) + ' KHZ' : Math.round(b.f) + ' HZ';
     $('#eqInfo').textContent = bd.type === 'highpass' ? `${bd.name} ▸ ${fs}` : `${bd.name} ▸ ${fs} ▸ ${b.g > 0 ? '+' : ''}${b.g.toFixed(1)} DB`;
   }
-  ac.peek = () => { if (!eqNodes) ac(); };
 
   let eqDrag = null;
   CV.eq.addEventListener('pointerdown', e => {
@@ -1269,7 +1292,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
   $('#btnRec').addEventListener('click', startRec);
   $('#btnPause').addEventListener('click', pauseRec);
   $('#btnStopRec').addEventListener('click', stopRec);
-  $('#btnPlay').addEventListener('click', () => { ac(); S.playing ? stopPlay() : startPlay(); drawWave(); drawEq(); });
+  $('#btnPlay').addEventListener('click', () => { speakerOn(); ac(); S.playing ? stopPlay() : startPlay(); drawWave(); drawEq(); });
   $('#btnTune').addEventListener('click', () => {
     S.tuneOn = !S.tuneOn;
     const b = $('#btnTune'); b.classList.toggle('on', S.tuneOn); b.setAttribute('aria-pressed', S.tuneOn);
@@ -1278,13 +1301,14 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     drawPitch();
   });
   $('#btnResetTrim').addEventListener('click', () => { stopPlay(); S.trimA = 0; S.trimB = S.dry.length / S.sr; S.pos = 0; setEditUI(); drawWave(); drawPitch(); });
+  $('#btnLoad').addEventListener('click', () => { speakerOn(); ac(); });
   $('#btnLoad').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#file').click(); } });
   $('#file').addEventListener('change', async e => {
     const f = e.target.files[0]; e.target.value = '';
     if (!f) return;
     stopPlay(); status('LOADING FILE...');
     try { await loadArrayBuffer(await f.arrayBuffer()); }
-    catch { status('COULD NOT OPEN THAT FILE.', true); }
+    catch { status('COULD NOT READ THAT FILE. IN VOICE MEMOS TAP SHARE, SAVE TO FILES, THEN LOAD THAT .M4A.', true); }
   });
 
   // ---------- save as 24-bit wav ----------

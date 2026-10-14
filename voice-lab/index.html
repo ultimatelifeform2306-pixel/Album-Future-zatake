@@ -242,9 +242,8 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
       <div class="ctl"><label for="warmth">WARMTH <output id="o-warmth"></output></label><input id="warmth" type="range" min="0" max="100" step="1"></div>
       <div class="ctl"><label for="polish">COMPRESS <output id="o-polish"></output></label><input id="polish" type="range" min="0" max="100" step="1"></div>
       <div class="ctl"><label for="reverb">STUDIO REVERB <output id="o-reverb"></output></label><input id="reverb" type="range" min="0" max="100" step="1"></div>
-      <div class="ctl"><label for="width">STEREO WIDTH <output id="o-width"></output></label><input id="width" type="range" min="0" max="100" step="1"></div>
     </div>
-    <p class="hint">NOISE CLEAN REMOVES HISS AND ROOM HUM. DE-ESS SOFTENS SHARP "SSS". WARMTH ADDS TAPE GLOW.<br>EVERY TAKE IS MASTERED TO SONG LOUDNESS WITH A LIMITER, SO IT NEVER CLIPS.</p>
+    <p class="hint">SET LOW FOR A NATURAL VOICE. NOISE CLEAN REMOVES HISS AND ROOM HUM. DE-ESS SOFTENS SHARP "SSS". WARMTH ADDS TAPE GLOW.<br>EVERY TAKE IS MASTERED TO SONG LOUDNESS WITH A LIMITER, SO IT NEVER CLIPS.</p>
   </section>
 
   <!-- 5. save -->
@@ -271,7 +270,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     pmajor: [0,2,4,7,9], pminor: [0,3,5,7,10], blues: [0,3,5,6,7,10],
   };
   const PRESETS = {
-    natural: { speed: 70, amount: 80, crush: 0 },
+    natural: { speed: 120, amount: 60, crush: 0 },
     pop:     { speed: 22, amount: 100, crush: 0 },
     hard:    { speed: 0, amount: 100, crush: 0 },
     bit:     { speed: 0, amount: 100, crush: 60 },
@@ -288,7 +287,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     { type: 'highshelf', name: 'AIR',      f: 11000, min: 7000, max: 16000 },
   ];
   const EQ_PRESETS = {
-    studio: [[90, 0], [140, 0], [320, -3], [1000, 0], [3200, 2.5], [6800, 0], [11000, 3]],
+    studio: [[80, 0], [140, 0], [320, -1.5], [1000, 0], [3200, 1.5], [6800, 0], [11000, 1.5]],
     warm:   [[70, 0], [140, 2.5], [320, -1], [1000, 0.5], [3200, 1], [6800, -1.5], [11000, 1]],
     bright: [[110, 0], [140, -1], [320, -3.5], [1000, -1], [3200, 3.5], [6800, 1], [11000, 5]],
     radio:  [[320, 0], [140, -8], [320, 0], [1300, 5], [3200, 3], [6800, -6], [11000, -12]],
@@ -305,7 +304,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     notes: new Array(12).fill(true),
     eq: EQ_PRESETS.studio.map(([f, g]) => ({ f, g })),
     p: { key: 0, scale: 'major', speed: 70, amount: 80, transpose: 0, crush: 0,
-         clean: 45, deess: 40, warmth: 30, polish: 55, reverb: 22, width: 50 },
+         clean: 30, deess: 30, warmth: 10, polish: 35, reverb: 12 },
   };
   let actx, eqNodes, safety, analyser;
   const ac = () => {
@@ -725,7 +724,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
   function impulse(sr, ch) {
     const key = sr + ':' + ch;
     if (irCache[key]) return irCache[key];
-    const L = Math.floor(sr * 2.0), pre = Math.floor(sr * 0.022), d = new Float32Array(L);
+    const L = Math.floor(sr * 1.1), pre = Math.floor(sr * 0.012), d = new Float32Array(L);
     let seed = ch ? 7654321 : 1234567;
     const rnd = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x3fffffff - 1; };
     let lp = 0;
@@ -733,7 +732,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
       const tt = (i - pre) / (L - pre);
       const k = 0.62 - 0.45 * tt;                       // the tail darkens as it fades, like a real plate
       lp += (rnd() - lp) * k;
-      d[i] = lp * Math.pow(1 - tt, 3.4);
+      d[i] = lp * Math.pow(1 - tt, 4.5);
     }
     return (irCache[key] = d);
   }
@@ -745,8 +744,8 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     });
   }
   async function studio(x, sr) {
-    const p = S.p, pol = p.polish / 100, rev = p.reverb / 100, warm = p.warmth / 100, width = p.width / 100;
-    const tail = rev > 0 ? Math.floor(sr * 2.1) : Math.floor(sr * 0.05);
+    const p = S.p, pol = p.polish / 100, rev = p.reverb / 100, warm = p.warmth / 100;
+    const tail = rev > 0 ? Math.floor(sr * 1.2) : Math.floor(sr * 0.05);
     const pre = normalize(x.slice(), 0.7);
     const oc = new OAC(2, pre.length + tail, sr);
     const b = oc.createBuffer(1, pre.length, sr); b.getChannelData(0).set(pre);
@@ -755,12 +754,12 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     let node = hp; src.connect(hp);
     if (pol > 0) {
       const comp = oc.createDynamicsCompressor();
-      comp.threshold.value = -10 - 20 * pol; comp.ratio.value = 1.5 + 4.5 * pol; comp.knee.value = 9;
-      comp.attack.value = 0.005; comp.release.value = 0.14;
+      comp.threshold.value = -8 - 16 * pol; comp.ratio.value = 1.3 + 3 * pol; comp.knee.value = 12;
+      comp.attack.value = 0.012; comp.release.value = 0.14;
       node.connect(comp); node = comp;
     }
     if (warm > 0) {
-      const sh = oc.createWaveShaper(), n = 4096, curve = new Float32Array(n), drive = 1 + warm * 3.5, mix = 0.35 + warm * 0.5;
+      const sh = oc.createWaveShaper(), n = 4096, curve = new Float32Array(n), drive = 1 + warm * 2.5, mix = warm * 0.6;
       for (let i = 0; i < n; i++) { const v = i / (n - 1) * 2 - 1; curve[i] = (1 - mix) * v + mix * Math.tanh(drive * v) / Math.tanh(drive); }
       sh.curve = curve; sh.oversample = '4x';
       node.connect(sh); node = sh;
@@ -771,20 +770,9 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
       gg.gain.setValueCurveAtTime(gc, 0, (gc.length - 1) * GATE_STEP / sr);
       node.connect(gg); node = gg;
     }
-    // stereo: the voice in the middle, a tiny delayed double on each side for width
-    const mid = oc.createGain(); node.connect(mid);
+    // one voice, dead centre
     const merger = oc.createChannelMerger(2);
-    mid.connect(merger, 0, 0); mid.connect(merger, 0, 1);
-    if (width > 0) {
-      [[0.011, 0, 1], [0.017, 1, -1]].forEach(([dt, ch, sign]) => {
-        const dl = oc.createDelay(0.05); dl.delayTime.value = dt;
-        const lp = oc.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 7000;
-        const gn = oc.createGain(); gn.gain.value = 0.22 * width;
-        const inv = oc.createGain(); inv.gain.value = -0.22 * width;
-        node.connect(dl); dl.connect(lp); lp.connect(gn); lp.connect(inv);
-        gn.connect(merger, 0, ch); inv.connect(merger, 0, 1 - ch);
-      });
-    }
+    node.connect(merger, 0, 0); node.connect(merger, 0, 1);
     merger.connect(oc.destination);
     if (rev > 0) {
       const conv = oc.createConvolver();
@@ -792,7 +780,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
       ir.getChannelData(0).set(impulse(sr, 0)); ir.getChannelData(1).set(impulse(sr, 1));
       conv.buffer = ir;
       const hpS = oc.createBiquadFilter(); hpS.type = 'highpass'; hpS.frequency.value = 220;
-      const send = oc.createGain(); send.gain.value = rev * 0.6;
+      const send = oc.createGain(); send.gain.value = rev * 0.35;
       node.connect(hpS); hpS.connect(conv); conv.connect(send); send.connect(oc.destination);
     }
     src.start();
@@ -815,7 +803,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
       e /= blk; if (e > 1e-6) { sum += e; cnt++; }
     }
     if (cnt) {
-      const rms = Math.sqrt(sum / cnt), gain = Math.min(20, Math.pow(10, -16 / 20) / rms);
+      const rms = Math.sqrt(sum / cnt), gain = Math.min(20, Math.pow(10, -18 / 20) / rms);
       for (let i = 0; i < n; i++) { L[i] *= gain; R[i] *= gain; }
     }
     const ceil = Math.pow(10, -1 / 20), la = Math.max(1, Math.floor(sr * 0.003)), step = 1 / la;
@@ -1232,7 +1220,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
   const sliders = {
     speed: v => v == 0 ? 'ROBOT' : v + 'MS',
     amount: pct, transpose: v => (v > 0 ? '+' : '') + v + ' ST', crush: offPct,
-    clean: offPct, deess: offPct, warmth: offPct, polish: offPct, reverb: offPct, width: offPct,
+    clean: offPct, deess: offPct, warmth: offPct, polish: offPct, reverb: offPct,
   };
   const TUNE_KEYS = ['speed', 'amount', 'transpose', 'crush'];
   function syncControls() {

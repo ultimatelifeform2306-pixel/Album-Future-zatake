@@ -289,11 +289,24 @@ body {
 .c1.go .frame img.cheer.cb { animation-name: cheer-up; }
 @keyframes cheer-down { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
 @keyframes cheer-up { 0%, 49% { opacity: 0; transform: none; } 50%, 100% { opacity: 1; transform: translateY(-6%); } }
-/* the other two have no victory frames of their own yet, so they hop */
-.c2.go .frame img { animation: win-hop .44s steps(1) infinite; }
+/* Knuckles has no victory frames of his own yet, so he hops */
 .c3.go .frame img { animation: knux-hop .44s steps(1) infinite; }
-@keyframes win-hop { 0%, 49% { transform: none; } 50%, 100% { transform: translateY(-4%); } }
 @keyframes knux-hop { 0%, 49% { transform: scale(1.16); } 50%, 100% { transform: scale(1.16) translateY(-4%); } }
+/* Ryu answers with a shoryuken. His card art steps aside for a sticker on the
+   blue card: one strip of ten cells, walked a cell at a time, the last three
+   holding the landing stance before he goes up again */
+.shoryu { display: none; }
+.c2.go #ryu-img { display: none; }
+.c2.go .shoryu {
+  display: block; position: absolute; left: 50%; bottom: 1%; transform: translateX(-50%);
+  width: 180%; aspect-ratio: 260 / 272; overflow: hidden;
+}
+.c2.go .shoryu img {
+  position: absolute; left: 0; top: 0; right: auto; bottom: auto;
+  width: 1000%; max-width: none; height: 100%; object-fit: fill;
+  image-rendering: pixelated; animation: shoryu 1.2s steps(10) infinite;
+}
+@keyframes shoryu { from { transform: translateX(0); } to { transform: translateX(-100%); } }
 
 /* locking a fighter in brings up the mode board: a 16-bit panel ringed by a
    chain of diamonds, with the two modes on it */
@@ -680,7 +693,7 @@ html.off .off-note { display: block; }
         </div>
         <div class="col c2">
           <div class="name">RYU</div>
-          <div class="frame art"><img id="ryu-img" src="assets/ryu-card-stance.png" alt="Ryu"></div>
+          <div class="frame art"><img id="ryu-img" src="assets/ryu-card-stance.png" alt="Ryu"><span class="shoryu" aria-hidden="true"><img src="assets/ryu-shoryu.png" alt=""></span></div>
           <p class="desc">RYU GIVE YOU STRENGTH, DEFENSE AND ENDURANCE</p>
         </div>
         <div class="col c3">
@@ -1031,7 +1044,7 @@ html.off .off-note { display: block; }
     delete stage.dataset.pick;
     document.body.classList.remove('pick-mode');
     document.querySelectorAll('.col.sel').forEach(c => c.classList.remove('sel'));
-    document.querySelectorAll('.col.go').forEach(c => c.classList.remove('go'));
+    dropPose();
     closeBoard();
     document.querySelector('.pick-cols').classList.remove('chosen');
     clearTimeout(swapTimer);
@@ -1159,6 +1172,7 @@ html.off .off-note { display: block; }
   const RYU_IDLE = "assets/ryu-card-idle.png";
   const slots = [...document.querySelectorAll('.pick-cols .col')];
   const ryuImg = document.getElementById('ryu-img');
+  const ryuFrame = ryuImg.closest('.frame');
   let cursor = -1, pickReady = false, swapTimer = 0;
   function poses(i) {
     // each fighter stands differently depending on whether they are the pick
@@ -1171,7 +1185,7 @@ html.off .off-note { display: block; }
   }
   function setCursor(i, animate) {
     cursor = i;
-    slots.forEach(c => c.classList.remove('go')); // a new pick drops the old pose
+    dropPose(); // a new pick drops the old one's victory pose
     closeBoard();
     slots.forEach((c, k) => c.classList.toggle('sel', k === i));
     clearTimeout(swapTimer);
@@ -1201,10 +1215,14 @@ html.off .off-note { display: block; }
   const modeOpts = [...modeBoard.querySelectorAll('.mb-opt')];
   let boardOpen = false;
   function closeBoard() { boardOpen = false; modeBoard.classList.remove('on'); }
+  function dropPose() {
+    slots.forEach(c => c.classList.remove('go'));
+    ryuFrame.classList.add('art');
+  }
   function openBoard() {
     if (boardOpen || !pickReady || cursor < 0) return;
     boardOpen = true;
-    slots.forEach(c => c.classList.remove('go'));
+    dropPose();
     modeBoard.classList.add('on');
     selectSfx();
     if (isPC) modeOpts[0].focus({ preventScroll: true });
@@ -1214,6 +1232,7 @@ html.off .off-note { display: block; }
     closeBoard();
     if (cursor < 0) return;
     slots[cursor].classList.add('go');
+    if (cursor === 1) ryuFrame.classList.remove('art');
     pickSfx();
   }
   modeOpts.forEach(b => b.addEventListener('click', e => { e.stopPropagation(); celebrate(); }));

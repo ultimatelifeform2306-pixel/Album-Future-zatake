@@ -248,7 +248,8 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
 
 <div class="wrap" id="site" inert>
   <div class="news">
-    <video class="screen" src="madara-news.mp4" poster="madara-news.jpg" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+    <!-- animated image, not a video: phones never pause it (Low Power Mode, data saver) -->
+    <img class="screen" src="madara-news.webp" alt="" aria-hidden="true">
     <img class="banner" src="banner-frame.webp" alt="Announcement: Madara wants to come back, this 19 October">
   </div>
   <header class="logo">
@@ -571,7 +572,6 @@ function openSite(withToast, back) {
   $("site").inert = false;
   if (myEmail) cloudSave(myEmail, { loggedOut: false }); // keep the server copy in step on every visit
   fillAccount();
-  const v = document.querySelector(".screen"); if (v) v.play().catch(() => {});
   if (withToast) {
     const t = document.createElement("div");
     t.className = "toast"; t.textContent = (back ? "WELCOME BACK, " : "WELCOME TO V-DEVIL, ") + player.toUpperCase();
@@ -929,7 +929,6 @@ function playGame() {
   const f = $("game-frame");
   if (f.getAttribute("src") !== GAME_URL) f.src = GAME_URL;
   $("player").hidden = false; $("site").inert = true;
-  const v = document.querySelector(".screen"); if (v) v.pause();
   document.documentElement.style.overflow = "hidden";
   $("back").focus();
 }
@@ -937,7 +936,6 @@ function closeGame() {
   $("player").hidden = true; $("site").inert = false;
   $("game-frame").removeAttribute("src"); // stops the game's music
   document.documentElement.style.overflow = "";
-  const v = document.querySelector(".screen"); if (v) v.play().catch(() => {});
 }
 document.addEventListener("click", e => {
   const a = e.target.closest("[data-play]");

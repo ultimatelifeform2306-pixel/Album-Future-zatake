@@ -184,6 +184,8 @@ nav button.out-btn { font: 12px var(--f-pixel); color: var(--bone); padding: 10p
 nav button.out-btn::before { content: "("; color: var(--magenta); }
 nav button.out-btn::after { content: ")"; color: var(--magenta); }
 @media (max-width: 640px) { nav button.out-btn { font-size: 10px; padding: 9px 10px; } }
+@keyframes quake { 0%,100% { transform: none; } 20% { transform: translate(-8px,4px); } 40% { transform: translate(7px,-5px); } 60% { transform: translate(-5px,-3px); } 80% { transform: translate(4px,5px); } }
+.quake { animation: quake .14s steps(2) 5; }
 </style>
 
 <!-- sign-in gate: nobody reaches the site without an account -->
@@ -428,6 +430,7 @@ let player = "PLAYER 1";
 function enter(name, ac) {
   player = name;
   try { sessionStorage.setItem(SESSION, name); } catch (_) {}
+  $("hello").textContent = "WELCOME, " + name.toUpperCase();
   $("gate").classList.add("out");
   setTimeout(() => { $("gate").hidden = true; playIntro(ac); }, 750);
 }
@@ -525,33 +528,76 @@ function glassSound(ac) {
   }
 }
 
-// ===== Intro: the pixel devil speaks, then the screen shatters =====
-const DEVIL = [
-  "..M..........M..",
-  ".MM..........MM.",
-  ".MMM........MMM.",
-  "..MMRRRRRRRRMM..",
-  "...RRRRRRRRRR...",
-  "..RRRRRRRRRRRR..",
-  "..RYYRRRRRRYYR..",
-  "..RYKRRRRRRKYR..",
-  "..RRRRRRRRRRRR..",
-  "..RRRRRRRRRRRR..",
-  "...RKWKWKWKWR...",
-  "...RRKKKKKKRR...",
-  "....RRRRRRRR....",
-  ".....RRRRRR.....",
-  "......RRRR......",
-  ".......RR......."
-];
-const TALK = { 10: "...RKWKWKWKWR...", 11: "...RKKKKKKKKR...", 12: "....RRKKKKRR...." };
+// ===== Scare sounds: drone, heartbeat, 8-bit laugh, scream =====
+function drone(ac) {
+  const t = ac.currentTime, g = ac.createGain(), f = ac.createBiquadFilter();
+  f.type = "lowpass"; f.frequency.value = 220; f.Q.value = 6;
+  const lfo = ac.createOscillator(), lg = ac.createGain();
+  lfo.frequency.value = .35; lg.gain.value = 120; lfo.connect(lg); lg.connect(f.frequency); lfo.start(t);
+  const oscs = [41, 41.7, 61.5].map(fr => { const o = ac.createOscillator(); o.type = "sawtooth"; o.frequency.value = fr; o.connect(f); o.start(t); return o; });
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.32, t + 1.5);
+  f.connect(g); g.connect(ac.destination);
+  return () => { const n = ac.currentTime; g.gain.cancelScheduledValues(n); g.gain.setValueAtTime(g.gain.value, n); g.gain.exponentialRampToValueAtTime(.0001, n + .4); [...oscs, lfo].forEach(o => o.stop(n + .5)); };
+}
+function heartbeat(ac, at) {
+  [0, .2].forEach((d, i) => {
+    const t = ac.currentTime + at + d, o = ac.createOscillator(), g = ac.createGain();
+    o.frequency.setValueAtTime(70, t); o.frequency.exponentialRampToValueAtTime(30, t + .15);
+    g.gain.setValueAtTime(i ? .45 : .6, t); g.gain.exponentialRampToValueAtTime(.0001, t + .2);
+    o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + .25);
+  });
+}
+function crusher(ac) { // stepped transfer curve = 8-bit grit
+  const ws = ac.createWaveShaper(), c = new Float32Array(256);
+  for (let i = 0; i < 256; i++) c[i] = Math.round((i / 128 - 1) * 6) / 6;
+  ws.curve = c; return ws;
+}
+function evilLaugh(ac) {
+  const t0 = ac.currentTime + .02, out = ac.createGain(), cr = crusher(ac);
+  out.gain.value = .22; cr.connect(out); out.connect(ac.destination); out.connect(master(ac));
+  const syll = [392, 370, 349, 330, 311, 294, 277, 262];
+  syll.forEach((p, i) => {
+    const s = t0 + i * .2, len = i === syll.length - 1 ? 1.1 : .14;
+    [1, .5].forEach((m, k) => {
+      const o = ac.createOscillator(), g = ac.createGain(), vib = ac.createOscillator(), vg = ac.createGain();
+      o.type = k ? "square" : "sawtooth";
+      o.frequency.setValueAtTime(p * m * 1.15, s); o.frequency.exponentialRampToValueAtTime(p * m * (i === syll.length - 1 ? .45 : .8), s + len);
+      vib.frequency.value = 28; vg.gain.value = p * m * .06; vib.connect(vg); vg.connect(o.frequency);
+      g.gain.setValueAtTime(.0001, s); g.gain.linearRampToValueAtTime(k ? .5 : .8, s + .015);
+      g.gain.exponentialRampToValueAtTime(.0001, s + len);
+      o.connect(g); g.connect(cr); o.start(s); vib.start(s); o.stop(s + len + .05); vib.stop(s + len + .05);
+    });
+    const n = ac.createBufferSource(), nf = ac.createBiquadFilter(), ng = ac.createGain(); // breathy "h"
+    n.buffer = noiseBuf(ac, .06); nf.type = "bandpass"; nf.frequency.value = 1800;
+    ng.gain.setValueAtTime(.35, s); ng.gain.exponentialRampToValueAtTime(.0001, s + .06);
+    n.connect(nf); nf.connect(ng); ng.connect(out); n.start(s);
+  });
+}
+function scream(ac) {
+  const t = ac.currentTime, cr = crusher(ac), g = ac.createGain();
+  g.gain.setValueAtTime(.0001, t); g.gain.linearRampToValueAtTime(.35, t + .05); g.gain.exponentialRampToValueAtTime(.0001, t + 1.1);
+  cr.connect(g); g.connect(ac.destination);
+  [1, 1.5, 2.02].forEach(m => {
+    const o = ac.createOscillator(); o.type = "sawtooth";
+    o.frequency.setValueAtTime(180 * m, t); o.frequency.exponentialRampToValueAtTime(950 * m, t + .5); o.frequency.exponentialRampToValueAtTime(400 * m, t + 1.1);
+    o.connect(cr); o.start(t); o.stop(t + 1.2);
+  });
+  const n = ac.createBufferSource(), ng = ac.createGain();
+  n.buffer = noiseBuf(ac, 1); ng.gain.setValueAtTime(.25, t); ng.gain.exponentialRampToValueAtTime(.0001, t + 1);
+  n.connect(ng); ng.connect(ac.destination); n.start(t);
+}
+
+// ===== Intro: the reaper speaks, laughs, lunges, then the screen shatters =====
+const REAPER = new Image(); REAPER.src = "reaper.webp"; // 16 frames, 186x340 each, in one row
+const FW = 186, FH = 340;
 const LINE = "You know well I'm gonna kill you, insect.";
+const TITLE = "V-DEVIL PRODUCTION";
 
 function playIntro(ac) {
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const cv = $("intro"), ctx = cv.getContext("2d"), skipBtn = $("skip");
   cv.hidden = false; skipBtn.hidden = false;
-  let W, H, dpr, done = false, raf;
+  let W, H, dpr, done = false, raf, stopDrone = null;
   function size() {
     dpr = Math.min(2, window.devicePixelRatio || 1);
     W = innerWidth; H = innerHeight;
@@ -560,55 +606,91 @@ function playIntro(ac) {
   size(); addEventListener("resize", size);
 
   const start = performance.now();
-  let typed = 0, nextType = 1400, typingDone = 0, phase = "talk";
-  if (ac) vampirePiano(ac);
+  let typed = 0, nextType = 1300, typingDone = 0, phase = "talk", laughAt = 0, lungeAt = 0;
+  if (ac) { vampirePiano(ac); stopDrone = drone(ac); [0, .9, 1.8, 2.6, 3.3, 3.9, 4.4].forEach(s => heartbeat(ac, s + .8)); }
 
   function wrap(text, maxW) {
     const words = text.split(" "), lines = []; let cur = "";
     words.forEach(w => { const t = cur ? cur + " " + w : w; if (ctx.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t; });
     if (cur) lines.push(cur); return lines;
   }
+  function pickFrame(t) {
+    if (phase === "talk") {
+      if (!typingDone) return Math.min(7, Math.floor((typed / LINE.length) * 8));
+      return 4 + Math.floor(t / 160) % 4;
+    }
+    if (phase === "laugh") return 8 + Math.floor(t / 110) % 4;
+    if (phase === "lunge") { const k = Math.floor((t - lungeAt) / 95); return 12 + Math.min(k, 7) % 4; }
+    return 15;
+  }
+  function shakeAmount() {
+    if (reduce) return 0;
+    if (phase === "talk") return typingDone ? 4 : 1.5;
+    if (phase === "laugh") return 9;
+    if (phase === "lunge") return 20;
+    return 6;
+  }
   function drawScene(now) {
-    const t = now - start;
-    ctx.fillStyle = "#07041a"; ctx.fillRect(0, 0, W, H);
-    const g = ctx.createRadialGradient(W / 2, H * .35, 10, W / 2, H * .35, Math.max(W, H) * .7);
-    g.addColorStop(0, "rgba(59,18,214,.55)"); g.addColorStop(1, "rgba(7,4,26,0)");
-    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-    // devil: steps in, bobs, mouth moves while typing, eyes flash red at the end
-    const px = Math.max(4, Math.floor(Math.min(W * .045, H * .028)));
-    const appear = Math.min(1, t / 900);
-    const bob = Math.round(Math.sin(t / 260) * 1) * px;
-    const dx = Math.round(W / 2 - 8 * px), dy = Math.round(H * .36 - 8 * px) + bob;
-    const talking = phase === "talk" && typed < LINE.length && typed > 0 && Math.floor(t / 110) % 2 === 0;
-    const rage = typingDone && Math.floor(t / 90) % 2 === 0;
-    const col = { M: "#a640ff", R: "#ff2e97", Y: rage ? "#ff1a1a" : "#ffc531", K: "#000", W: "#fbf7ff" };
-    ctx.globalAlpha = Math.round(appear * 4) / 4;
-    DEVIL.forEach((row, y) => {
-      const r = talking && TALK[y] ? TALK[y] : row;
-      [...r].forEach((ch, x) => { if (col[ch]) { ctx.fillStyle = col[ch]; ctx.fillRect(dx + x * px, dy + y * px, px, px); } });
-    });
+    const t = now - start, sh = shakeAmount();
+    ctx.save();
+    ctx.translate((Math.random() - .5) * sh * 2, (Math.random() - .5) * sh * 2);
+    if (phase === "lunge" && !reduce) ctx.rotate((Math.random() - .5) * .02);
+    ctx.fillStyle = "#050208"; ctx.fillRect(-40, -40, W + 80, H + 80);
+    // reaper
+    const sc = Math.min((H * .9) / FH, (W * .98) / FW) * (phase === "lunge" ? 1 + Math.min(.25, (t - lungeAt) / 3000) : 1);
+    const rw = FW * sc, rh = FH * sc, rx = (W - rw) / 2, ry = Math.max(0, (H - rh) / 2 - H * .04);
+    const appear = Math.min(1, t / 1000);
+    ctx.globalAlpha = Math.round(appear * 5) / 5;
+    ctx.imageSmoothingEnabled = false;
+    if (REAPER.complete && REAPER.naturalWidth) ctx.drawImage(REAPER, pickFrame(t) * FW, 0, FW, FH, rx, ry, rw, rh);
     ctx.globalAlpha = 1;
+    // edge vignette so the art melts into black
+    const v = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .25, W / 2, H / 2, Math.max(W, H) * .65);
+    v.addColorStop(0, "rgba(5,2,8,0)"); v.addColorStop(1, "rgba(5,2,8,.92)");
+    ctx.fillStyle = v; ctx.fillRect(-40, -40, W + 80, H + 80);
+    // blood flashes during the laugh and lunge
+    if ((phase === "laugh" && Math.floor(t / 140) % 3 === 0) || (phase === "lunge" && Math.floor(t / 95) % 2 === 0)) {
+      ctx.fillStyle = phase === "lunge" ? "rgba(255,255,255,.18)" : "rgba(200,0,40,.22)"; ctx.fillRect(-40, -40, W + 80, H + 80);
+    }
+    // moving title: wave, jitter and a split red/cyan ghost
+    const tfs = Math.max(12, Math.min(30, Math.floor(W / 22)));
+    ctx.font = tfs + 'px "Press Start 2P", monospace'; ctx.textBaseline = "top";
+    const tw = ctx.measureText(TITLE).width, tx0 = (W - tw) / 2, ty0 = Math.max(18, H * .04);
+    let x = tx0;
+    [...TITLE].forEach((ch, i) => {
+      const cw = ctx.measureText(ch).width;
+      const j = sh * .6;
+      const y = ty0 + Math.sin(t / 180 + i * .55) * tfs * .35 + (Math.random() - .5) * j;
+      const xx = x + (Math.random() - .5) * j;
+      ctx.fillStyle = "rgba(255,0,60,.8)"; ctx.fillText(ch, xx - 3, y);
+      ctx.fillStyle = "rgba(0,230,255,.7)"; ctx.fillText(ch, xx + 3, y);
+      ctx.fillStyle = Math.random() < .04 ? "#ff2e97" : "#fbf7ff"; ctx.fillText(ch, xx, y);
+      x += cw;
+    });
     // dialogue box
     const bw = Math.min(W - 32, 720), fs = Math.max(11, Math.min(18, Math.floor(bw / 34)));
     ctx.font = fs + 'px "Press Start 2P", monospace';
     const lines = wrap(LINE, bw - 40), lh = fs * 1.9;
-    const bh = lines.length * lh + 56, bx = (W - bw) / 2, by = Math.min(H - bh - 24, dy + 18 * px);
-    ctx.fillStyle = "#000"; ctx.fillRect(bx, by, bw, bh);
+    const bh = lines.length * lh + 56, bx = (W - bw) / 2, by = H - bh - Math.max(24, H * .05);
+    ctx.fillStyle = "rgba(0,0,0,.86)"; ctx.fillRect(bx, by, bw, bh);
     ctx.strokeStyle = "#a640ff"; ctx.lineWidth = 4; ctx.strokeRect(bx + 2, by + 2, bw - 4, bh - 4);
-    ctx.fillStyle = "#ff2e97"; ctx.fillRect(bx + 14, by - 12, ctx.measureText("V-DEVIL").width + 20, fs + 14);
-    ctx.fillStyle = "#fbf7ff"; ctx.textBaseline = "top"; ctx.fillText("V-DEVIL", bx + 24, by - 5);
+    ctx.fillStyle = "#c8002e"; ctx.fillRect(bx + 14, by - 12, ctx.measureText("THE REAPER").width + 20, fs + 14);
+    ctx.fillStyle = "#fbf7ff"; ctx.fillText("THE REAPER", bx + 24, by - 5);
     let left = typed;
     lines.forEach((l, i) => {
       const part = l.slice(0, Math.max(0, left)); left -= l.length + 1;
-      ctx.fillText(part, bx + 20, by + 32 + i * lh);
+      const jy = phase === "talk" ? 0 : (Math.random() - .5) * 3;
+      ctx.fillStyle = phase === "talk" ? "#fbf7ff" : "#ff4d6d";
+      ctx.fillText(part, bx + 20, by + 32 + i * lh + jy);
     });
-    if (typingDone && Math.floor(t / 400) % 2 === 0) { ctx.fillStyle = "#ffc531"; ctx.fillText("▼", bx + bw - 20 - fs, by + bh - fs - 12); }
-    // scanlines
-    ctx.fillStyle = "rgba(0,0,0,.22)";
+    if (phase === "laugh") { ctx.fillStyle = "#ff2e97"; ctx.fillText("HA HA HA HA...", bx + bw - 20 - ctx.measureText("HA HA HA HA...").width, by + bh - fs - 12); }
+    ctx.restore();
+    // scanlines (not shaken)
+    ctx.fillStyle = "rgba(0,0,0,.25)";
     for (let y = 0; y < H; y += 4) ctx.fillRect(0, y, W, 2);
   }
 
-  let shards = null, crack = null, crackAt = 0;
+  let crack = null, crackAt = 0;
   function makeCracks() {
     const cx = W / 2 + (Math.random() - .5) * W * .1, cy = H * .45, R = Math.hypot(W, H);
     const n = 13, angles = [];
@@ -622,16 +704,18 @@ function playIntro(ac) {
       const poly = [A[j], A[j + 1], B[j + 1], B[j]];
       const mx = poly.reduce((s, p) => s + p[0], 0) / 4, my = poly.reduce((s, p) => s + p[1], 0) / 4;
       const d = Math.hypot(mx - cx, my - cy) || 1;
-      list.push({ poly, mx, my, vx: (mx - cx) / d * (2 + Math.random() * 5), vy: (my - cy) / d * (2 + Math.random() * 4) - 3, rot: 0, vr: (Math.random() - .5) * .12, delay: j * 40 + Math.random() * 60 });
+      list.push({ poly, mx, my, vx: (mx - cx) / d * (2 + Math.random() * 5), vy: (my - cy) / d * (2 + Math.random() * 4) - 3, vr: (Math.random() - .5) * .12, delay: j * 40 + Math.random() * 60 });
     }
-    return { cx, cy, grid, list, n };
+    return { grid, list };
   }
 
   function finish() {
     if (done) return; done = true;
     cancelAnimationFrame(raf); removeEventListener("resize", size);
+    if (stopDrone) stopDrone();
     cv.hidden = true; skipBtn.hidden = true;
     openSite(true);
+    if (!reduce) { $("site").classList.add("quake"); setTimeout(() => $("site").classList.remove("quake"), 700); }
   }
   skipBtn.onclick = finish;
 
@@ -646,20 +730,27 @@ function playIntro(ac) {
         if (typed === LINE.length) typingDone = t;
       }
       drawScene(now);
-      if (typingDone && t - typingDone > 1500) {
+      if (typingDone && t - typingDone > 600) { phase = "laugh"; laughAt = t; if (ac) evilLaugh(ac); }
+    } else if (phase === "laugh") {
+      drawScene(now);
+      if (t - laughAt > 2500) { phase = "lunge"; lungeAt = t; if (ac) scream(ac); }
+    } else if (phase === "lunge") {
+      drawScene(now);
+      if (t - lungeAt > 900) {
         if (reduce) return finish();
         phase = "crack"; crack = makeCracks(); crackAt = t; if (ac) crackSound(ac);
       }
     } else if (phase === "crack") {
       drawScene(now);
-      const k = Math.min(1, (t - crackAt) / 380);
+      const k = Math.min(1, (t - crackAt) / 300);
       ctx.strokeStyle = "rgba(255,255,255,.9)"; ctx.lineWidth = 1.5;
       crack.grid.forEach(ray => { ctx.beginPath(); ctx.moveTo(...ray[0]); const last = Math.max(1, Math.ceil(k * (ray.length - 1))); for (let j = 1; j <= last; j++) ctx.lineTo(...ray[j]); ctx.stroke(); });
       if (k > .5) for (let j = 1; j < 4; j++) { ctx.beginPath(); crack.grid.forEach((ray, i) => i ? ctx.lineTo(...ray[j]) : ctx.moveTo(...ray[j])); ctx.closePath(); ctx.stroke(); }
-      if (t - crackAt > 650) {
+      if (t - crackAt > 520) {
         snap = document.createElement("canvas"); snap.width = cv.width; snap.height = cv.height;
         snap.getContext("2d").drawImage(cv, 0, 0);
         phase = "shatter"; shatterStart = t; if (ac) glassSound(ac);
+        if (stopDrone) { stopDrone(); stopDrone = null; }
         $("site").inert = false;
       }
     } else if (phase === "shatter") {
@@ -680,8 +771,11 @@ function playIntro(ac) {
     }
     raf = requestAnimationFrame(frame);
   }
-  const fontReady = document.fonts ? document.fonts.load('16px "Press Start 2P"').catch(() => {}) : Promise.resolve();
-  fontReady.then(() => { raf = requestAnimationFrame(frame); });
+  const ready = [
+    document.fonts ? document.fonts.load('16px "Press Start 2P"').catch(() => {}) : null,
+    REAPER.decode ? REAPER.decode().catch(() => {}) : null
+  ];
+  Promise.all(ready).then(() => { raf = requestAnimationFrame(frame); });
 }
 
 // Same tab, already logged in: skip the gate

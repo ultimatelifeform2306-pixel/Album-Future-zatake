@@ -222,6 +222,20 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     <canvas id="pitch" style="margin-top:18px" aria-label="Pitch line: your voice and the tuned voice"></canvas>
     <div class="cap"><i><span class="k1">&#9632; YOUR PITCH</span> &nbsp; <span class="k2">&#9632; TUNED</span></i><i>BRIGHT LINES = NOTES IN KEY</i></div>
     <p class="hint">RETUNE SPEED 0 = ROBOT SNAP. HIGHER = SMOOTH, NATURAL GLIDE.<br>TAP THE NOTE KEYS TO CHOOSE WHICH NOTES YOUR VOICE LANDS ON.</p>
+    <h3>CHORUS AUTOTUNE</h3>
+    <div class="row presets" role="group" aria-label="Chorus voices">
+      <button type="button" data-chorus="off">OFF</button>
+      <button type="button" data-chorus="double">DOUBLE</button>
+      <button type="button" data-chorus="third">3RD UP</button>
+      <button type="button" data-chorus="fifth">5TH UP</button>
+      <button type="button" data-chorus="octave">OCTAVE</button>
+      <button type="button" data-chorus="choir">CHOIR</button>
+    </div>
+    <div class="grid" style="margin-top:12px">
+      <div class="ctl"><label for="chorusMix">CHORUS MIX <output id="o-chorusMix"></output></label><input id="chorusMix" type="range" min="0" max="100" step="1"></div>
+      <div class="ctl"><label for="spread">SPREAD <output id="o-spread"></output></label><input id="spread" type="range" min="0" max="100" step="1"></div>
+    </div>
+    <p class="hint">EXTRA AUTOTUNED VOICES SING WITH YOU, IN YOUR KEY. DOUBLE = TWO COPIES OF YOU LEFT AND RIGHT.<br>3RD AND 5TH UP = HARMONY ABOVE YOU. OCTAVE = A DEEP VOICE UNDER YOU. CHOIR = ALL OF THEM.</p>
   </section>
 
   <!-- 4. studio -->
@@ -294,6 +308,33 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     bit:     { speed: 0, amount: 100, crush: 60 },
     raw:     { speed: 50, amount: 0, crush: 0, transpose: 0 },
   };
+  // chorus voices: a scale step (deg) or fixed semitones, a few cents of detune, a delay, a place left or right, a level
+  const CHORUS = {
+    off: [],
+    double: [
+      { semi: 0, cents: 9, ms: 21, pan: -1, gain: 0.75 },
+      { semi: 0, cents: -9, ms: 32, pan: 1, gain: 0.75 },
+    ],
+    third: [
+      { deg: 2, cents: 4, ms: 14, pan: -0.6, gain: 0.8 },
+      { deg: 2, cents: -6, ms: 27, pan: 0.6, gain: 0.6 },
+    ],
+    fifth: [
+      { deg: 4, cents: -4, ms: 16, pan: 0.6, gain: 0.75 },
+      { deg: 4, cents: 6, ms: 29, pan: -0.6, gain: 0.55 },
+    ],
+    octave: [
+      { semi: -12, cents: 0, ms: 10, pan: -0.25, gain: 0.7 },
+      { semi: -12, cents: 7, ms: 23, pan: 0.25, gain: 0.5 },
+    ],
+    choir: [
+      { deg: 2, cents: 4, ms: 14, pan: -0.7, gain: 0.65 },
+      { deg: 4, cents: -4, ms: 18, pan: 0.7, gain: 0.6 },
+      { semi: -12, cents: 0, ms: 10, pan: 0, gain: 0.45 },
+      { semi: 0, cents: 10, ms: 26, pan: -1, gain: 0.5 },
+      { semi: 0, cents: -10, ms: 35, pan: 1, gain: 0.5 },
+    ],
+  };
   const BG = {
     off:    { clean: 0, focus: 0 },
     light:  { clean: 30, focus: 0 },
@@ -331,6 +372,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     notes: new Array(12).fill(true),
     eq: EQ_PRESETS.studio.map(([f, g]) => ({ f, g })),
     p: { key: 0, scale: 'major', speed: 70, amount: 80, transpose: 0, crush: 0,
+         chorus: 'off', chorusMix: 45, spread: 70,
          clean: 30, focus: 0, deess: 30, warmth: 10, polish: 35, reverb: 12 },
   };
   // the web-audio engine is used only while the mic records; it is closed afterwards
@@ -602,6 +644,32 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     return { shift, target };
   }
 
+  // ---------- chorus: the shift each extra voice needs, frame by frame ----------
+  function voiceShift(v, leadShift) {
+    const an = S.an, F = an.f0.length, out = new Float32Array(F);
+    const allowed = S.notes.some(Boolean) ? S.notes : new Array(12).fill(true);
+    const count = allowed.filter(Boolean).length;
+    const ok = k => allowed[((k % 12) + 12) % 12];
+    // a chromatic or near-chromatic scale has no steps to climb, so use plain intervals: 3rd = 4, 5th = 7
+    const semiFor = { 2: 4, 4: 7 };
+    for (let f = 0; f < F; f++) {
+      const hz = an.f0[f];
+      if (!hz) { out[f] = leadShift[f]; continue; }
+      const m = 69 + 12 * Math.log2(hz / 440), lead = m + leadShift[f];
+      let up = 0;
+      if (v.deg && count < 10) {
+        let note = Math.round(lead);
+        for (let d = 0; d <= 6 && !ok(note); d++) { if (ok(Math.round(lead) + d)) { note = Math.round(lead) + d; break; } if (ok(Math.round(lead) - d)) { note = Math.round(lead) - d; break; } }
+        let k = note, steps = v.deg;
+        while (steps > 0) { k++; if (ok(k)) steps--; if (k - note > 24) break; }
+        up = k - note;
+      } else if (v.deg) up = semiFor[v.deg] || 0;
+      else up = v.semi;
+      out[f] = leadShift[f] + up + v.cents / 100;
+    }
+    return out;
+  }
+
   // ---------- pitch shifting (TD-PSOLA: keeps your voice's tone, moves the note) ----------
   function psola(x, sr, an, shift) {
     const N = x.length;
@@ -824,10 +892,12 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
       const pr = oc.startRendering(); if (pr && pr.then) pr.then(res, rej);
     });
   }
-  async function studio(x, sr) {
+  async function studio(x, sr, voices = []) {
     const p = S.p, pol = p.polish / 100, rev = p.reverb / 100, warm = p.warmth / 100;
-    const tail = rev > 0 ? Math.floor(sr * 1.2) : Math.floor(sr * 0.05);
-    const pre = normalize(x.slice(), 0.7);
+    const tail = (rev > 0 ? Math.floor(sr * 1.2) : Math.floor(sr * 0.05)) + Math.floor(sr * 0.04);
+    let pk = 0; for (let i = 0; i < x.length; i++) { const v = Math.abs(x[i]); if (v > pk) pk = v; }
+    const lvl = pk > 1e-5 ? 0.7 / pk : 1;
+    const pre = new Float32Array(x.length); for (let i = 0; i < x.length; i++) pre[i] = x[i] * lvl;
     const oc = new OAC(2, pre.length + tail, sr);
     const b = oc.createBuffer(1, pre.length, sr); b.getChannelData(0).set(pre);
     const src = oc.createBufferSource(); src.buffer = b;
@@ -851,10 +921,42 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
       gg.gain.setValueCurveAtTime(gc, 0, (gc.length - 1) * GATE_STEP / sr);
       node.connect(gg); node = gg;
     }
-    // one voice, dead centre
+    // the lead, dead centre
     const merger = oc.createChannelMerger(2);
     node.connect(merger, 0, 0); node.connect(merger, 0, 1);
     merger.connect(oc.destination);
+    // the chorus: same chain as the lead, each voice a little late and placed left or right
+    const chorusBus = oc.createGain();
+    voices.forEach(v => {
+      const vb = oc.createBuffer(1, v.data.length, sr), d = vb.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = v.data[i] * lvl;
+      const vsrc = oc.createBufferSource(); vsrc.buffer = vb;
+      const vhp = oc.createBiquadFilter(); vhp.type = 'highpass'; vhp.frequency.value = v.low ? 50 : 90;
+      const vlp = oc.createBiquadFilter(); vlp.type = 'lowpass'; vlp.frequency.value = 9000;   // backing voices sit behind the lead
+      const vg = oc.createGain(); vg.gain.value = v.gain;
+      vsrc.connect(vhp); vhp.connect(vlp); vlp.connect(vg);
+      let vn = vg;
+      if (gc) {
+        const vgate = oc.createGain();
+        vgate.gain.setValueCurveAtTime(gc, v.ms / 1000, (gc.length - 1) * GATE_STEP / sr);
+        vn.connect(vgate); vn = vgate;
+      }
+      if (oc.createStereoPanner) {
+        const pan = oc.createStereoPanner(); pan.pan.value = Math.max(-1, Math.min(1, v.pan));
+        vn.connect(pan); pan.connect(chorusBus);
+      } else {
+        const m2 = oc.createChannelMerger(2), gl = oc.createGain(), gr = oc.createGain();
+        gl.gain.value = Math.min(1, 1 - v.pan); gr.gain.value = Math.min(1, 1 + v.pan);
+        vn.connect(gl); vn.connect(gr); gl.connect(m2, 0, 0); gr.connect(m2, 0, 1); m2.connect(chorusBus);
+      }
+      vsrc.start(v.ms / 1000);
+    });
+    if (voices.length) {
+      const cc = oc.createDynamicsCompressor();
+      cc.threshold.value = -20; cc.ratio.value = 3; cc.knee.value = 10; cc.attack.value = 0.01; cc.release.value = 0.2;
+      chorusBus.connect(cc); cc.connect(oc.destination);
+      chorusBus.__out = cc;
+    }
     if (rev > 0) {
       const conv = oc.createConvolver();
       const ir = oc.createBuffer(2, impulse(sr, 0).length, sr);
@@ -863,6 +965,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
       const hpS = oc.createBiquadFilter(); hpS.type = 'highpass'; hpS.frequency.value = 220;
       const send = oc.createGain(); send.gain.value = rev * 0.35;
       node.connect(hpS); hpS.connect(conv); conv.connect(send); send.connect(oc.destination);
+      if (chorusBus.__out) { const cs = oc.createGain(); cs.gain.value = 1.4; chorusBus.__out.connect(cs); cs.connect(hpS); }   // the chorus sits a bit deeper in the room
     }
     src.start();
     const r = await renderCtx(oc);
@@ -926,8 +1029,19 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     await tick();
     const tuned = psola(S.clean, S.sr, S.an, shift);
     const smooth = deess(tuned, S.sr, S.p.deess / 100);
+    const voices = [];
+    const mixAmt = S.p.chorusMix / 100;
+    if (mixAmt > 0) {
+      for (const v of CHORUS[S.p.chorus] || []) {
+        status('SINGING THE CHORUS VOICES...');
+        await tick();
+        if (id !== renderId) return;
+        const vs = voiceShift(v, shift);
+        voices.push({ data: deess(psola(S.clean, S.sr, S.an, vs), S.sr, S.p.deess / 100), pan: v.pan * S.p.spread / 100, gain: v.gain * mixAmt, ms: v.ms, low: (v.semi || 0) < 0 });
+      }
+    }
     if (id !== renderId) return;
-    const out = await studio(smooth, S.sr);
+    const out = await studio(smooth, S.sr, voices);
     if (id !== renderId) return;
     S.out = out;
     await buildMix(id);
@@ -1396,7 +1510,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
   const pct = v => v + '%', offPct = v => v == 0 ? 'OFF' : v + '%';
   const sliders = {
     speed: v => v == 0 ? 'ROBOT' : v + 'MS',
-    amount: pct, transpose: v => (v > 0 ? '+' : '') + v + ' ST', crush: offPct,
+    amount: pct, transpose: v => (v > 0 ? '+' : '') + v + ' ST', crush: offPct, chorusMix: offPct, spread: pct,
     clean: offPct, focus: offPct, deess: offPct, warmth: offPct, polish: offPct, reverb: offPct,
   };
   const TUNE_KEYS = ['speed', 'amount', 'transpose', 'crush'];
@@ -1425,6 +1539,12 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
     syncControls(); renderSoon();
   }));
 
+  const syncChorus = () => document.querySelectorAll('[data-chorus]').forEach(b => b.classList.toggle('on', b.dataset.chorus === S.p.chorus));
+  document.querySelectorAll('[data-chorus]').forEach(b => b.addEventListener('click', () => {
+    S.p.chorus = b.dataset.chorus;
+    if (S.p.chorus !== 'off' && S.p.chorusMix === 0) { S.p.chorusMix = 45; syncControls(); }
+    syncChorus(); renderSoon();
+  }));
   document.querySelectorAll('[data-bg]').forEach(b => b.addEventListener('click', () => {
     Object.assign(S.p, BG[b.dataset.bg]);
     syncControls(); syncBg(); renderSoon();
@@ -1531,7 +1651,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 20px; background: var
   applyScale(); syncControls(); applyEq();
   document.querySelector('[data-preset="natural"]').classList.add('on');
   document.querySelector('[data-eq="studio"]').classList.add('on');
-  syncBg();
+  syncBg(); syncChorus();
   const redraw = () => { if (recState === 'idle') { drawTape(S.dry ? S.dry.length / S.sr : 0); drawWave(); } drawPitch(); drawEq(); };
   addEventListener('resize', redraw);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(redraw);

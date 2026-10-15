@@ -380,6 +380,40 @@ const STORE = "vdevil.accounts", SESSION = "vdevil.session";
 let memAccounts = {};
 function loadAccounts() { try { return JSON.parse(localStorage.getItem(STORE) || "{}"); } catch (_) { return memAccounts; } }
 function saveAccounts(a) { memAccounts = a; try { localStorage.setItem(STORE, JSON.stringify(a)); } catch (_) {} }
+// Cloud copy: viewers signed in to Claude keep their account on the artifact's
+// server store (data/users/<id>/ is private to each person), so it survives
+// cleared browser storage, the Claude app vs Safari, and new devices.
+let cloudP = null;
+function cloud() {
+  if (!cloudP) cloudP = (async () => {
+    if (!window.claude || !window.claude.use) return null;
+    const [user, db] = await Promise.all([window.claude.use("user"), window.claude.use("db")]);
+    if (!user || !db) return null;
+    const id = await user.id();
+    return id ? db.doc("data/users/" + id + "/vdevil/account") : null;
+  })().catch(() => null);
+  return cloudP;
+}
+async function cloudSave(email, patch) {
+  try {
+    const ref = await cloud(); if (!ref) return;
+    const a = loadAccounts()[email]; if (!a) return;
+    await ref.set({ email, username: a.username, salt: a.salt, hash: a.hash, created: a.created, loggedOut: false, ...patch });
+  } catch (_) {}
+}
+async function cloudLoad() {
+  try {
+    const ref = await cloud(); if (!ref) return null;
+    const snap = await ref.get();
+    return snap.exists ? snap.data() : null;
+  } catch (_) { return null; }
+}
+function adopt(c) { // put a cloud account back into this browser's list
+  const all = loadAccounts();
+  all[c.email] = { username: c.username, salt: c.salt, hash: c.hash, created: c.created };
+  saveAccounts(all);
+}
+try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (_) {}
 const hex = buf => [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
 async function hashPw(pw, saltHex) {
   const enc = new TextEncoder();
@@ -465,7 +499,11 @@ $("auth").addEventListener("submit", async e => {
       say("Account created!", true);
       enter(email, ac);
     } else {
-      const a = accounts[email];
+      let a = accounts[email];
+      if (!a) {
+        const c = await cloudLoad();
+        if (c && c.email === email) { adopt(c); a = loadAccounts()[email]; }
+      }
       if (!a) return say("Access refused: no account with this email. Sign up first.");
       if (await hashPw(pw, a.salt) !== a.hash) return say("Access refused: wrong password.");
       enter(email, ac);
@@ -476,6 +514,7 @@ $("auth").addEventListener("submit", async e => {
 let player = "PLAYER 1", myEmail = "";
 function enter(email, ac) {
   myEmail = email;
+  cloudSave(email, { loggedOut: false });
   player = (loadAccounts()[email] || {}).username || "PLAYER 1";
   try { localStorage.setItem(SESSION, email); } catch (_) {}
   fillAccount();
@@ -526,6 +565,7 @@ function openSite(withToast, back) {
   }
 }
 $("logout").onclick = () => {
+  if (myEmail) cloudSave(myEmail, { loggedOut: true });
   try { localStorage.removeItem(SESSION); } catch (_) {}
   myEmail = ""; show("home");
   $("site").inert = true;
@@ -896,7 +936,18 @@ $("back").onclick = closeGame;
   let s = null; try { s = localStorage.getItem(SESSION); } catch (_) {}
   const all = loadAccounts();
   if (s && !all[s]) s = Object.keys(all).find(e => all[e].username === s) || null; // older sessions kept the name
-  if (s) { myEmail = s; player = all[s].username; $("gate").hidden = true; openSite(true, true); }
-  else setTimeout(() => $("email").focus(), 50);
+  if (s) { myEmail = s; player = all[s].username; $("gate").hidden = true; openSite(true, true); return; }
+  // Not remembered here: ask the cloud copy before showing the login
+  say("Checking your account…", true);
+  $("go").disabled = true;
+  const giveUp = setTimeout(ready, 4000);
+  function ready() { clearTimeout(giveUp); if ($("msg").textContent === "Checking your account…") say(""); $("go").disabled = false; setTimeout(() => $("email").focus(), 50); }
+  cloudLoad().then(c => {
+    if (c && c.email && !c.loggedOut && $("gate").hidden === false && !$("blackout").classList.contains("on")) {
+      adopt(c); clearTimeout(giveUp);
+      try { localStorage.setItem(SESSION, c.email); } catch (_) {}
+      myEmail = c.email; player = c.username; $("gate").hidden = true; openSite(true, true);
+    } else ready();
+  });
 })();
 </script>

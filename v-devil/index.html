@@ -169,6 +169,8 @@ form { display: grid; gap: 14px; }
 .note { font-size: 16px; color: var(--muted); }
 
 /* ---------- intro scene ---------- */
+#blackout { position: fixed; inset: 0; z-index: 55; background: #000; opacity: 0; transition: opacity 5s linear; }
+#blackout.on { opacity: 1; }
 #intro { position: fixed; inset: 0; z-index: 60; width: 100%; height: 100%; display: block; }
 .skip {
   position: fixed; z-index: 61;
@@ -222,6 +224,7 @@ nav button.out-btn::after { content: ")"; color: var(--magenta); }
     </div>
   </div>
 </div>
+<div id="blackout" hidden></div>
 <canvas id="intro" hidden></canvas>
 <button class="skip" id="skip" type="button" hidden>SKIP ▶</button>
 
@@ -431,8 +434,10 @@ function enter(name, ac) {
   player = name;
   try { sessionStorage.setItem(SESSION, name); } catch (_) {}
   $("hello").textContent = "WELCOME, " + name.toUpperCase();
-  $("gate").classList.add("out");
-  setTimeout(() => { $("gate").hidden = true; playIntro(ac); }, 750);
+  const bo = $("blackout");
+  bo.hidden = false;
+  requestAnimationFrame(() => requestAnimationFrame(() => bo.classList.add("on")));
+  setTimeout(() => { $("gate").hidden = true; playIntro(ac); }, 5000);
 }
 function openSite(withToast) {
   $("site").inert = false;
@@ -450,8 +455,8 @@ $("logout").onclick = () => {
   $("site").inert = true;
   $("password").value = "";
   setMode("login");
+  $("blackout").hidden = true; $("blackout").classList.remove("on");
   $("gate").hidden = false;
-  requestAnimationFrame(() => $("gate").classList.remove("out"));
 };
 
 // ===== Sound: all made live with Web Audio =====
@@ -597,6 +602,7 @@ function playIntro(ac) {
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const cv = $("intro"), ctx = cv.getContext("2d"), skipBtn = $("skip");
   cv.hidden = false; skipBtn.hidden = false;
+  $("blackout").hidden = true; $("blackout").classList.remove("on");
   let W, H, dpr, done = false, raf, stopDrone = null;
   function size() {
     dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -637,16 +643,23 @@ function playIntro(ac) {
     if (phase === "lunge" && !reduce) ctx.rotate((Math.random() - .5) * .02);
     ctx.fillStyle = "#050208"; ctx.fillRect(-40, -40, W + 80, H + 80);
     // reaper
-    const sc = Math.min((H * .9) / FH, (W * .98) / FW) * (phase === "lunge" ? 1 + Math.min(.25, (t - lungeAt) / 3000) : 1);
-    const rw = FW * sc, rh = FH * sc, rx = (W - rw) / 2, ry = Math.max(0, (H - rh) / 2 - H * .04);
-    const appear = Math.min(1, t / 1000);
-    ctx.globalAlpha = Math.round(appear * 5) / 5;
+    const zoom = phase === "lunge" ? 1 + Math.min(.25, (t - lungeAt) / 3000) : 1;
+    const cover = Math.max(W / FW, H / FH), sc = Math.min(cover, (H * 1.3) / FH) * zoom;
+    const rw = FW * sc, rh = FH * sc, rx = (W - rw) / 2, ry = (H - rh) / 2;
+    const appear = Math.min(1, t / 1000), fr = pickFrame(t);
     ctx.imageSmoothingEnabled = false;
-    if (REAPER.complete && REAPER.naturalWidth) ctx.drawImage(REAPER, pickFrame(t) * FW, 0, FW, FH, rx, ry, rw, rh);
+    if (REAPER.complete && REAPER.naturalWidth) {
+      if (rw < W) { // wide screens: same frame stretched dark behind, so there are no empty sides
+        const bw = FW * cover * zoom, bh = FH * cover * zoom;
+        ctx.globalAlpha = .35 * appear; ctx.drawImage(REAPER, fr * FW, 0, FW, FH, (W - bw) / 2, (H - bh) / 2, bw, bh);
+      }
+      ctx.globalAlpha = Math.round(appear * 5) / 5;
+      ctx.drawImage(REAPER, fr * FW, 0, FW, FH, rx, ry, rw, rh);
+    }
     ctx.globalAlpha = 1;
     // edge vignette so the art melts into black
     const v = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .25, W / 2, H / 2, Math.max(W, H) * .65);
-    v.addColorStop(0, "rgba(5,2,8,0)"); v.addColorStop(1, "rgba(5,2,8,.92)");
+    v.addColorStop(0, "rgba(5,2,8,0)"); v.addColorStop(1, "rgba(5,2,8,.6)");
     ctx.fillStyle = v; ctx.fillRect(-40, -40, W + 80, H + 80);
     // blood flashes during the laugh and lunge
     if ((phase === "laugh" && Math.floor(t / 140) % 3 === 0) || (phase === "lunge" && Math.floor(t / 95) % 2 === 0)) {

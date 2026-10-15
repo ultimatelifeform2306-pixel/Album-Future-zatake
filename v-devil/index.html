@@ -460,7 +460,7 @@ let player = "PLAYER 1", myEmail = "";
 function enter(email, ac) {
   myEmail = email;
   player = (loadAccounts()[email] || {}).username || "PLAYER 1";
-  try { sessionStorage.setItem(SESSION, email); } catch (_) {}
+  try { localStorage.setItem(SESSION, email); } catch (_) {}
   fillAccount();
   const bo = $("blackout");
   bo.hidden = false;
@@ -497,19 +497,19 @@ function fillAccount() {
   drawAvatar($("nav-avatar"), a.username);
   drawAvatar($("big-avatar"), a.username);
 }
-function openSite(withToast) {
+function openSite(withToast, back) {
   $("site").inert = false;
   fillAccount();
   const v = document.querySelector(".screen"); if (v) v.play().catch(() => {});
   if (withToast) {
     const t = document.createElement("div");
-    t.className = "toast"; t.textContent = "WELCOME TO V-DEVIL, " + player.toUpperCase();
+    t.className = "toast"; t.textContent = (back ? "WELCOME BACK, " : "WELCOME TO V-DEVIL, ") + player.toUpperCase();
     document.body.append(t);
     setTimeout(() => { t.style.opacity = 0; setTimeout(() => t.remove(), 700); }, 3200);
   }
 }
 $("logout").onclick = () => {
-  try { sessionStorage.removeItem(SESSION); } catch (_) {}
+  try { localStorage.removeItem(SESSION); } catch (_) {}
   myEmail = ""; show("home");
   $("site").inert = true;
   $("password").value = "";
@@ -849,12 +849,12 @@ function playIntro(ac) {
   Promise.all(ready).then(() => { raf = requestAnimationFrame(frame); });
 }
 
-// Same tab, already logged in: skip the gate
+// Logged in before on this device (until LOG OUT): open the site straight away
 (() => {
-  let s = null; try { s = sessionStorage.getItem(SESSION); } catch (_) {}
+  let s = null; try { s = localStorage.getItem(SESSION); } catch (_) {}
   const all = loadAccounts();
   if (s && !all[s]) s = Object.keys(all).find(e => all[e].username === s) || null; // older sessions kept the name
-  if (s) { myEmail = s; player = all[s].username; $("gate").hidden = true; openSite(false); }
+  if (s) { myEmail = s; player = all[s].username; $("gate").hidden = true; openSite(true, true); }
   else setTimeout(() => $("email").focus(), 50);
 })();
 </script>

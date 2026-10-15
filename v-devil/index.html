@@ -172,20 +172,23 @@ form { display: grid; gap: 14px; }
 #blackout { position: fixed; inset: 0; z-index: 55; background: #000; opacity: 0; transition: opacity 5s linear; }
 #blackout.on { opacity: 1; }
 #intro { position: fixed; inset: 0; z-index: 60; width: 100%; height: 100%; display: block; }
-.skip {
-  position: fixed; z-index: 61;
-  right: max(16px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px));
-  font: 10px var(--f-pixel); color: var(--bone); background: rgba(0,0,0,.6); border: 2px solid var(--lilac); padding: 10px 12px; cursor: pointer;
-}
 .toast {
   position: fixed; z-index: 40; left: 50%; top: max(16px, env(safe-area-inset-top, 0px)); transform: translateX(-50%);
   max-width: calc(100% - 32px); font: 11px/1.6 var(--f-pixel); text-align: center; color: var(--ink); background: var(--gold);
   padding: 12px 16px; box-shadow: 4px 4px 0 var(--ink); transition: opacity .6s;
 }
-nav button.out-btn { font: 12px var(--f-pixel); color: var(--bone); padding: 10px 14px; border: 0; cursor: pointer; background: #2a0f86; box-shadow: inset -3px -3px 0 #160651, inset 3px 3px 0 #6b45ff; }
-nav button.out-btn::before { content: "("; color: var(--magenta); }
-nav button.out-btn::after { content: ")"; color: var(--magenta); }
-@media (max-width: 640px) { nav button.out-btn { font-size: 10px; padding: 9px 10px; } }
+canvas.avatar { image-rendering: pixelated; display: block; flex: none; background: var(--ink); }
+nav a.acct-tab { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; }
+nav a.acct-tab span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+nav a.acct-tab canvas.avatar { width: 20px; height: 20px; box-shadow: 0 0 0 2px var(--ink); }
+.acct { gap: 18px; }
+.badge { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.badge-text { display: grid; gap: 8px; min-width: 0; }
+.badge-text h2 { font-size: clamp(14px, 4vw, 20px); overflow-wrap: anywhere; }
+.rank { font: 10px var(--f-pixel); letter-spacing: .15em; color: var(--magenta); }
+canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink), 0 0 0 6px var(--gold), 6px 6px 0 6px rgba(0,0,0,.5); }
+.acct dd { overflow-wrap: anywhere; }
+.acct #logout { border: 0; cursor: pointer; }
 @keyframes quake { 0%,100% { transform: none; } 20% { transform: translate(-8px,4px); } 40% { transform: translate(7px,-5px); } 60% { transform: translate(-5px,-3px); } 80% { transform: translate(4px,5px); } }
 .quake { animation: quake .14s steps(2) 5; }
 </style>
@@ -226,7 +229,6 @@ nav button.out-btn::after { content: ")"; color: var(--magenta); }
 </div>
 <div id="blackout" hidden></div>
 <canvas id="intro" hidden></canvas>
-<button class="skip" id="skip" type="button" hidden>SKIP ▶</button>
 
 <div class="wrap" id="site" inert>
   <div class="news">
@@ -242,7 +244,7 @@ nav button.out-btn::after { content: ")"; color: var(--magenta); }
     <a href="#home" data-tab="home">HOME</a>
     <a href="#game" data-tab="game">GAME</a>
     <a href="#credits" data-tab="credits">CREDITS</a>
-    <button class="out-btn" id="logout" type="button">LOG OUT</button>
+    <a href="#account" data-tab="account" class="acct-tab"><canvas class="avatar" id="nav-avatar" width="8" height="8" aria-hidden="true"></canvas><span id="nav-name">ACCOUNT</span></a>
   </nav>
 
   <!-- HOME -->
@@ -293,6 +295,30 @@ nav button.out-btn::after { content: ")"; color: var(--magenta); }
     </div>
   </section>
 
+  <!-- ACCOUNT -->
+  <section class="win" id="account" data-panel="account" hidden>
+    <div class="bar"><i>■</i><b>ACCOUNT.EXE</b><i>_</i><i>×</i></div>
+    <div class="body acct">
+      <div class="badge">
+        <canvas class="avatar big" id="big-avatar" width="8" height="8" role="img" aria-label="Your player badge"></canvas>
+        <div class="badge-text">
+          <span class="rank" id="acc-rank">PLAYER #1</span>
+          <h2 id="acc-name">PLAYER 1</h2>
+          <span class="blink">● ONLINE</span>
+        </div>
+      </div>
+      <dl class="stats">
+        <dt>USERNAME</dt><dd id="acc-user">-</dd>
+        <dt>EMAIL</dt><dd id="acc-email">-</dd>
+        <dt>MEMBER SINCE</dt><dd id="acc-since">-</dd>
+        <dt>PLAYER NO.</dt><dd id="acc-no">-</dd>
+        <dt>SAVED ON</dt><dd>This device only</dd>
+      </dl>
+      <p class="small">Your badge is made from your username, so it is yours alone. Your password is never shown or stored as text.</p>
+      <button class="btn alt" id="logout" type="button">LOG OUT</button>
+    </div>
+  </section>
+
   <!-- CREDITS -->
   <section class="win" id="credits" data-panel="credits" hidden>
     <div class="bar"><i>■</i><b>CREDITS.TXT</b><i>_</i><i>×</i></div>
@@ -314,7 +340,7 @@ nav button.out-btn::after { content: ")"; color: var(--magenta); }
 
 <script>
 // tabs, deep-linkable as #home / #game / #credits
-const tabs = ["home", "game", "credits"];
+const tabs = ["home", "game", "credits", "account"];
 function show(name) {
   if (!tabs.includes(name)) name = "home";
   document.querySelectorAll("[data-panel]").forEach(p => p.hidden = p.dataset.panel !== name);
@@ -419,29 +445,60 @@ $("auth").addEventListener("submit", async e => {
       accounts[email] = { username: u, salt, hash: await hashPw(pw, salt), created: Date.now() };
       saveAccounts(accounts);
       say("Account created!", true);
-      enter(u, ac);
+      enter(email, ac);
     } else {
       const a = accounts[email];
       if (!a) return say("Access refused: no account with this email. Sign up first.");
       if (await hashPw(pw, a.salt) !== a.hash) return say("Access refused: wrong password.");
-      enter(a.username, ac);
+      enter(email, ac);
     }
   } finally { $("go").disabled = false; }
 });
 
-let player = "PLAYER 1";
-function enter(name, ac) {
-  player = name;
-  try { sessionStorage.setItem(SESSION, name); } catch (_) {}
-  $("hello").textContent = "WELCOME, " + name.toUpperCase();
+let player = "PLAYER 1", myEmail = "";
+function enter(email, ac) {
+  myEmail = email;
+  player = (loadAccounts()[email] || {}).username || "PLAYER 1";
+  try { sessionStorage.setItem(SESSION, email); } catch (_) {}
+  fillAccount();
   const bo = $("blackout");
   bo.hidden = false;
   requestAnimationFrame(() => requestAnimationFrame(() => bo.classList.add("on")));
   setTimeout(() => { $("gate").hidden = true; playIntro(ac); }, 5000);
 }
+// Pixel badge: a mirrored 8x8 sprite seeded by the username
+function drawAvatar(cv, name) {
+  let h = 2166136261;
+  for (const ch of name.toLowerCase()) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619) >>> 0; }
+  const rnd = () => { h ^= h << 13; h >>>= 0; h ^= h >>> 17; h ^= h << 5; h >>>= 0; return h / 4294967296; };
+  const pals = [["#ff2e97", "#ffc531"], ["#a640ff", "#22e0ff"], ["#ffc531", "#ff2e97"], ["#22e0ff", "#a640ff"], ["#8dffb0", "#ff2e97"]];
+  const [main, eye] = pals[Math.floor(rnd() * pals.length)];
+  const c = cv.getContext("2d");
+  c.fillStyle = "#12063a"; c.fillRect(0, 0, 8, 8);
+  for (let y = 1; y < 7; y++) for (let x = 1; x < 4; x++) {
+    if (rnd() < .58) { c.fillStyle = main; c.fillRect(x, y, 1, 1); c.fillRect(7 - x, y, 1, 1); }
+  }
+  c.fillStyle = "#000"; c.fillRect(2, 3, 1, 1); c.fillRect(5, 3, 1, 1);
+  c.fillStyle = eye; c.fillRect(2, 2, 1, 1); c.fillRect(5, 2, 1, 1);
+}
+function fillAccount() {
+  const all = loadAccounts(), a = all[myEmail] || { username: player, created: Date.now() };
+  const order = Object.values(all).sort((x, y) => x.created - y.created);
+  const no = Math.max(1, order.findIndex(x => x.username === a.username) + 1);
+  $("hello").textContent = "WELCOME, " + a.username.toUpperCase();
+  $("nav-name").textContent = a.username.toUpperCase();
+  $("acc-name").textContent = a.username.toUpperCase();
+  $("acc-user").textContent = a.username;
+  $("acc-email").textContent = myEmail || "-";
+  $("acc-since").textContent = new Date(a.created).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
+  $("acc-no").textContent = "#" + String(no).padStart(3, "0");
+  $("acc-rank").textContent = "PLAYER #" + String(no).padStart(3, "0");
+  drawAvatar($("nav-avatar"), a.username);
+  drawAvatar($("big-avatar"), a.username);
+}
 function openSite(withToast) {
   $("site").inert = false;
-  $("hello").textContent = "WELCOME, " + player.toUpperCase();
+  fillAccount();
   const v = document.querySelector(".screen"); if (v) v.play().catch(() => {});
   if (withToast) {
     const t = document.createElement("div");
@@ -452,6 +509,7 @@ function openSite(withToast) {
 }
 $("logout").onclick = () => {
   try { sessionStorage.removeItem(SESSION); } catch (_) {}
+  myEmail = ""; show("home");
   $("site").inert = true;
   $("password").value = "";
   setMode("login");
@@ -600,8 +658,8 @@ const TITLE = "V-DEVIL PRODUCTION";
 
 function playIntro(ac) {
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const cv = $("intro"), ctx = cv.getContext("2d"), skipBtn = $("skip");
-  cv.hidden = false; skipBtn.hidden = false;
+  const cv = $("intro"), ctx = cv.getContext("2d");
+  cv.hidden = false;
   $("blackout").hidden = true; $("blackout").classList.remove("on");
   let W, H, dpr, done = false, raf, stopDrone = null;
   function size() {
@@ -726,11 +784,10 @@ function playIntro(ac) {
     if (done) return; done = true;
     cancelAnimationFrame(raf); removeEventListener("resize", size);
     if (stopDrone) stopDrone();
-    cv.hidden = true; skipBtn.hidden = true;
+    cv.hidden = true;
     openSite(true);
     if (!reduce) { $("site").classList.add("quake"); setTimeout(() => $("site").classList.remove("quake"), 700); }
   }
-  skipBtn.onclick = finish;
 
   let snap = null, shatterStart = 0;
   function frame(now) {
@@ -794,7 +851,9 @@ function playIntro(ac) {
 // Same tab, already logged in: skip the gate
 (() => {
   let s = null; try { s = sessionStorage.getItem(SESSION); } catch (_) {}
-  if (s) { player = s; $("gate").hidden = true; openSite(false); }
+  const all = loadAccounts();
+  if (s && !all[s]) s = Object.keys(all).find(e => all[e].username === s) || null; // older sessions kept the name
+  if (s) { myEmail = s; player = all[s].username; $("gate").hidden = true; openSite(false); }
   else setTimeout(() => $("email").focus(), 50);
 })();
 </script>

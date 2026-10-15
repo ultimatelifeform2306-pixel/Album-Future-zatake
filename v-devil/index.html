@@ -168,6 +168,18 @@ form { display: grid; gap: 14px; }
 .gate .btn { justify-self: stretch; text-align: center; border: 0; cursor: pointer; }
 .note { font-size: 16px; color: var(--muted); }
 
+/* ---------- in-site game player ---------- */
+.player { position: fixed; inset: 0; z-index: 45; background: #000; display: flex; flex-direction: column; }
+.player iframe { flex: 1; width: 100%; border: 0; display: block; background: #07041a; }
+.player .back {
+  flex: none; align-self: stretch; text-align: left; cursor: pointer; border: 0;
+  font: 11px var(--f-pixel); color: var(--bone); background: var(--ink);
+  padding-top: max(10px, env(safe-area-inset-top, 0px)); padding-bottom: 10px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  box-shadow: inset 0 -3px 0 var(--lilac);
+}
+.player .back:focus-visible { outline: 3px dashed var(--gold); outline-offset: -4px; }
+
 /* ---------- intro scene ---------- */
 #blackout { position: fixed; inset: 0; z-index: 55; background: #000; opacity: 0; transition: opacity 5s linear; }
 #blackout.on { opacity: 1; }
@@ -228,6 +240,10 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
   </div>
 </div>
 <div id="blackout" hidden></div>
+<div class="player" id="player" hidden>
+  <button class="back" id="back" type="button">◀ BACK TO SITE</button>
+  <iframe id="game-frame" title="Panel Sewi: Sigmatiserie" allow="autoplay; fullscreen"></iframe>
+</div>
 <canvas id="intro" hidden></canvas>
 
 <div class="wrap" id="site" inert>
@@ -262,7 +278,7 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
           <p>PANEL SEWI<br>SIGMATISERIE · シグマティセリー</p>
           <span class="blink">▶ PRESS START</span>
           <div class="btns">
-            <a class="btn" href="https://claude.ai/artifact/TjkUL8gEqXLqfFzubzL7ZN" target="_blank" rel="noopener">PLAY NOW</a>
+            <a class="btn" href="#play" data-play>▶ PLAY NOW</a>
             <a class="btn alt" href="#game" data-tab="game">MORE INFO</a>
           </div>
         </div>
@@ -275,7 +291,7 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
     <div class="bar"><i>■</i><b>GAME.EXE · PANEL SEWI</b><i>_</i><i>×</i></div>
     <div class="body">
       <div class="game">
-        <a class="cover" href="https://claude.ai/artifact/TjkUL8gEqXLqfFzubzL7ZN" target="_blank" rel="noopener" aria-label="Play Panel Sewi">
+        <a class="cover" href="#play" data-play aria-label="Play Panel Sewi">
           <img src="cover.jpg" alt="Panel Sewi Sigmatiserie title screen with PRESS START">
         </a>
         <div class="body" style="padding:0">
@@ -287,8 +303,10 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
             <dt>PLAYS ON</dt><dd>Phone, tablet, computer</dd>
             <dt>YEAR</dt><dd>2026</dd>
           </dl>
-          <span class="blink">▶ PRESS START</span>
-          <a class="btn" href="https://claude.ai/artifact/TjkUL8gEqXLqfFzubzL7ZN" target="_blank" rel="noopener">PLAY PANEL SEWI</a>
+          <div class="btns">
+            <a class="btn" href="#play" data-play>▶ PLAY</a>
+            <a class="btn alt" href="#home" data-tab="home">RETURN HOME</a>
+          </div>
           <p class="small">There's a big difference between playing on PC and on mobile. You'll see it soon. Just play the game.</p>
         </div>
       </div>
@@ -848,6 +866,31 @@ function playIntro(ac) {
   ];
   Promise.all(ready).then(() => { raf = requestAnimationFrame(frame); });
 }
+
+// ===== Play Panel Sewi inside the website =====
+// Published site: the game ships next to the page as game/index.html. Repo copy: it is the root index.html.
+let GAME_URL = "game/index.html";
+fetch(GAME_URL, { method: "HEAD" }).then(r => { if (!r.ok) GAME_URL = "../index.html"; }).catch(() => { GAME_URL = "../index.html"; });
+function playGame() {
+  const f = $("game-frame");
+  if (f.getAttribute("src") !== GAME_URL) f.src = GAME_URL;
+  $("player").hidden = false; $("site").inert = true;
+  const v = document.querySelector(".screen"); if (v) v.pause();
+  document.documentElement.style.overflow = "hidden";
+  $("back").focus();
+}
+function closeGame() {
+  $("player").hidden = true; $("site").inert = false;
+  $("game-frame").removeAttribute("src"); // stops the game's music
+  document.documentElement.style.overflow = "";
+  const v = document.querySelector(".screen"); if (v) v.play().catch(() => {});
+}
+document.addEventListener("click", e => {
+  const a = e.target.closest("[data-play]");
+  if (!a) return;
+  e.preventDefault(); playGame();
+});
+$("back").onclick = closeGame;
 
 // Logged in before on this device (until LOG OUT): open the site straight away
 (() => {

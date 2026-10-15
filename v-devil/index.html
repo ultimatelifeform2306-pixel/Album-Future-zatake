@@ -248,7 +248,7 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
 
 <div class="wrap" id="site" inert>
   <div class="news">
-    <!-- real video at 1.2x; if the phone blocks it (Low Power Mode, data saver) the animated image takes over -->
+    <!-- real video at its own speed; if the phone blocks it (Low Power Mode, data saver) the animated image takes over -->
     <video class="screen" id="news-vid" src="madara-news.mp4" autoplay muted loop playsinline preload="auto" disablepictureinpicture aria-hidden="true"></video>
     <img class="screen" id="news-img" src="madara-news.webp" alt="" aria-hidden="true" hidden>
     <img class="banner" src="banner-frame.webp" alt="Announcement: Madara wants to come back, this 19 October">
@@ -945,13 +945,13 @@ document.addEventListener("click", e => {
 });
 $("back").onclick = closeGame;
 
-// Banner clip: play the video a little faster; swap to the animated image if it will not play
+// Banner clip: play the video; swap to the animated image if it will not play
 (() => {
   const v = $("news-vid"), img = $("news-img");
   let swapped = false;
   const swap = () => { if (swapped) return; swapped = true; v.pause(); v.hidden = true; img.hidden = false; };
   v.muted = true; v.defaultMuted = true;
-  const rate = () => { v.defaultPlaybackRate = 1.2; v.playbackRate = 1.2; };
+  const rate = () => { v.defaultPlaybackRate = 1; v.playbackRate = 1; };
   rate(); v.addEventListener("loadedmetadata", rate);
   const go = () => { if (!swapped && v.paused) v.play().then(rate).catch(swap); };
   go(); v.addEventListener("canplay", go);

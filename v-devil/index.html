@@ -248,9 +248,9 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
 
 <div class="wrap" id="site" inert>
   <div class="news">
-    <!-- real video at its own speed; if the phone blocks it (Low Power Mode, data saver) the animated image takes over -->
+    <!-- real video at its own speed; if the phone blocks it (Low Power Mode, data saver) a frame player takes over at the same speed -->
     <video class="screen" id="news-vid" src="madara-news.mp4" autoplay muted loop playsinline preload="auto" disablepictureinpicture aria-hidden="true"></video>
-    <img class="screen" id="news-img" src="madara-news.webp" alt="" aria-hidden="true" hidden>
+    <canvas class="screen" id="news-cv" width="420" height="232" aria-hidden="true" hidden></canvas>
     <img class="banner" src="banner-frame.webp" alt="Announcement: Madara wants to come back, this 19 October">
   </div>
   <header class="logo">
@@ -945,19 +945,38 @@ document.addEventListener("click", e => {
 });
 $("back").onclick = closeGame;
 
-// Banner clip: play the video; swap to the animated image if it will not play
+// Banner clip: play the real video. Only if the phone refuses it (Low Power Mode,
+// data saver) switch to a canvas that draws the clip's frames on the clock, so it
+// always runs at true speed even when the phone is slow.
 (() => {
-  const v = $("news-vid"), img = $("news-img");
+  const v = $("news-vid"), cv = $("news-cv");
+  const FPS = 15, FRAMES = 170, W = 420, H = 232, COLS = 8, PER = 96;
   let swapped = false;
-  const swap = () => { if (swapped) return; swapped = true; v.pause(); v.hidden = true; img.hidden = false; };
+  function swap() {
+    if (swapped) return; swapped = true;
+    v.pause(); v.hidden = true; cv.hidden = false;
+    const ctx = cv.getContext("2d");
+    const sheets = [0, 1].map(i => { const im = new Image(); im.src = "madara-sheet-" + i + ".jpg"; return im; });
+    const t0 = performance.now();
+    (function draw(now) {
+      const f = Math.floor((now - t0) / 1000 * FPS) % FRAMES, sh = sheets[Math.floor(f / PER)], k = f % PER;
+      if (sh.complete && sh.naturalWidth) ctx.drawImage(sh, (k % COLS) * W, Math.floor(k / COLS) * H, W, H, 0, 0, W, H);
+      requestAnimationFrame(draw);
+    })(t0);
+  }
   v.muted = true; v.defaultMuted = true;
-  const rate = () => { v.defaultPlaybackRate = 1; v.playbackRate = 1; };
-  rate(); v.addEventListener("loadedmetadata", rate);
-  const go = () => { if (!swapped && v.paused) v.play().then(rate).catch(swap); };
-  go(); v.addEventListener("canplay", go);
-  setTimeout(() => { if (v.paused || v.currentTime === 0) swap(); }, 2500);
-  v.addEventListener("pause", () => { if (!document.hidden && !swapped) setTimeout(() => { if (v.paused && !document.hidden) v.play().catch(swap); }, 300); });
+  const go = () => {
+    if (swapped || !v.paused) return;
+    const p = v.play();
+    if (p) p.catch(err => { if (err && err.name === "NotAllowedError") swap(); });
+  };
+  go();
+  v.addEventListener("canplay", go);
+  v.addEventListener("pause", () => { if (!document.hidden) setTimeout(go, 250); });
   document.addEventListener("visibilitychange", () => { if (!document.hidden) go(); });
+  // Still not running after the clip has loaded: the phone is holding it back
+  setTimeout(() => { if (!swapped && v.paused && v.readyState >= 3) swap(); }, 4000);
+  v.addEventListener("error", swap);
 })();
 
 // Logged in before on this device (until LOG OUT): open the site straight away

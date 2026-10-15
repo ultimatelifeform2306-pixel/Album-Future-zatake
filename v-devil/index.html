@@ -217,8 +217,8 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
       </div>
       <form id="auth" novalidate>
         <div class="field" id="f-email">
-          <label for="email">EMAIL</label>
-          <div class="row"><input id="email" type="email" autocomplete="email" placeholder="player@mail.com" required></div>
+          <label for="email" id="email-label">EMAIL OR USERNAME</label>
+          <div class="row"><input id="email" type="text" autocomplete="username" autocapitalize="none" placeholder="player@mail.com or your username" required></div>
         </div>
         <div class="field" id="f-user" hidden>
           <label for="username">USERNAME</label>
@@ -329,7 +329,7 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
         <dt>EMAIL</dt><dd id="acc-email">-</dd>
         <dt>MEMBER SINCE</dt><dd id="acc-since">-</dd>
         <dt>PLAYER NO.</dt><dd id="acc-no">-</dd>
-        <dt>SAVED ON</dt><dd>This device only</dd>
+        <dt>SAVED ON</dt><dd id="acc-saved">Checking…</dd>
       </dl>
       <p class="small">Your badge is made from your username, so it is yours alone. Your password is never shown or stored as text.</p>
       <button class="btn alt" id="logout" type="button">LOG OUT</button>
@@ -390,16 +390,21 @@ function cloud() {
     const [user, db] = await Promise.all([window.claude.use("user"), window.claude.use("db")]);
     if (!user || !db) return null;
     const id = await user.id();
-    return id ? db.doc("data/users/" + id + "/vdevil/account") : null;
+    return id ? db.doc("data/users/" + id + "/vdevil") : null;
   })().catch(() => null);
   return cloudP;
 }
 async function cloudSave(email, patch) {
   try {
-    const ref = await cloud(); if (!ref) return;
-    const a = loadAccounts()[email]; if (!a) return;
+    const ref = await cloud(); if (!ref) return markSaved(false);
+    const a = loadAccounts()[email]; if (!a) return markSaved(false);
     await ref.set({ email, username: a.username, salt: a.salt, hash: a.hash, created: a.created, loggedOut: false, ...patch });
-  } catch (_) {}
+    markSaved(true);
+  } catch (_) { markSaved(false); }
+}
+function markSaved(ok) {
+  const el = document.getElementById("acc-saved");
+  if (el) el.textContent = ok ? "Your Claude account ✓ (any device)" : "This device only";
 }
 async function cloudLoad() {
   try {
@@ -442,7 +447,7 @@ function checkUsername(u) {
   if (!u) return "Pick a username.";
   if ([...u].length > 15) return "Username refused: 15 characters maximum.";
   if ([...u].length < 3) return "Username must be at least 3 characters.";
-  if (!/^[A-Za-z0-9_.-]+$/.test(u)) return "Use only letters, numbers, _ . or -";
+  if (!/^[A-Za-z0-9_.-]+( [A-Za-z0-9_.-]+)*$/.test(u)) return "Use letters, numbers, single spaces, _ . or -";
   if (isOffensive(u)) return "Username refused: racist words are not allowed.";
   return "";
 }
@@ -455,6 +460,9 @@ function setMode(m) {
   $("tab-login").setAttribute("aria-selected", m === "login");
   $("tab-signup").setAttribute("aria-selected", m === "signup");
   $("f-user").hidden = m !== "signup";
+  $("email-label").textContent = m === "signup" ? "EMAIL" : "EMAIL OR USERNAME";
+  $("email").placeholder = m === "signup" ? "player@mail.com" : "player@mail.com or your username";
+  $("email").type = m === "signup" ? "email" : "text";
   $("password").autocomplete = m === "signup" ? "new-password" : "current-password";
   $("go").textContent = m === "signup" ? "▶ CREATE ACCOUNT" : "▶ LOG IN";
   $("mode-note").textContent = m === "signup"
@@ -479,8 +487,14 @@ $("username").addEventListener("input", e => {
 $("auth").addEventListener("submit", async e => {
   e.preventDefault();
   const ac = audio(); // unlock sound inside the tap
-  const email = $("email").value.trim().toLowerCase();
+  let email = $("email").value.trim().toLowerCase().replace(/\s+/g, " ");
   const pw = $("password").value;
+  if (mode === "login" && email && !email.includes("@")) { // a username was typed: find its email
+    const local = Object.keys(loadAccounts()).find(k => loadAccounts()[k].username.toLowerCase() === email);
+    if (local) email = local;
+    else { const c = await cloudLoad(); if (c && c.username && c.username.toLowerCase() === email) { adopt(c); email = c.email; } }
+    if (!email.includes("@")) return say("Access refused: no account with this username. Sign up first.");
+  }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return say("Enter a valid email, like player@mail.com.");
   if (pw.length < 8) return say("Password needs 8 characters or more.");
   if (!crypto.subtle) return say("This browser can't make a secure login. Open the site over https.");
@@ -555,6 +569,7 @@ function fillAccount() {
 }
 function openSite(withToast, back) {
   $("site").inert = false;
+  if (myEmail) cloudSave(myEmail, { loggedOut: false }); // keep the server copy in step on every visit
   fillAccount();
   const v = document.querySelector(".screen"); if (v) v.play().catch(() => {});
   if (withToast) {

@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>V-Devil Production</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -124,9 +125,105 @@ footer { text-align: center; font-family: var(--f-pixel); font-size: 9px; color:
   nav a { font-size: 10px; padding: 9px 10px; }
 }
 @media (prefers-reduced-motion: reduce) { .blink { animation: none; } .btn:hover { transform: none; } }
+
+[hidden] { display: none !important; }
+
+/* ---------- sign-in gate ---------- */
+.gate {
+  position: fixed; inset: 0; z-index: 50; overflow-y: auto;
+  display: grid; place-items: center;
+  padding-top: max(20px, env(safe-area-inset-top, 0px));
+  padding-bottom: max(20px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.25) 0 2px, transparent 2px 4px),
+    radial-gradient(120% 80% at 50% 0%, var(--purple) 0%, #22098a 45%, var(--void) 100%), var(--void);
+  transition: opacity .7s steps(7);
+}
+.gate.out { opacity: 0; pointer-events: none; }
+.gate .win { width: min(100%, 460px); }
+.gate .logo h1 { font-size: clamp(16px, 5vw, 26px); }
+.tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tabs button {
+  font: 11px var(--f-pixel); color: var(--bone); padding: 12px 6px; border: 0; cursor: pointer;
+  background: #2a0f86; box-shadow: inset -3px -3px 0 #160651, inset 3px 3px 0 #6b45ff;
+}
+.tabs button[aria-selected="true"] { background: var(--magenta); box-shadow: inset 3px 3px 0 #a3125c, inset -3px -3px 0 #ff86c3; }
+.tabs button:focus-visible, .field input:focus-visible, .gate .btn:focus-visible, .peek:focus-visible { outline: 3px dashed var(--gold); outline-offset: 3px; }
+form { display: grid; gap: 14px; }
+.field { display: grid; gap: 6px; }
+.field label { font: 10px var(--f-pixel); letter-spacing: .1em; color: var(--muted); }
+.field .row { display: flex; gap: 8px; }
+.field input {
+  flex: 1; min-width: 0; font: 22px var(--f-body); color: var(--bone);
+  background: var(--ink); border: 0; padding: 8px 10px;
+  box-shadow: inset 3px 3px 0 #000, 0 0 0 3px var(--lilac);
+}
+.field input::placeholder { color: #6d5fa8; }
+.field small { font-size: 17px; color: var(--muted); }
+.peek { font: 9px var(--f-pixel); padding: 0 10px; border: 0; cursor: pointer; color: var(--ink); background: var(--bone); box-shadow: inset -3px -3px 0 #9d8fd6; }
+.msg { min-height: 1.3em; margin: 0; font-size: 19px; color: #ff7a7a; }
+.msg.ok { color: #8dffb0; }
+.gate .btn { justify-self: stretch; text-align: center; border: 0; cursor: pointer; }
+.note { font-size: 16px; color: var(--muted); }
+
+/* ---------- intro scene ---------- */
+#intro { position: fixed; inset: 0; z-index: 60; width: 100%; height: 100%; display: block; }
+.skip {
+  position: fixed; z-index: 61;
+  right: max(16px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  font: 10px var(--f-pixel); color: var(--bone); background: rgba(0,0,0,.6); border: 2px solid var(--lilac); padding: 10px 12px; cursor: pointer;
+}
+.toast {
+  position: fixed; z-index: 40; left: 50%; top: max(16px, env(safe-area-inset-top, 0px)); transform: translateX(-50%);
+  max-width: calc(100% - 32px); font: 11px/1.6 var(--f-pixel); text-align: center; color: var(--ink); background: var(--gold);
+  padding: 12px 16px; box-shadow: 4px 4px 0 var(--ink); transition: opacity .6s;
+}
+nav button.out-btn { font: 12px var(--f-pixel); color: var(--bone); padding: 10px 14px; border: 0; cursor: pointer; background: #2a0f86; box-shadow: inset -3px -3px 0 #160651, inset 3px 3px 0 #6b45ff; }
+nav button.out-btn::before { content: "("; color: var(--magenta); }
+nav button.out-btn::after { content: ")"; color: var(--magenta); }
+@media (max-width: 640px) { nav button.out-btn { font-size: 10px; padding: 9px 10px; } }
 </style>
 
-<div class="wrap">
+<!-- sign-in gate: nobody reaches the site without an account -->
+<div class="gate" id="gate">
+  <div class="win">
+    <div class="bar"><i>■</i><b>LOGIN.EXE · V-DEVIL</b><i>_</i><i>×</i></div>
+    <div class="body">
+      <header class="logo"><h1>V-DEVIL <span>PRODUCTION</span></h1></header>
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" id="tab-login" aria-selected="true">LOG IN</button>
+        <button type="button" role="tab" id="tab-signup" aria-selected="false">SIGN UP</button>
+      </div>
+      <form id="auth" novalidate>
+        <div class="field" id="f-email">
+          <label for="email">EMAIL</label>
+          <div class="row"><input id="email" type="email" autocomplete="email" placeholder="player@mail.com" required></div>
+        </div>
+        <div class="field" id="f-user" hidden>
+          <label for="username">USERNAME</label>
+          <div class="row"><input id="username" type="text" autocomplete="username" maxlength="15" placeholder="max 15 characters"></div>
+          <small id="user-count">0 / 15</small>
+        </div>
+        <div class="field">
+          <label for="password">PASSWORD</label>
+          <div class="row">
+            <input id="password" type="password" autocomplete="current-password" placeholder="8 characters or more" required>
+            <button type="button" class="peek" id="peek" aria-label="Show password">SHOW</button>
+          </div>
+        </div>
+        <p class="msg" id="msg" role="alert"></p>
+        <button class="btn" type="submit" id="go">▶ LOG IN</button>
+        <p class="note" id="mode-note">No account yet? Tap SIGN UP first. Sound is on after you log in.</p>
+      </form>
+    </div>
+  </div>
+</div>
+<canvas id="intro" hidden></canvas>
+<button class="skip" id="skip" type="button" hidden>SKIP ▶</button>
+
+<div class="wrap" id="site" inert>
   <div class="news">
     <video class="screen" src="madara-news.mp4" poster="madara-news.jpg" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
     <img class="banner" src="banner-frame.webp" alt="Announcement: Madara wants to come back, this 19 October">
@@ -140,13 +237,14 @@ footer { text-align: center; font-family: var(--f-pixel); font-size: 9px; color:
     <a href="#home" data-tab="home">HOME</a>
     <a href="#game" data-tab="game">GAME</a>
     <a href="#credits" data-tab="credits">CREDITS</a>
+    <button class="out-btn" id="logout" type="button">LOG OUT</button>
   </nav>
 
   <!-- HOME -->
   <section class="win" id="home" data-panel="home">
     <div class="bar"><i>■</i><b>HOME.EXE</b><i>_</i><i>×</i></div>
     <div class="body">
-      <h2>WELCOME, PLAYER 1</h2>
+      <h2 id="hello">WELCOME, PLAYER 1</h2>
       <p>V-Devil Production makes 90s-style games and music. Our first release is <strong>Panel Sewi: Sigmatiserie</strong>, an arcade title screen built for the Sigmatiserie EP. Pick your fighter, hear the voices and play it on your phone like a real console game.</p>
       <div class="game">
         <a class="cover" href="#game" data-tab="game" aria-label="Open Panel Sewi in the Game tab">
@@ -226,4 +324,370 @@ document.addEventListener("click", e => {
   window.scrollTo({ top: 0 });
 });
 show(location.hash.slice(1));
+</script>
+<script>
+// ===== Accounts: kept in this browser only, passwords stored as salted PBKDF2 hashes =====
+const STORE = "vdevil.accounts", SESSION = "vdevil.session";
+let memAccounts = {};
+function loadAccounts() { try { return JSON.parse(localStorage.getItem(STORE) || "{}"); } catch (_) { return memAccounts; } }
+function saveAccounts(a) { memAccounts = a; try { localStorage.setItem(STORE, JSON.stringify(a)); } catch (_) {} }
+const hex = buf => [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+async function hashPw(pw, saltHex) {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey("raw", enc.encode(pw), "PBKDF2", false, ["deriveBits"]);
+  const salt = new Uint8Array(saltHex.match(/../g).map(h => parseInt(h, 16)));
+  return hex(await crypto.subtle.deriveBits({ name: "PBKDF2", salt, iterations: 120000, hash: "SHA-256" }, key, 256));
+}
+
+// Username filter: racial slurs are refused, including l33t spellings and stretched letters.
+// The word lists are base64 so the source does not spell them out.
+const SUB = atob("bmlnZyxuZWdybyxuZWdyZSx3ZXRiYWNrLGJlYW5lcixyYWdoZWFkLHRvd2VsaGVhZCxqaWdhYm9vLHBvcmNobW9ua2V5LGJvdWdub3VsLGNoaW5ldG9xdWUsY2hpbnRvayx5b3VwaW4sYmFtYm91bGEsemlwcGVyaGVhZA==").split(",");
+const WHOLE = atob("Y2hpbmssc3BpYyxraWtlLGdvb2ssY29vbixwYWtpLGJpY290LHNwb29rLG5pZ2dhLG5pZ2E=").split(",");
+const stretch = w => new RegExp([...w].map(c => c + "+").join(""));
+const SUB_RE = SUB.map(stretch), WHOLE_RE = WHOLE.map(w => new RegExp("^" + stretch(w).source + "s*$"));
+function normalize(s) {
+  const leet = { "0": "o", "1": "i", "!": "i", "|": "i", "3": "e", "4": "a", "@": "a", "5": "s", "$": "s", "7": "t", "8": "b", "9": "g", "6": "g" };
+  return s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/[0-9!|@$]/g, c => leet[c] || c);
+}
+function isOffensive(name) {
+  const n = normalize(name), joined = n.replace(/[^a-z]/g, "");
+  if (SUB_RE.some(r => r.test(joined))) return true;
+  const tokens = n.split(/[^a-z]+/).filter(Boolean).concat(joined);
+  return tokens.some(t => WHOLE_RE.some(r => r.test(t)));
+}
+function checkUsername(u) {
+  if (!u) return "Pick a username.";
+  if ([...u].length > 15) return "Username refused: 15 characters maximum.";
+  if ([...u].length < 3) return "Username must be at least 3 characters.";
+  if (!/^[A-Za-z0-9_.-]+$/.test(u)) return "Use only letters, numbers, _ . or -";
+  if (isOffensive(u)) return "Username refused: racist words are not allowed.";
+  return "";
+}
+
+// ===== Gate UI =====
+const $ = id => document.getElementById(id);
+let mode = "login";
+function setMode(m) {
+  mode = m;
+  $("tab-login").setAttribute("aria-selected", m === "login");
+  $("tab-signup").setAttribute("aria-selected", m === "signup");
+  $("f-user").hidden = m !== "signup";
+  $("password").autocomplete = m === "signup" ? "new-password" : "current-password";
+  $("go").textContent = m === "signup" ? "▶ CREATE ACCOUNT" : "▶ LOG IN";
+  $("mode-note").textContent = m === "signup"
+    ? "Already have an account? Tap LOG IN."
+    : "No account yet? Tap SIGN UP first. Sound is on after you log in.";
+  say("");
+}
+function say(t, ok) { $("msg").textContent = t; $("msg").classList.toggle("ok", !!ok); }
+$("tab-login").onclick = () => setMode("login");
+$("tab-signup").onclick = () => setMode("signup");
+$("peek").onclick = () => {
+  const p = $("password"), show = p.type === "password";
+  p.type = show ? "text" : "password";
+  $("peek").textContent = show ? "HIDE" : "SHOW";
+  $("peek").setAttribute("aria-label", show ? "Hide password" : "Show password");
+};
+$("username").addEventListener("input", e => {
+  const n = [...e.target.value].length;
+  $("user-count").textContent = n + " / 15";
+});
+
+$("auth").addEventListener("submit", async e => {
+  e.preventDefault();
+  const ac = audio(); // unlock sound inside the tap
+  const email = $("email").value.trim().toLowerCase();
+  const pw = $("password").value;
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return say("Enter a valid email, like player@mail.com.");
+  if (pw.length < 8) return say("Password needs 8 characters or more.");
+  if (!crypto.subtle) return say("This browser can't make a secure login. Open the site over https.");
+  const accounts = loadAccounts();
+  $("go").disabled = true;
+  try {
+    if (mode === "signup") {
+      const u = $("username").value.trim();
+      const bad = checkUsername(u);
+      if (bad) return say(bad);
+      if (accounts[email]) return say("This email already has an account. Tap LOG IN.");
+      if (Object.values(accounts).some(a => a.username.toLowerCase() === u.toLowerCase())) return say("That username is taken. Pick another one.");
+      const salt = hex(crypto.getRandomValues(new Uint8Array(16)));
+      accounts[email] = { username: u, salt, hash: await hashPw(pw, salt), created: Date.now() };
+      saveAccounts(accounts);
+      say("Account created!", true);
+      enter(u, ac);
+    } else {
+      const a = accounts[email];
+      if (!a) return say("Access refused: no account with this email. Sign up first.");
+      if (await hashPw(pw, a.salt) !== a.hash) return say("Access refused: wrong password.");
+      enter(a.username, ac);
+    }
+  } finally { $("go").disabled = false; }
+});
+
+let player = "PLAYER 1";
+function enter(name, ac) {
+  player = name;
+  try { sessionStorage.setItem(SESSION, name); } catch (_) {}
+  $("gate").classList.add("out");
+  setTimeout(() => { $("gate").hidden = true; playIntro(ac); }, 750);
+}
+function openSite(withToast) {
+  $("site").inert = false;
+  $("hello").textContent = "WELCOME, " + player.toUpperCase();
+  const v = document.querySelector(".screen"); if (v) v.play().catch(() => {});
+  if (withToast) {
+    const t = document.createElement("div");
+    t.className = "toast"; t.textContent = "WELCOME TO V-DEVIL, " + player.toUpperCase();
+    document.body.append(t);
+    setTimeout(() => { t.style.opacity = 0; setTimeout(() => t.remove(), 700); }, 3200);
+  }
+}
+$("logout").onclick = () => {
+  try { sessionStorage.removeItem(SESSION); } catch (_) {}
+  $("site").inert = true;
+  $("password").value = "";
+  setMode("login");
+  $("gate").hidden = false;
+  requestAnimationFrame(() => $("gate").classList.remove("out"));
+};
+
+// ===== Sound: all made live with Web Audio =====
+let AC = null;
+function audio() {
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    if (AC.state === "suspended") AC.resume();
+  } catch (_) { AC = null; }
+  return AC;
+}
+function master(ac) {
+  if (ac._out) return ac._out;
+  const out = ac.createGain(); out.gain.value = .8;
+  const dl = ac.createDelay(1); dl.delayTime.value = .23;
+  const fb = ac.createGain(); fb.gain.value = .32;
+  const wet = ac.createGain(); wet.gain.value = .35;
+  out.connect(ac.destination); out.connect(dl); dl.connect(fb); fb.connect(dl); dl.connect(wet); wet.connect(ac.destination);
+  return ac._out = out;
+}
+const hz = m => 440 * Math.pow(2, (m - 69) / 12);
+function pianoNote(ac, midi, t, dur, vol) {
+  const out = master(ac);
+  [[1, "triangle", 1], [2, "sine", .35], [3, "sine", .12], [.5, "sine", .3]].forEach(([mul, type, g]) => {
+    const o = ac.createOscillator(), a = ac.createGain();
+    o.type = type; o.frequency.value = hz(midi) * mul;
+    a.gain.setValueAtTime(0, t);
+    a.gain.linearRampToValueAtTime(vol * g, t + .008);
+    a.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(a); a.connect(out); o.start(t); o.stop(t + dur + .05);
+  });
+}
+// Haunted-castle motif in D minor: the famous vampire organ turn, then a low chord
+function vampirePiano(ac) {
+  const t0 = ac.currentTime + .05, q = .14;
+  const line = [[81, 0], [79, 1], [81, 2], [79, 6], [77, 7], [76, 8], [74, 9], [73, 11], [74, 14]];
+  line.forEach(([m, s]) => { pianoNote(ac, m, t0 + s * q, 1.4, .22); pianoNote(ac, m - 12, t0 + s * q, 1.4, .14); });
+  [38, 50, 53, 57].forEach(m => pianoNote(ac, m, t0 + 14 * q, 3.2, .2));
+  [[69, 22], [70, 23], [69, 24], [65, 26], [62, 28]].forEach(([m, s]) => pianoNote(ac, m, t0 + s * q, 1.6, .15));
+}
+function typeBlip(ac) {
+  const t = ac.currentTime, o = ac.createOscillator(), a = ac.createGain();
+  o.type = "square"; o.frequency.value = 520 + Math.random() * 260;
+  a.gain.setValueAtTime(.07, t); a.gain.exponentialRampToValueAtTime(.0001, t + .05);
+  o.connect(a); a.connect(ac.destination); o.start(t); o.stop(t + .06);
+}
+function noiseBuf(ac, sec) {
+  const b = ac.createBuffer(1, ac.sampleRate * sec, ac.sampleRate), d = b.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  return b;
+}
+function crackSound(ac) {
+  const t = ac.currentTime, n = ac.createBufferSource(), f = ac.createBiquadFilter(), a = ac.createGain();
+  n.buffer = noiseBuf(ac, .15); f.type = "highpass"; f.frequency.value = 2500;
+  a.gain.setValueAtTime(.5, t); a.gain.exponentialRampToValueAtTime(.0001, t + .12);
+  n.connect(f); f.connect(a); a.connect(ac.destination); n.start(t);
+}
+function glassSound(ac) {
+  const t = ac.currentTime;
+  const n = ac.createBufferSource(), f = ac.createBiquadFilter(), a = ac.createGain();
+  n.buffer = noiseBuf(ac, 1.2); f.type = "bandpass"; f.frequency.value = 4200; f.Q.value = .7;
+  a.gain.setValueAtTime(.9, t); a.gain.exponentialRampToValueAtTime(.0001, t + 1.1);
+  n.connect(f); f.connect(a); a.connect(ac.destination); n.start(t);
+  const thud = ac.createOscillator(), tg = ac.createGain();
+  thud.frequency.setValueAtTime(120, t); thud.frequency.exponentialRampToValueAtTime(40, t + .3);
+  tg.gain.setValueAtTime(.6, t); tg.gain.exponentialRampToValueAtTime(.0001, t + .35);
+  thud.connect(tg); tg.connect(ac.destination); thud.start(t); thud.stop(t + .4);
+  for (let i = 0; i < 26; i++) {
+    const s = t + Math.random() * 1.1, o = ac.createOscillator(), g = ac.createGain();
+    o.type = "sine"; o.frequency.value = 2800 + Math.random() * 5200;
+    g.gain.setValueAtTime(.0001, s); g.gain.linearRampToValueAtTime(.08 + Math.random() * .08, s + .003);
+    g.gain.exponentialRampToValueAtTime(.0001, s + .08 + Math.random() * .25);
+    o.connect(g); g.connect(ac.destination); o.start(s); o.stop(s + .4);
+  }
+}
+
+// ===== Intro: the pixel devil speaks, then the screen shatters =====
+const DEVIL = [
+  "..M..........M..",
+  ".MM..........MM.",
+  ".MMM........MMM.",
+  "..MMRRRRRRRRMM..",
+  "...RRRRRRRRRR...",
+  "..RRRRRRRRRRRR..",
+  "..RYYRRRRRRYYR..",
+  "..RYKRRRRRRKYR..",
+  "..RRRRRRRRRRRR..",
+  "..RRRRRRRRRRRR..",
+  "...RKWKWKWKWR...",
+  "...RRKKKKKKRR...",
+  "....RRRRRRRR....",
+  ".....RRRRRR.....",
+  "......RRRR......",
+  ".......RR......."
+];
+const TALK = { 10: "...RKWKWKWKWR...", 11: "...RKKKKKKKKR...", 12: "....RRKKKKRR...." };
+const LINE = "You know well I'm gonna kill you, insect.";
+
+function playIntro(ac) {
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const cv = $("intro"), ctx = cv.getContext("2d"), skipBtn = $("skip");
+  cv.hidden = false; skipBtn.hidden = false;
+  let W, H, dpr, done = false, raf;
+  function size() {
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    W = innerWidth; H = innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  size(); addEventListener("resize", size);
+
+  const start = performance.now();
+  let typed = 0, nextType = 1400, typingDone = 0, phase = "talk";
+  if (ac) vampirePiano(ac);
+
+  function wrap(text, maxW) {
+    const words = text.split(" "), lines = []; let cur = "";
+    words.forEach(w => { const t = cur ? cur + " " + w : w; if (ctx.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t; });
+    if (cur) lines.push(cur); return lines;
+  }
+  function drawScene(now) {
+    const t = now - start;
+    ctx.fillStyle = "#07041a"; ctx.fillRect(0, 0, W, H);
+    const g = ctx.createRadialGradient(W / 2, H * .35, 10, W / 2, H * .35, Math.max(W, H) * .7);
+    g.addColorStop(0, "rgba(59,18,214,.55)"); g.addColorStop(1, "rgba(7,4,26,0)");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    // devil: steps in, bobs, mouth moves while typing, eyes flash red at the end
+    const px = Math.max(4, Math.floor(Math.min(W * .045, H * .028)));
+    const appear = Math.min(1, t / 900);
+    const bob = Math.round(Math.sin(t / 260) * 1) * px;
+    const dx = Math.round(W / 2 - 8 * px), dy = Math.round(H * .36 - 8 * px) + bob;
+    const talking = phase === "talk" && typed < LINE.length && typed > 0 && Math.floor(t / 110) % 2 === 0;
+    const rage = typingDone && Math.floor(t / 90) % 2 === 0;
+    const col = { M: "#a640ff", R: "#ff2e97", Y: rage ? "#ff1a1a" : "#ffc531", K: "#000", W: "#fbf7ff" };
+    ctx.globalAlpha = Math.round(appear * 4) / 4;
+    DEVIL.forEach((row, y) => {
+      const r = talking && TALK[y] ? TALK[y] : row;
+      [...r].forEach((ch, x) => { if (col[ch]) { ctx.fillStyle = col[ch]; ctx.fillRect(dx + x * px, dy + y * px, px, px); } });
+    });
+    ctx.globalAlpha = 1;
+    // dialogue box
+    const bw = Math.min(W - 32, 720), fs = Math.max(11, Math.min(18, Math.floor(bw / 34)));
+    ctx.font = fs + 'px "Press Start 2P", monospace';
+    const lines = wrap(LINE, bw - 40), lh = fs * 1.9;
+    const bh = lines.length * lh + 56, bx = (W - bw) / 2, by = Math.min(H - bh - 24, dy + 18 * px);
+    ctx.fillStyle = "#000"; ctx.fillRect(bx, by, bw, bh);
+    ctx.strokeStyle = "#a640ff"; ctx.lineWidth = 4; ctx.strokeRect(bx + 2, by + 2, bw - 4, bh - 4);
+    ctx.fillStyle = "#ff2e97"; ctx.fillRect(bx + 14, by - 12, ctx.measureText("V-DEVIL").width + 20, fs + 14);
+    ctx.fillStyle = "#fbf7ff"; ctx.textBaseline = "top"; ctx.fillText("V-DEVIL", bx + 24, by - 5);
+    let left = typed;
+    lines.forEach((l, i) => {
+      const part = l.slice(0, Math.max(0, left)); left -= l.length + 1;
+      ctx.fillText(part, bx + 20, by + 32 + i * lh);
+    });
+    if (typingDone && Math.floor(t / 400) % 2 === 0) { ctx.fillStyle = "#ffc531"; ctx.fillText("▼", bx + bw - 20 - fs, by + bh - fs - 12); }
+    // scanlines
+    ctx.fillStyle = "rgba(0,0,0,.22)";
+    for (let y = 0; y < H; y += 4) ctx.fillRect(0, y, W, 2);
+  }
+
+  let shards = null, crack = null, crackAt = 0;
+  function makeCracks() {
+    const cx = W / 2 + (Math.random() - .5) * W * .1, cy = H * .45, R = Math.hypot(W, H);
+    const n = 13, angles = [];
+    for (let i = 0; i < n; i++) angles.push((i + .35 + Math.random() * .3) / n * Math.PI * 2);
+    const rings = [0, R * .06, R * .16, R * .3, R * .5, R * 1.1];
+    const pt = (a, r) => [cx + Math.cos(a) * r * (r ? .85 + Math.random() * .3 : 0), cy + Math.sin(a) * r * (r ? .85 + Math.random() * .3 : 0)];
+    const grid = angles.map(a => rings.map(r => pt(a, r)));
+    const list = [];
+    for (let i = 0; i < n; i++) for (let j = 0; j < rings.length - 1; j++) {
+      const A = grid[i], B = grid[(i + 1) % n];
+      const poly = [A[j], A[j + 1], B[j + 1], B[j]];
+      const mx = poly.reduce((s, p) => s + p[0], 0) / 4, my = poly.reduce((s, p) => s + p[1], 0) / 4;
+      const d = Math.hypot(mx - cx, my - cy) || 1;
+      list.push({ poly, mx, my, vx: (mx - cx) / d * (2 + Math.random() * 5), vy: (my - cy) / d * (2 + Math.random() * 4) - 3, rot: 0, vr: (Math.random() - .5) * .12, delay: j * 40 + Math.random() * 60 });
+    }
+    return { cx, cy, grid, list, n };
+  }
+
+  function finish() {
+    if (done) return; done = true;
+    cancelAnimationFrame(raf); removeEventListener("resize", size);
+    cv.hidden = true; skipBtn.hidden = true;
+    openSite(true);
+  }
+  skipBtn.onclick = finish;
+
+  let snap = null, shatterStart = 0;
+  function frame(now) {
+    if (done) return;
+    const t = now - start;
+    if (phase === "talk") {
+      if (t > nextType && typed < LINE.length) {
+        typed++; nextType = t + (/[ ,.']/.test(LINE[typed - 1]) ? 120 : 62);
+        if (ac && LINE[typed - 1] !== " ") typeBlip(ac);
+        if (typed === LINE.length) typingDone = t;
+      }
+      drawScene(now);
+      if (typingDone && t - typingDone > 1500) {
+        if (reduce) return finish();
+        phase = "crack"; crack = makeCracks(); crackAt = t; if (ac) crackSound(ac);
+      }
+    } else if (phase === "crack") {
+      drawScene(now);
+      const k = Math.min(1, (t - crackAt) / 380);
+      ctx.strokeStyle = "rgba(255,255,255,.9)"; ctx.lineWidth = 1.5;
+      crack.grid.forEach(ray => { ctx.beginPath(); ctx.moveTo(...ray[0]); const last = Math.max(1, Math.ceil(k * (ray.length - 1))); for (let j = 1; j <= last; j++) ctx.lineTo(...ray[j]); ctx.stroke(); });
+      if (k > .5) for (let j = 1; j < 4; j++) { ctx.beginPath(); crack.grid.forEach((ray, i) => i ? ctx.lineTo(...ray[j]) : ctx.moveTo(...ray[j])); ctx.closePath(); ctx.stroke(); }
+      if (t - crackAt > 650) {
+        snap = document.createElement("canvas"); snap.width = cv.width; snap.height = cv.height;
+        snap.getContext("2d").drawImage(cv, 0, 0);
+        phase = "shatter"; shatterStart = t; if (ac) glassSound(ac);
+        $("site").inert = false;
+      }
+    } else if (phase === "shatter") {
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const st = t - shatterStart; let alive = 0;
+      crack.list.forEach(s => {
+        const e = Math.max(0, st - s.delay) / 16;
+        const ox = s.vx * e, oy = s.vy * e + .45 * e * e, r = s.vr * e;
+        if (s.my + oy - 200 < H) alive++;
+        ctx.save();
+        ctx.translate(s.mx + ox, s.my + oy); ctx.rotate(r); ctx.translate(-s.mx, -s.my);
+        ctx.beginPath(); s.poly.forEach((p, i) => i ? ctx.lineTo(...p) : ctx.moveTo(...p)); ctx.closePath();
+        ctx.clip(); ctx.drawImage(snap, 0, 0, W, H);
+        ctx.strokeStyle = "rgba(255,255,255,.6)"; ctx.lineWidth = 1.2; ctx.stroke();
+        ctx.restore();
+      });
+      if (!alive || st > 2600) return finish();
+    }
+    raf = requestAnimationFrame(frame);
+  }
+  const fontReady = document.fonts ? document.fonts.load('16px "Press Start 2P"').catch(() => {}) : Promise.resolve();
+  fontReady.then(() => { raf = requestAnimationFrame(frame); });
+}
+
+// Same tab, already logged in: skip the gate
+(() => {
+  let s = null; try { s = sessionStorage.getItem(SESSION); } catch (_) {}
+  if (s) { player = s; $("gate").hidden = true; openSite(false); }
+  else setTimeout(() => $("email").focus(), 50);
+})();
 </script>

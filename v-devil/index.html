@@ -58,15 +58,16 @@ img, canvas { image-rendering: pixelated; }
 .slot.flash::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(255,255,255,.55) 0 2px, transparent 2px 5px); mix-blend-mode: screen; animation: flash .55s steps(4) both; }
 @keyframes flash { from { opacity: 1; } to { opacity: 0; } }
 /* headline drawn by the page, in the frame's text spot */
-.heads { position: absolute; z-index: 3; left: 25%; right: 25%; top: 58.5%; height: 22%; pointer-events: none; }
-.head { position: absolute; inset: 0; margin: 0; display: grid; justify-items: center; align-content: center; gap: .2cqw; text-align: center; visibility: hidden; font-family: "Russo One", "Arial Black", sans-serif; line-height: 1; white-space: nowrap; }
+.heads { position: absolute; z-index: 3; inset: 0; pointer-events: none; }
+.head { position: absolute; left: 25%; right: 25%; top: 58.5%; height: 22%; margin: 0; display: grid; justify-items: center; align-content: center; gap: .2cqw; text-align: center; visibility: hidden; font-family: "Russo One", "Arial Black", sans-serif; line-height: 1; white-space: nowrap; }
 .head.on, .head.in, .head.out { visibility: visible; }
+/* Madara's headline is the original artwork's lettering, cut out at its exact spot */
+#head-madara { left: 32.34%; right: auto; width: 35.25%; top: 58.07%; height: 22.14%; display: block; }
+#head-madara img { display: block; width: 100%; height: 100%; }
 .head .h1 { font-weight: 400; font-size: 6.2cqw; letter-spacing: .02em; paint-order: stroke fill; }
-.head .h1.red { background: linear-gradient(#fff 0%, #ffb3b3 30%, #ff2a2a 55%, #a00010 100%); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0 .5cqw rgba(255,30,30,.85)) drop-shadow(.25cqw .25cqw 0 #000); }
 .head .h1.blue { font-size: 5.4cqw; color: #3a1fd6; -webkit-text-stroke: .35cqw #fff; filter: drop-shadow(.35cqw .35cqw 0 #1a0b6e) drop-shadow(0 0 .6cqw rgba(140,90,255,.8)); }
 .head .h2 { font-size: 3.5cqw; color: #fff; text-shadow: .2cqw .2cqw 0 #000, 0 0 .6cqw rgba(0,0,0,.9); }
 .head .h3 { font-size: 2.6cqw; color: #ff2e3a; text-shadow: .18cqw .18cqw 0 #000; }
-.head .h3 em { font-style: normal; color: #b46bff; }
 .head .kenos-tag { color: #a640ff; }
 .head.in { animation: headIn .6s steps(6) both; }
 .head.out { animation: headOut .35s steps(4) both; }
@@ -285,7 +286,7 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
     </div>
     <img class="banner" src="banner-frame.webp" alt="">
     <div class="heads">
-      <p class="head on" id="head-madara"><b class="h1 red">MADARA</b><span class="h2">WANTS TO COME BACK</span><span class="h3"><em>THIS</em> 19 OCTOBER</span></p>
+      <p class="head on" id="head-madara"><img src="madara-head.webp" alt="Madara wants to come back, this 19 October"></p>
       <p class="head" id="head-kenos"><b class="h1 blue">NEW DANGER 2025</b><span class="h2">GONNA DROP OUT SOON</span><span class="h3 kenos-tag">KENOS</span></p>
     </div>
   </div>

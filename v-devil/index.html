@@ -57,6 +57,29 @@ img, canvas { image-rendering: pixelated; }
 @keyframes swapOut { to { transform: translateX(-100%); filter: brightness(.3); } }
 .slot.flash::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(255,255,255,.55) 0 2px, transparent 2px 5px); mix-blend-mode: screen; animation: flash .55s steps(4) both; }
 @keyframes flash { from { opacity: 1; } to { opacity: 0; } }
+/* album scene: the cover video sits centred on its own blurred red glow */
+.album-bg { filter: saturate(1.4); }
+video.album { position: absolute; top: 0; bottom: 0; left: 50%; height: 100%; aspect-ratio: 596 / 540; transform: translateX(-50%); object-fit: cover; box-shadow: 0 0 2cqw rgba(255,0,30,.8); }
+/* the 16-bit grim reaper rises at both sides with a red aura, laughing */
+.reaper-pop { position: absolute; bottom: 0; height: 84%; mix-blend-mode: lighten; -webkit-mask-image: radial-gradient(ellipse 50% 52% at 50% 46%, #000 55%, transparent 100%); mask-image: radial-gradient(ellipse 50% 52% at 50% 46%, #000 55%, transparent 100%); aspect-ratio: 186 / 340; background: url(reaper.webp) 53.333% 0 / 1600% 100% no-repeat; image-rendering: pixelated;
+  filter: drop-shadow(0 0 1.2cqw #ff0018) drop-shadow(0 0 2.5cqw rgba(255,0,24,.7)) sepia(1) saturate(4) hue-rotate(-40deg);
+  transform: translateY(105%); }
+.reaper-pop.left { left: 0; } .reaper-pop.right { right: 0; transform: translateY(105%) scaleX(-1); }
+#scene-album.on .reaper-pop, #scene-album.in .reaper-pop { animation: rise .9s steps(9) .3s both, laugh .44s steps(4) 1.2s infinite, aura 1.2s ease-in-out 1.2s infinite; }
+#scene-album.on .reaper-pop.right, #scene-album.in .reaper-pop.right { animation-name: riseR, laugh, aura; }
+@keyframes rise { from { transform: translateY(105%); } to { transform: translateY(0); } }
+@keyframes riseR { from { transform: translateY(105%) scaleX(-1); } to { transform: scaleX(-1); } }
+@keyframes laugh { from { background-position-x: 53.333%; } to { background-position-x: 80%; } }
+@keyframes aura { 50% { filter: drop-shadow(0 0 2cqw #ff0018) drop-shadow(0 0 4cqw rgba(255,0,24,.9)) sepia(1) saturate(5) hue-rotate(-40deg) brightness(1.2); } }
+/* the frame turns blood red while the reaper is out */
+.banner { transition: filter .5s steps(5); }
+.news.red .banner { filter: hue-rotate(75deg) saturate(1.7) brightness(1.05); }
+.news { transition: box-shadow .5s steps(5); }
+.news.red { box-shadow: 0 0 0 3px var(--ink), 0 0 0 6px #ff1a3c, 10px 10px 0 6px rgba(0,0,0,.55); }
+.head .h1.blood { font-size: 4.6cqw; color: #ff2238; -webkit-text-stroke: .25cqw #2a0006; filter: drop-shadow(0 0 .7cqw rgba(255,0,30,.9)) drop-shadow(.3cqw .3cqw 0 #000); }
+.head .h3.dimwit { font-size: 4.2cqw; color: #ff2238; text-shadow: .2cqw .2cqw 0 #000, 0 0 .8cqw #ff0018; }
+.sound-btn { position: absolute; z-index: 4; right: 8%; top: 12%; font: 1.4cqw var(--f-pixel); color: #fff; background: #c8002e; border: 0; padding: .9cqw 1.2cqw; box-shadow: .3cqw .3cqw 0 #000; cursor: pointer; animation: blink 1.1s steps(1) infinite; }
+@media (max-width: 640px) { .sound-btn { font-size: 9px; padding: 6px 8px; } }
 /* headline drawn by the page, in the frame's text spot */
 .heads { position: absolute; z-index: 3; inset: 0; pointer-events: none; }
 .head { position: absolute; left: 25%; right: 25%; top: 58.5%; height: 22%; margin: 0; display: grid; justify-items: center; align-content: center; gap: .2cqw; text-align: center; visibility: hidden; font-family: "Russo One", "Arial Black", sans-serif; line-height: 1; white-space: nowrap; }
@@ -157,7 +180,7 @@ footer { text-align: center; font-family: var(--f-pixel); font-size: 9px; color:
   .game { grid-template-columns: 1fr; }
   nav a { font-size: 10px; padding: 9px 10px; }
 }
-@media (prefers-reduced-motion: reduce) { .scene.in, .scene.out, .head.in, .head.out, .slot.flash::after { animation: none; } .blink { animation: none; } .btn:hover { transform: none; } }
+@media (prefers-reduced-motion: reduce) { #scene-album .reaper-pop { animation: none !important; transform: none; } #scene-album .reaper-pop.right { transform: scaleX(-1); } .scene.in, .scene.out, .head.in, .head.out, .slot.flash::after { animation: none; } .blink { animation: none; } .btn:hover { transform: none; } }
 
 [hidden] { display: none !important; }
 
@@ -288,10 +311,17 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
         <canvas class="fill" id="news-cv" width="420" height="232" hidden></canvas>
       </div>
       <div class="scene" id="scene-kenos"><img class="fill" src="kenos.jpg" alt=""></div>
+      <div class="scene" id="scene-album">
+        <img class="fill album-bg" src="madara-album-bg.jpg" alt="">
+        <video class="album" id="album-vid" src="madara-album.mp4" poster="madara-album.jpg" playsinline preload="auto" disablepictureinpicture></video>
+        <div class="reaper-pop left"></div><div class="reaper-pop right"></div>
+      </div>
     </div>
     <img class="banner" src="banner-frame.webp" alt="">
+    <button class="sound-btn" id="sound-btn" type="button" hidden>♪ TAP FOR SOUND</button>
     <div class="heads">
       <p class="head on" id="head-madara"><img src="madara-head.webp" alt="Madara wants to come back, this 19 October"></p>
+      <p class="head" id="head-album"><b class="h1 blood">MADARA ALBUM COVER</b><span class="h2">IS READY,</span><span class="h3 dimwit">YOU DIMWIT</span></p>
       <p class="head" id="head-kenos"><b class="h1 blue">NEW DANGER 2025</b><span class="h2">GONNA DROP OUT SOON</span><span class="h3 kenos-tag">KENOS</span></p>
     </div>
   </div>
@@ -1047,15 +1077,34 @@ $("back").onclick = closeGame;
   v.addEventListener("error", swap);
 })();
 
-// Banner swap: Madara clip (its whole run) <-> Kenos picture, headline swaps with it
+// Banner swap: Madara clip -> Kenos picture -> album cover (red frame, reaper, sound) -> again.
+// Each scene brings its own headline in with the same 16-bit switch.
 (() => {
-  const SCENES = [{ id: "madara", ms: 11300 }, { id: "kenos", ms: 5500 }];
+  const SCENES = [{ id: "madara", ms: 11300 }, { id: "kenos", ms: 5500 }, { id: "album", ms: 15200 }];
   let i = 0;
-  const v = $("news-vid"), slot = document.querySelector(".slot");
+  const v = $("news-vid"), av = $("album-vid"), slot = document.querySelector(".slot"), news = document.querySelector(".news"), btn = $("sound-btn");
   const scene = id => $("scene-" + id), head = id => $("head-" + id);
+  // sound: browsers only allow it after a tap, so any tap on the page turns it on
+  let soundOk = false;
+  function blessAlbum() { // a play() inside a tap lets this video use sound later on iPhone
+    if (soundOk) return; soundOk = true; btn.hidden = true;
+    av.muted = false;
+    if (av.paused) av.play().then(() => { if (SCENES[i].id !== "album") av.pause(); }).catch(() => {});
+  }
+  ["pointerdown", "touchend", "keydown"].forEach(ev => addEventListener(ev, blessAlbum, { capture: true, once: true }));
+  btn.onclick = blessAlbum;
+  function startAlbum() {
+    try { av.currentTime = 0; } catch (_) {}
+    av.muted = !soundOk;
+    av.play().catch(() => { av.muted = true; av.play().catch(() => {}); });
+    btn.hidden = soundOk;
+  }
+  function stopAlbum() { av.pause(); btn.hidden = true; }
   function next() {
     const from = SCENES[i].id; i = (i + 1) % SCENES.length; const to = SCENES[i].id;
     if (to === "madara") { try { v.currentTime = 0; } catch (_) {} dispatchEvent(new Event("news-restart")); }
+    if (to === "album") { news.classList.add("red"); startAlbum(); }
+    if (from === "album") { news.classList.remove("red"); setTimeout(stopAlbum, 300); }
     [scene(from), head(from)].forEach(el => { el.classList.remove("on", "in"); el.classList.add("out"); });
     [scene(to), head(to)].forEach(el => { el.classList.remove("out"); el.classList.add("in"); });
     slot.classList.remove("flash"); void slot.offsetWidth; slot.classList.add("flash");
@@ -1066,6 +1115,8 @@ $("back").onclick = closeGame;
     setTimeout(next, SCENES[i].ms);
   }
   setTimeout(next, SCENES[0].ms);
+  // leaving the tab or opening the game silences the cover
+  document.addEventListener("visibilitychange", () => { if (document.hidden) av.pause(); else if (SCENES[i].id === "album") av.play().catch(() => {}); });
 })();
 
 // Logged in before on this device (until LOG OUT): open the site straight away

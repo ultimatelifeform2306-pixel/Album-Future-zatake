@@ -372,7 +372,7 @@ html:not(.pc) .mb-opt::before { opacity: 1; }
 }
 
 /* character select locks the page: nothing to press, nothing moving */
-.stage[data-pick] :is(.controls, .note) { display: none; }
+.stage[data-pick] .controls { display: none; }
 body.pick-mode { background: radial-gradient(125% 95% at 50% 0%, #2d0a52 0%, #11021f 48%, #000 100%) fixed, #000; }
 /* on a computer the page behind the panel follows the clock */
 .pc body[data-sky], .pc body.pick-mode[data-sky] {
@@ -426,7 +426,7 @@ body.pick-mode .pads { display: block; }
 .pc {
   --pc: 1;
 }
-.pc body.pick-mode .pads, .pc .pads, .pc .note { display: none; }
+.pc body.pick-mode .pads, .pc .pads { display: none; }
 .pc body { padding-inline: 0; }
 .pc .cover { aspect-ratio: 16 / 9; width: min(100%, calc((100vh - 130px) * 16 / 9)); }
 .pc .cover:is([data-phase="black"],[data-phase="pick"]) {
@@ -634,10 +634,9 @@ html.off .off-note { display: block; }
 .btn.primary { color: var(--ink); background: var(--gold); border-color: var(--ink); }
 .btn.primary:hover { background: #ffd866; }
 /* nothing behind the touch screen is reachable until it is tapped */
-.stage[data-locked] :is(.controls, .note) { visibility: hidden; pointer-events: none; }
+.stage[data-locked] .controls { visibility: hidden; pointer-events: none; }
 /* skipping and starting the intro only make sense while it runs */
 .stage:not([data-playing]) #skip { display: none; }
-.note { margin: 0; font-size: 13px; color: #a99ee0; text-align: center; max-width: 52ch; line-height: 1.6; }
 
 @media (prefers-reduced-motion: reduce) {
   .start { animation: none; }
@@ -724,7 +723,6 @@ html.off .off-note { display: block; }
     <button class="btn primary" id="play" type="button"><img class="start-icon" id="start-icon-btn" alt="">PRESS START</button>
     <button class="btn" id="skip" type="button">SKIP INTRO</button>
   </div>
-  <p class="note">Type a name on the board and the intro runs with sound; press start then shows what drops next; reload the page to watch it again. the V-Devil Team boot card with typing blips, then the opening sound with every cut on its beat, then the 8-bit voice tag. Tap the screen to skip ahead.</p>
   <div class="pads" aria-hidden="true">
     <div class="pad pad-l"><i class="key k1"></i><i class="key k2"></i><i class="key k3"></i><i class="key k4"></i></div>
     <div class="pad pad-r"><i class="key k1"></i><i class="key k2"></i><i class="key k3"></i><i class="key k4"></i></div>

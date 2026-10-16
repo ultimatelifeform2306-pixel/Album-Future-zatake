@@ -3,7 +3,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Russo+One&family=VT323&display=swap">
 <style>
 /* Layout: a 16-bit desktop. A menu bar of three tabs on top, one pixel window per tab below. Single purple arcade look. */
 :root {
@@ -44,7 +44,34 @@ img, canvas { image-rendering: pixelated; }
 .logo { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; text-align: center; padding-top: 8px; }
 .news { position: relative; max-width: 100%; background: var(--ink); box-shadow: 0 0 0 3px var(--ink), 0 0 0 6px var(--lilac), 10px 10px 0 6px rgba(0,0,0,.55); }
 /* the clip fills the board's whole screen; the frame image on top is see-through there, keeping its text and sparks */
-.screen { position: absolute; left: 6.69%; top: 9.38%; width: 86.7%; height: 76.2%; object-fit: cover; display: block; }
+.news { container-type: inline-size; }
+.slot { position: absolute; left: 6.69%; top: 9.38%; width: 86.7%; height: 76.2%; overflow: hidden; background: #000; }
+.scene { position: absolute; inset: 0; visibility: hidden; }
+.scene.on, .scene.in, .scene.out { visibility: visible; }
+.fill { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+#scene-kenos .fill { object-position: 50% 46%; }
+/* 16-bit switch: the old picture is pushed out left, the new one slides in, in 8 hard steps, with a flash */
+.scene.in { animation: swapIn .55s steps(8) both; }
+.scene.out { animation: swapOut .55s steps(8) both; }
+@keyframes swapIn { from { transform: translateX(100%); filter: brightness(2.2) saturate(0); } 60% { filter: brightness(1.4) hue-rotate(60deg); } to { transform: none; filter: none; } }
+@keyframes swapOut { to { transform: translateX(-100%); filter: brightness(.3); } }
+.slot.flash::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(255,255,255,.55) 0 2px, transparent 2px 5px); mix-blend-mode: screen; animation: flash .55s steps(4) both; }
+@keyframes flash { from { opacity: 1; } to { opacity: 0; } }
+/* headline drawn by the page, in the frame's text spot */
+.heads { position: absolute; z-index: 3; left: 25%; right: 25%; top: 58.5%; height: 22%; pointer-events: none; }
+.head { position: absolute; inset: 0; margin: 0; display: grid; justify-items: center; align-content: center; gap: .2cqw; text-align: center; visibility: hidden; font-family: "Russo One", "Arial Black", sans-serif; line-height: 1; white-space: nowrap; }
+.head.on, .head.in, .head.out { visibility: visible; }
+.head .h1 { font-weight: 400; font-size: 6.2cqw; letter-spacing: .02em; paint-order: stroke fill; }
+.head .h1.red { background: linear-gradient(#fff 0%, #ffb3b3 30%, #ff2a2a 55%, #a00010 100%); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0 .5cqw rgba(255,30,30,.85)) drop-shadow(.25cqw .25cqw 0 #000); }
+.head .h1.blue { font-size: 5.4cqw; color: #3a1fd6; -webkit-text-stroke: .35cqw #fff; filter: drop-shadow(.35cqw .35cqw 0 #1a0b6e) drop-shadow(0 0 .6cqw rgba(140,90,255,.8)); }
+.head .h2 { font-size: 3.5cqw; color: #fff; text-shadow: .2cqw .2cqw 0 #000, 0 0 .6cqw rgba(0,0,0,.9); }
+.head .h3 { font-size: 2.6cqw; color: #ff2e3a; text-shadow: .18cqw .18cqw 0 #000; }
+.head .h3 em { font-style: normal; color: #b46bff; }
+.head .kenos-tag { color: #a640ff; }
+.head.in { animation: headIn .6s steps(6) both; }
+.head.out { animation: headOut .35s steps(4) both; }
+@keyframes headIn { 0% { transform: translateY(40%) scaleY(0); opacity: 0; filter: drop-shadow(-.6cqw 0 0 #00e5ff) drop-shadow(.6cqw 0 0 #ff1a4b); } 70% { transform: translateY(-6%) scaleY(1.15); opacity: 1; } 100% { transform: none; filter: none; } }
+@keyframes headOut { to { transform: translateX(-8%) skewX(-20deg); opacity: 0; filter: drop-shadow(.8cqw 0 0 #00e5ff); } }
 .news::before { content: ""; position: absolute; left: 6.69%; right: 6.6%; top: 45%; bottom: 14%; z-index: 1; background: linear-gradient(transparent, rgba(0,0,0,.75)); pointer-events: none; }
 .banner { position: relative; z-index: 2; display: block; width: 100%; max-width: 100%; height: auto; aspect-ratio: 1376 / 768; image-rendering: auto; }
 .logo h1 {
@@ -124,7 +151,7 @@ footer { text-align: center; font-family: var(--f-pixel); font-size: 9px; color:
   .game { grid-template-columns: 1fr; }
   nav a { font-size: 10px; padding: 9px 10px; }
 }
-@media (prefers-reduced-motion: reduce) { .blink { animation: none; } .btn:hover { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .scene.in, .scene.out, .head.in, .head.out, .slot.flash::after { animation: none; } .blink { animation: none; } .btn:hover { transform: none; } }
 
 [hidden] { display: none !important; }
 
@@ -249,9 +276,18 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
 <div class="wrap" id="site" inert>
   <div class="news">
     <!-- real video at its own speed; if the phone blocks it (Low Power Mode, data saver) a frame player takes over at the same speed -->
-    <video class="screen" id="news-vid" src="madara-news.mp4" autoplay muted loop playsinline preload="auto" disablepictureinpicture aria-hidden="true"></video>
-    <canvas class="screen" id="news-cv" width="420" height="232" aria-hidden="true" hidden></canvas>
-    <img class="banner" src="banner-frame.webp" alt="Announcement: Madara wants to come back, this 19 October">
+    <div class="slot" aria-hidden="true">
+      <div class="scene on" id="scene-madara">
+        <video class="fill" id="news-vid" src="madara-news.mp4" autoplay muted loop playsinline preload="auto" disablepictureinpicture></video>
+        <canvas class="fill" id="news-cv" width="420" height="232" hidden></canvas>
+      </div>
+      <div class="scene" id="scene-kenos"><img class="fill" src="kenos.jpg" alt=""></div>
+    </div>
+    <img class="banner" src="banner-frame.webp" alt="">
+    <div class="heads">
+      <p class="head on" id="head-madara"><b class="h1 red">MADARA</b><span class="h2">WANTS TO COME BACK</span><span class="h3"><em>THIS</em> 19 OCTOBER</span></p>
+      <p class="head" id="head-kenos"><b class="h1 blue">NEW DANGER 2025</b><span class="h2">GONNA DROP OUT SOON</span><span class="h3 kenos-tag">KENOS</span></p>
+    </div>
   </div>
   <header class="logo">
     <h1>V-DEVIL <span>PRODUCTION</span></h1>
@@ -957,7 +993,8 @@ $("back").onclick = closeGame;
     v.pause(); v.hidden = true; cv.hidden = false;
     const ctx = cv.getContext("2d");
     const sheets = [0, 1].map(i => { const im = new Image(); im.src = "madara-sheet-" + i + ".jpg"; return im; });
-    const t0 = performance.now();
+    let t0 = performance.now();
+    addEventListener("news-restart", () => { t0 = performance.now(); });
     (function draw(now) {
       const f = Math.floor((now - t0) / 1000 * FPS) % FRAMES, sh = sheets[Math.floor(f / PER)], k = f % PER;
       if (sh.complete && sh.naturalWidth) ctx.drawImage(sh, (k % COLS) * W, Math.floor(k / COLS) * H, W, H, 0, 0, W, H);
@@ -977,6 +1014,27 @@ $("back").onclick = closeGame;
   // Still not running after the clip has loaded: the phone is holding it back
   setTimeout(() => { if (!swapped && v.paused && v.readyState >= 3) swap(); }, 4000);
   v.addEventListener("error", swap);
+})();
+
+// Banner swap: Madara clip (its whole run) <-> Kenos picture, headline swaps with it
+(() => {
+  const SCENES = [{ id: "madara", ms: 11300 }, { id: "kenos", ms: 5500 }];
+  let i = 0;
+  const v = $("news-vid"), slot = document.querySelector(".slot");
+  const scene = id => $("scene-" + id), head = id => $("head-" + id);
+  function next() {
+    const from = SCENES[i].id; i = (i + 1) % SCENES.length; const to = SCENES[i].id;
+    if (to === "madara") { try { v.currentTime = 0; } catch (_) {} dispatchEvent(new Event("news-restart")); }
+    [scene(from), head(from)].forEach(el => { el.classList.remove("on", "in"); el.classList.add("out"); });
+    [scene(to), head(to)].forEach(el => { el.classList.remove("out"); el.classList.add("in"); });
+    slot.classList.remove("flash"); void slot.offsetWidth; slot.classList.add("flash");
+    setTimeout(() => {
+      [scene(from), head(from)].forEach(el => el.classList.remove("out"));
+      [scene(to), head(to)].forEach(el => { el.classList.remove("in"); el.classList.add("on"); });
+    }, 650);
+    setTimeout(next, SCENES[i].ms);
+  }
+  setTimeout(next, SCENES[0].ms);
 })();
 
 // Logged in before on this device (until LOG OUT): open the site straight away

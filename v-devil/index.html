@@ -1215,11 +1215,26 @@ $("back").onclick = closeGame;
   };
   document.querySelectorAll("[data-eur]").forEach(el => el.textContent = fmt.format(local(parseFloat(el.dataset.eur))));
   $("cur-note").textContent = code === "EUR" ? "Prices in euros." : "Prices shown in " + code + " for your country, converted from euros (approximate).";
+  // Paste each pack's Stripe Payment Link here to open payments ("" = not open yet).
+  // In Stripe, set each link's "After payment" page to this site with ?paid=<pack>.
+  const PAY_LINKS = { 500: "", 1000: "", 5000: "" };
   document.querySelectorAll(".buy").forEach(b => b.onclick = () => {
-    const m = $("shop-msg");
+    const m = $("shop-msg"), link = PAY_LINKS[b.dataset.pack];
     m.classList.remove("ok");
-    m.textContent = "Payments open soon. You have not been charged and nothing was added yet.";
+    if (!link) { m.textContent = "Payments open soon. You have not been charged and nothing was added yet."; return; }
+    const u = new URL(link);
+    if (myEmail) u.searchParams.set("prefilled_email", myEmail); // Stripe fills in the player's email
+    window.open(u.toString(), "_blank", "noopener");
+    m.textContent = "Payment page opened in a new tab.";
   });
+  // Back from Stripe: say thanks. Kix are added after the payment is checked, never from the
+  // address alone, since anyone could type ?paid=5000 themselves.
+  const paid = new URLSearchParams(location.search).get("paid");
+  if (paid && PAY_LINKS[paid]) {
+    const m = $("shop-msg"); m.classList.add("ok");
+    m.textContent = "Thanks for your order of " + paid + " Kix! They will be added to your account once the payment is confirmed.";
+    if (typeof show === "function") show("shop");
+  }
 })();
 
 // Logged in before on this device (until LOG OUT): open the site straight away

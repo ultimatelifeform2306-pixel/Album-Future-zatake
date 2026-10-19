@@ -6,7 +6,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Press+Start+2P&family=Share+Tech+Mono&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Press+Start+2P&family=Share+Tech+Mono&family=VT323&display=swap">
 <style>
 /* Layout: a field base. A stencilled gate you ENTER, then a home with three sections: HOME, RADIO (track select on a field radio), VIDEO CLIPS (a scrolling row of field monitors). Black only. */
 :root {
@@ -166,6 +166,15 @@ td.w { color: var(--dim); letter-spacing: .12em; text-transform: uppercase; }
 .pop span { font: 400 16px var(--f-pixel); color: var(--gold); animation: s3kFlash 1s steps(1) infinite; }
 .pop small { font: 16px var(--f-mono); color: #c7b8ff; }
 @keyframes s3kPop { from { transform: scale(0); } }
+/* VHS 2006: tracking band rolling down, a little jitter, camcorder text */
+.screen.vhs img { animation: vhsJit 2.6s steps(1) infinite; filter: saturate(1.15) contrast(1.05); }
+.screen.vhs::after { content: ""; position: absolute; left: 0; right: 0; height: 14%; top: -20%; z-index: 1;
+  background: linear-gradient(transparent, rgba(255,255,255,.28) 40%, rgba(255,255,255,.08) 60%, transparent); mix-blend-mode: screen; animation: vhsTrack 3.2s linear infinite; }
+.vhs-play, .vhs-date { position: absolute; z-index: 2; font: 400 9px/1 "VT323", var(--f-mono); color: #fff; text-shadow: 1px 0 0 #ff2a6d, -1px 0 0 #2af0ff, 0 0 3px rgba(0,0,0,.8); letter-spacing: .06em; }
+.vhs-play { top: 6px; left: 7px; font-size: 13px; animation: s3kFlash 1.4s steps(1) infinite; }
+.vhs-date { bottom: 6px; right: 7px; font-size: 12px; }
+@keyframes vhsTrack { to { top: 110%; } }
+@keyframes vhsJit { 0%, 86%, 100% { transform: none; } 88% { transform: translateX(2px) skewX(-2deg); } 90% { transform: translateX(-3px); } 92% { transform: translateY(1px); } }
 @keyframes s3kFlash { 50% { opacity: 0; } }
 
 footer { font-size: 12px; letter-spacing: .3em; color: var(--dim); text-align: center; text-transform: uppercase; }
@@ -175,7 +184,7 @@ footer { font-size: 12px; letter-spacing: .3em; color: var(--dim); text-align: c
   .tiles { grid-template-columns: 1fr; }
   .cmd img { max-width: 220px; }
 }
-@media (prefers-reduced-motion: reduce) { .gate { transition: none; } .clips, .card.sel .tv, .led, .lcd .air.on, .pop span { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .gate { transition: none; } .clips, .card.sel .tv, .led, .lcd .air.on, .pop span, .screen.vhs img, .screen.vhs::after, .vhs-play { animation: none; } }
 </style>
 
 <div class="gate" id="gate">
@@ -357,7 +366,11 @@ let sel = 1;
 items.forEach((it, i) => {
   const c = document.createElement("div");
   c.className = "card";
-  c.innerHTML = '<div class="tv"><div class="screen" style="--c1:' + (it.c || "#000") + '">' + (it.img ? '<img alt="" src="' + it.img + '">' : "<b>" + pad(it.no) + "</b>") + '</div></div><div class="plate"><strong></strong><em></em></div>';
+  const vhs = it.no && it.img; // track pictures play like a 2006 VHS tape
+  c.innerHTML = '<div class="tv"><div class="screen' + (vhs ? " vhs" : "") + '" style="--c1:' + (it.c || "#000") + '">' +
+    (it.img ? '<img alt="" src="' + it.img + '">' : "<b>" + pad(it.no) + "</b>") +
+    (vhs ? '<span class="vhs-play">PLAY ▶</span><span class="vhs-date">OCT.19 2006</span>' : "") +
+    '</div></div><div class="plate"><strong></strong><em></em></div>';
   c.querySelector("strong").textContent = it.t; c.querySelector("em").textContent = it.n;
   c.onclick = () => { if (i === sel) clipGo(); else { sel = i; renderClips(); beep(700, .05); } };
   row.append(c);

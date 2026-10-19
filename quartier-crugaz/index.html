@@ -1,0 +1,233 @@
+<meta charset="utf-8">
+<title>Quartier Crugaz</title>
+<!-- for hosting outside Claude (GitHub Pages): the artifact wrapper adds its own viewport -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Quartier Crugaz presents Skull of Death, the last group album, with Madara.">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Share+Tech+Mono&display=swap">
+<style>
+/* Layout: a classified field file. A stencilled gate you ENTER, then one dossier page: cover, title block, roster of tracks. Black only. */
+:root {
+  --ink: #070707;        /* night black */
+  --panel: #111210;      /* dossier sheet, a touch of olive in the black */
+  --bone: #d9d3c1;       /* stencil paint */
+  --olive: #6b7a3a;      /* army green */
+  --dim: #8b8676;        /* worn label grey */
+  --blood: #c1121f;      /* the album's red */
+  --f-stencil: "Black Ops One", "Impact", "Arial Black", sans-serif;
+  --f-mono: "Share Tech Mono", "Courier New", monospace;
+  color-scheme: dark;
+}
+[hidden] { display: none !important; }
+html, body { background: var(--ink); }
+body {
+  margin: 0; min-height: 100%;
+  color: var(--bone); font: 17px/1.55 var(--f-mono);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 48px;
+  box-sizing: border-box;
+  background:
+    radial-gradient(80% 60% at 50% 0%, rgba(107,122,58,.10), transparent 70%),
+    var(--ink);
+}
+*, *::before, *::after { box-sizing: inherit; }
+a { color: inherit; }
+button { font: inherit; }
+:focus-visible { outline: 2px dashed var(--olive); outline-offset: 4px; }
+
+/* ---------- gate ---------- */
+.gate {
+  position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; overflow: hidden;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background: var(--ink); transition: opacity 1.2s ease;
+}
+.gate.out { opacity: 0; pointer-events: none; }
+.gate canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .5; }
+.gate-in { position: relative; display: grid; justify-items: center; gap: 18px; text-align: center; }
+.code { font-size: 12px; letter-spacing: .35em; color: var(--dim); text-transform: uppercase; }
+.gate h1 {
+  margin: 0; font: 400 clamp(44px, 12vw, 120px)/.92 var(--f-stencil); letter-spacing: .02em; color: var(--bone);
+  text-wrap: balance;
+}
+.gate h1 span { display: block; color: var(--olive); }
+.enter {
+  margin-top: 10px; padding: 14px 38px; cursor: pointer;
+  font: 400 22px var(--f-stencil); letter-spacing: .2em; color: var(--ink);
+  background: var(--bone); border: 0; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  transition: background .15s;
+}
+.enter:hover { background: var(--olive); color: var(--bone); }
+.warn { font-size: 12px; color: var(--dim); letter-spacing: .2em; }
+
+/* ---------- dossier ---------- */
+.page { max-width: 1080px; margin: 0 auto; display: grid; gap: 40px; padding-top: 22px; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; border-bottom: 2px solid #2a2b26; padding-bottom: 14px; }
+.brand { font: 400 22px var(--f-stencil); letter-spacing: .06em; }
+.brand span { color: var(--olive); }
+.file { font-size: 13px; letter-spacing: .25em; color: var(--dim); text-transform: uppercase; }
+
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 36px; align-items: center; }
+.hero > * { min-width: 0; }
+.cover { position: relative; aspect-ratio: 596 / 540; background: #000; box-shadow: 0 0 0 1px #2a2b26, 0 30px 60px -20px rgba(193,18,31,.35); }
+.cover video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.cover::before, .cover::after { content: ""; position: absolute; width: 26px; height: 26px; border: 3px solid var(--bone); z-index: 1; }
+.cover::before { top: -8px; left: -8px; border-right: 0; border-bottom: 0; }
+.cover::after { bottom: -8px; right: -8px; border-left: 0; border-top: 0; }
+.sound {
+  position: absolute; z-index: 2; right: 12px; bottom: 12px; cursor: pointer;
+  font: 13px var(--f-mono); letter-spacing: .15em; color: var(--bone); background: rgba(7,7,7,.8); border: 1px solid var(--bone); padding: 8px 12px;
+}
+.title-block { display: grid; gap: 14px; }
+.title-block h2 { margin: 0; font: 400 clamp(44px, 8vw, 96px)/.9 var(--f-stencil); letter-spacing: .01em; color: var(--bone); text-wrap: balance; }
+.title-block h2 em { font-style: normal; color: var(--blood); }
+.desc { margin: 0; font: 400 22px var(--f-stencil); letter-spacing: .12em; color: var(--olive); text-transform: uppercase; }
+.facts { margin: 6px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 22px; font-size: 15px; }
+.facts dt { color: var(--dim); letter-spacing: .2em; text-transform: uppercase; }
+.facts dd { margin: 0; }
+.stamp {
+  justify-self: start; margin-top: 8px; padding: 6px 14px; transform: rotate(-4deg);
+  font: 400 26px var(--f-stencil); letter-spacing: .14em; color: var(--blood);
+  border: 4px solid var(--blood); opacity: .9; mix-blend-mode: screen;
+}
+
+.roster { display: grid; gap: 14px; }
+.roster h3 { margin: 0; font: 400 26px var(--f-stencil); letter-spacing: .08em; }
+.roster h3 span { color: var(--dim); font: 14px var(--f-mono); letter-spacing: .25em; margin-left: 10px; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th { text-align: left; font-weight: 400; font-size: 12px; letter-spacing: .3em; color: var(--dim); padding: 8px 12px; border-bottom: 2px solid var(--olive); text-transform: uppercase; }
+td { padding: 14px 12px; border-bottom: 1px solid #23241f; }
+tbody tr:hover { background: rgba(107,122,58,.12); }
+td.no { width: 64px; color: var(--olive); font: 400 20px var(--f-stencil); }
+td.t { font: 400 20px var(--f-stencil); letter-spacing: .05em; }
+td.w { color: var(--dim); letter-spacing: .12em; text-transform: uppercase; }
+
+.cmd { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 24px; align-items: center; padding: 22px; background: var(--panel); border-left: 4px solid var(--blood); }
+.cmd img { width: 100%; height: auto; display: block; filter: grayscale(.4) contrast(1.1); }
+.cmd p { margin: 0; max-width: 60ch; }
+.cmd b { font: 400 24px var(--f-stencil); letter-spacing: .06em; display: block; margin-bottom: 6px; }
+
+footer { font-size: 12px; letter-spacing: .3em; color: var(--dim); text-align: center; text-transform: uppercase; }
+
+@media (max-width: 720px) {
+  .hero { grid-template-columns: 1fr; }
+  .cmd { grid-template-columns: 1fr; }
+  .cmd img { max-width: 220px; }
+}
+@media (prefers-reduced-motion: reduce) { .gate { transition: none; } }
+</style>
+
+<div class="gate" id="gate">
+  <canvas id="grid" aria-hidden="true"></canvas>
+  <div class="gate-in">
+    <span class="code">File 01 · Restricted access</span>
+    <h1>QUARTIER <span>CRUGAZ</span></h1>
+    <span class="warn">SKULL OF DEATH · THE LAST GROUP ALBUM</span>
+    <button class="enter" id="enter" type="button">ENTER</button>
+  </div>
+</div>
+
+<main class="page" id="page" inert>
+  <header class="top">
+    <div class="brand">QUARTIER <span>CRUGAZ</span></div>
+    <div class="file">File 01 / Skull of Death</div>
+  </header>
+
+  <section class="hero">
+    <div class="cover">
+      <video id="vid" src="skull-of-death.mp4" poster="cover.jpg" playsinline loop preload="auto"></video>
+      <button class="sound" id="sound" type="button">SOUND ON</button>
+    </div>
+    <div class="title-block">
+      <h2>SKULL <em>OF</em> DEATH</h2>
+      <p class="desc">Last group album</p>
+      <dl class="facts">
+        <dt>Artist</dt><dd>Madara</dd>
+        <dt>Group</dt><dd>Quartier Crugaz</dd>
+        <dt>Tracks</dt><dd>11</dd>
+        <dt>Status</dt><dd>Out now</dd>
+      </dl>
+      <span class="stamp">OUT NOW</span>
+    </div>
+  </section>
+
+  <section class="roster" aria-labelledby="roster-h">
+    <h3 id="roster-h">TRACKLIST <span>11 TITLES</span></h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>No.</th><th>Title</th><th>With</th></tr></thead>
+        <tbody id="tracks"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="cmd">
+    <img src="madara.jpg" alt="Madara in a gold matador suit, presenting the album">
+    <div>
+      <b>MADARA</b>
+      <p>Skull of Death is the last album from the group. Eleven tracks, out now.</p>
+    </div>
+  </section>
+
+  <footer>© 2026 Quartier Crugaz</footer>
+</main>
+
+<script>
+const TRACKS = [
+  ["TÊTE DE MORT", "Madara"], ["SALSA", "Knuckles"], ["CHEZ MK", "Kenos"], ["CHAIR DE POULE", "Merre"],
+  ["PHARMACIE", "Sonic"], ["MOUSQUETAIRE", "Shadow"], ["SPORT", "Black Goku"], ["ROSE", "V.JR"],
+  ["JAPON", "IShowSpeed"], ["BISON", "Frieza"], ["COURAGE", "Black Goku"]
+];
+const tb = document.getElementById("tracks");
+TRACKS.forEach(([t, w], i) => {
+  const tr = document.createElement("tr");
+  tr.innerHTML = '<td class="no"></td><td class="t"></td><td class="w"></td>';
+  tr.children[0].textContent = String(i + 1).padStart(2, "0");
+  tr.children[1].textContent = t;
+  tr.children[2].textContent = w;
+  tb.append(tr);
+});
+
+// gate background: a slow radar sweep over a coordinate grid
+(() => {
+  const cv = document.getElementById("grid"), c = cv.getContext("2d");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let W, H, raf;
+  const size = () => { const d = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = W * d; cv.height = H * d; c.setTransform(d, 0, 0, d, 0, 0); };
+  size(); addEventListener("resize", size);
+  function draw(t) {
+    c.clearRect(0, 0, W, H);
+    c.strokeStyle = "rgba(107,122,58,.35)"; c.lineWidth = 1;
+    for (let x = (W / 2) % 48; x < W; x += 48) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x, H); c.stroke(); }
+    for (let y = (H / 2) % 48; y < H; y += 48) { c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); }
+    const cx = W / 2, cy = H / 2, r = Math.hypot(W, H) / 2;
+    c.strokeStyle = "rgba(217,211,193,.25)";
+    [.18, .32, .46].forEach(k => { c.beginPath(); c.arc(cx, cy, Math.min(W, H) * k, 0, Math.PI * 2); c.stroke(); });
+    if (!reduce) {
+      const a = (t / 2600) % (Math.PI * 2);
+      const g = c.createConicGradient ? c.createConicGradient(a - .6, cx, cy) : null;
+      if (g) { g.addColorStop(0, "rgba(107,122,58,0)"); g.addColorStop(.1, "rgba(107,122,58,.45)"); g.addColorStop(.1001, "rgba(107,122,58,0)"); c.fillStyle = g; c.beginPath(); c.arc(cx, cy, r, 0, Math.PI * 2); c.fill(); }
+      raf = requestAnimationFrame(draw);
+    }
+  }
+  raf = requestAnimationFrame(draw);
+  document.getElementById("enter").addEventListener("click", () => setTimeout(() => cancelAnimationFrame(raf), 1300));
+})();
+
+// ENTER: fade the gate, open the file, start the album with sound (the tap allows it)
+const vid = document.getElementById("vid"), soundBtn = document.getElementById("sound");
+function setSound(on) { vid.muted = !on; soundBtn.textContent = on ? "SOUND OFF" : "SOUND ON"; }
+document.getElementById("enter").onclick = () => {
+  const gate = document.getElementById("gate");
+  gate.classList.add("out");
+  document.getElementById("page").inert = false;
+  setSound(true);
+  vid.play().catch(() => { setSound(false); vid.play().catch(() => {}); });
+  setTimeout(() => { gate.hidden = true; }, 1250);
+};
+soundBtn.onclick = () => { setSound(vid.muted); if (vid.paused) vid.play().catch(() => {}); };
+document.addEventListener("visibilitychange", () => { if (document.hidden) vid.pause(); });
+</script>

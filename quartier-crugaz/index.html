@@ -350,7 +350,9 @@ tune(0);
 // ---------- video clips: Sonic 3 & Knuckles style select ----------
 const row = $("row");
 const COLORS = ["#8a0f2a", "#c2185b", "#6a1bd6", "#e65100", "#1565c0", "#37474f", "#2e7d32", "#ad1457", "#d32f2f", "#5d4037", "#f9a825"];
-const items = [{ t: "PLAY ALL", n: "Skull of Death", img: "cover.jpg" }].concat(TRACKS.map(([t, n], i) => ({ t, n, no: i + 1, c: COLORS[i] })));
+// a track's TV shows its own picture when it has one
+const SHOTS = { 1: "track-01.jpg" };
+const items = [{ t: "PLAY ALL", n: "Skull of Death", img: "cover.jpg" }].concat(TRACKS.map(([t, n], i) => ({ t, n, no: i + 1, c: COLORS[i], img: SHOTS[i + 1] })));
 let sel = 1;
 items.forEach((it, i) => {
   const c = document.createElement("div");

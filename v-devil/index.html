@@ -196,6 +196,58 @@ footer { text-align: center; font-family: var(--f-pixel); font-size: 9px; color:
 
 [hidden] { display: none !important; }
 
+/* ---------- album: title screen + Sonic 3 & Knuckles style select ---------- */
+.s3k { position: relative; overflow: hidden; aspect-ratio: 16 / 10; min-height: 440px; max-height: 80vh; width: 100%; background: #000; font-family: var(--f-pixel); container-type: inline-size; }
+.s3k-fade { position: absolute; inset: 0; z-index: 9; background: #000; opacity: 0; pointer-events: none; transition: opacity .8s steps(8); }
+.s3k-fade.on { opacity: 1; }
+.s3k-title { position: absolute; inset: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: center; background: radial-gradient(90% 90% at 70% 40%, #d0141c 0%, #5c0008 60%, #1a0002 100%); }
+.s3k-madara { height: 100%; width: 100%; object-fit: cover; object-position: 40% 20%; -webkit-mask-image: linear-gradient(90deg, #000 75%, transparent); mask-image: linear-gradient(90deg, #000 75%, transparent); }
+.s3k-logo { display: grid; justify-items: center; gap: 10px; text-align: center; padding: 16px; min-width: 0; }
+.s3k-pre { font-size: 10px; letter-spacing: .3em; color: #ffd1d1; }
+.s3k-name { font: 400 clamp(30px, 9cqw, 72px)/1 "Russo One", sans-serif; color: #ff2238; -webkit-text-stroke: 2px #fff; paint-order: stroke fill; filter: drop-shadow(4px 4px 0 #000); animation: s3kWobble 2.4s steps(6) infinite; }
+.s3k-sub { font: 400 clamp(16px, 4.6cqw, 36px)/1 "Russo One", sans-serif; color: var(--gold); filter: drop-shadow(3px 3px 0 #000); }
+@keyframes s3kWobble { 50% { transform: translateY(-4px) rotate(-1.5deg); } }
+.s3k-enter { margin-top: 10px; font: 14px var(--f-pixel); color: #000; background: var(--gold); border: 0; padding: 14px 22px; cursor: pointer; box-shadow: inset -4px -4px 0 #c28a00, inset 4px 4px 0 #fff0a8, 4px 4px 0 #000; animation: blink 1s steps(1) infinite; }
+.s3k-enter:focus-visible, .s3k-go:focus-visible, .s3k-arrow:focus-visible { outline: 3px dashed #fff; outline-offset: 3px; }
+.s3k-c { font-size: 8px; color: #ffd1d1; letter-spacing: .15em; }
+.s3k-select { position: absolute; inset: 0; display: grid; grid-template-rows: auto 1fr auto auto; gap: 8px; padding: 14px 0 16px;
+  background: repeating-conic-gradient(#7a0010 0 25%, #a8001a 0 50%) 0 0 / 48px 48px; animation: s3kScroll 3s linear infinite; }
+@keyframes s3kScroll { to { background-position: 48px 48px; } }
+.s3k-head { justify-self: center; font-size: clamp(14px, 3.4cqw, 24px); color: #fff; background: #1b1bb5; padding: 10px 18px; box-shadow: 0 0 0 3px #000, 0 0 0 6px var(--gold), 6px 6px 0 6px rgba(0,0,0,.5); text-shadow: 3px 3px 0 #000; }
+.s3k-head span { color: var(--gold); }
+.s3k-row-wrap { position: relative; overflow: hidden; display: flex; align-items: center; }
+.s3k-row { display: flex; gap: 22px; padding: 30px 0; transition: transform .32s steps(6); will-change: transform; }
+.s3k-card { flex: none; width: 150px; display: grid; gap: 8px; justify-items: center; cursor: pointer; transition: transform .2s steps(3); }
+.s3k-tv { width: 150px; aspect-ratio: 4 / 3; padding: 9px; background: linear-gradient(#d8d8e8, #8f8fa8); border-radius: 14px; box-shadow: inset -4px -4px 0 #5d5d78, inset 4px 4px 0 #fff, 4px 4px 0 #000; }
+.s3k-screen { position: relative; width: 100%; height: 100%; border-radius: 8px; overflow: hidden; display: grid; place-items: center;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 2px, transparent 2px 4px), var(--c1); box-shadow: inset 0 0 0 3px #000; }
+.s3k-screen::before { content: ""; position: absolute; inset: 0; background: linear-gradient(160deg, rgba(255,255,255,.35), transparent 40%); }
+.s3k-screen b { font: 400 34px var(--f-pixel); color: #fff; text-shadow: 4px 4px 0 #000; }
+.s3k-screen img { width: 100%; height: 100%; object-fit: cover; }
+.s3k-plate { width: 150px; padding: 8px 6px; background: #000; box-shadow: 0 0 0 3px #fff; text-align: center; display: grid; gap: 6px; }
+.s3k-plate strong { font: 400 9px/1.4 var(--f-pixel); color: var(--gold); overflow-wrap: anywhere; }
+.s3k-plate em { font: 400 8px/1.3 var(--f-pixel); color: #ffb3b3; font-style: normal; }
+.s3k-card.sel { transform: scale(1.14); }
+.s3k-card.sel .s3k-tv { animation: s3kBlink .5s steps(1) infinite; }
+@keyframes s3kBlink { 50% { box-shadow: inset -4px -4px 0 #5d5d78, inset 4px 4px 0 #fff, 0 0 0 4px var(--gold), 4px 4px 0 4px #000; } }
+.s3k-now { margin: 0; justify-self: center; text-align: center; font-size: clamp(9px, 2.2cqw, 13px); line-height: 1.6; color: #fff; text-shadow: 2px 2px 0 #000; padding: 0 16px; }
+.s3k-ctrl { display: flex; justify-content: center; gap: 14px; }
+.s3k-arrow, .s3k-go { font: 14px var(--f-pixel); border: 0; cursor: pointer; padding: 12px 16px; color: #000; background: #fff; box-shadow: inset -4px -4px 0 #9d8fd6, 4px 4px 0 #000; }
+.s3k-go { background: var(--gold); box-shadow: inset -4px -4px 0 #c28a00, inset 4px 4px 0 #fff0a8, 4px 4px 0 #000; padding: 12px 26px; }
+.s3k-arrow:active, .s3k-go:active { transform: translate(2px, 2px); box-shadow: none; }
+.s3k-pop { position: absolute; inset: 0; z-index: 5; display: grid; place-items: center; background: rgba(0,0,0,.7); cursor: pointer; }
+.s3k-pop > div { display: grid; gap: 14px; justify-items: center; text-align: center; padding: 22px 26px; background: #1b1bb5; box-shadow: 0 0 0 3px #000, 0 0 0 6px var(--gold); animation: s3kPop .3s steps(4) both; max-width: 90%; }
+.s3k-pop b { font: 400 14px/1.5 var(--f-pixel); color: #fff; }
+.s3k-pop span { font-size: 18px; color: var(--gold); animation: blink 1s steps(1) infinite; }
+.s3k-pop small { font: 18px var(--f-body); color: #c7b8ff; }
+@keyframes s3kPop { from { transform: scale(0); } }
+@media (max-width: 640px) {
+  .s3k { aspect-ratio: auto; height: 560px; max-height: none; }
+  .s3k-title { grid-template-columns: 1fr; grid-template-rows: 55% 45%; }
+  .s3k-madara { -webkit-mask-image: linear-gradient(#000 75%, transparent); mask-image: linear-gradient(#000 75%, transparent); object-position: 30% 15%; }
+}
+@media (prefers-reduced-motion: reduce) { .s3k-select, .s3k-name, .s3k-enter, .s3k-card.sel .s3k-tv { animation: none; } }
+
 /* ---------- Kix money ---------- */
 nav a.kix-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--ink); box-shadow: 0 0 0 2px #e0201a; color: var(--gold); }
 nav a.kix-chip::before, nav a.kix-chip::after { content: none; }
@@ -371,6 +423,7 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
     <a href="#home" data-tab="home">HOME</a>
     <a href="#game" data-tab="game">GAME</a>
     <a href="#credits" data-tab="credits">CREDITS</a>
+    <a href="#album" data-tab="album">ALBUM</a>
     <a href="#shop" data-tab="shop">SHOP</a>
     <a href="#shop" data-tab="shop" class="kix-chip" aria-label="Your Kix, open the shop"><img src="kix.png" alt=""><span class="kix-n">0</span></a>
     <a href="#account" data-tab="account" class="acct-tab"><canvas class="avatar" id="nav-avatar" width="8" height="8" aria-hidden="true"></canvas><span id="nav-name">ACCOUNT</span></a>
@@ -423,6 +476,37 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
           <p class="small">There's a big difference between playing on PC and on mobile. You'll see it soon. Just play the game.</p>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- ALBUM -->
+  <section class="win" id="album" data-panel="album" hidden>
+    <div class="bar"><i>■</i><b>ALBUM.EXE · MADARA</b><i>_</i><i>×</i></div>
+    <div class="s3k" id="s3k">
+      <!-- title screen -->
+      <div class="s3k-title" id="s3k-title">
+        <img class="s3k-madara" src="album-madara.jpg" alt="Madara in his gold matador suit, presenting the album">
+        <div class="s3k-logo">
+          <span class="s3k-pre">THE ALBUM</span>
+          <b class="s3k-name">MADARA</b>
+          <b class="s3k-sub">SLAP AGAIN</b>
+          <button class="s3k-enter" id="s3k-enter" type="button">▶ ENTER</button>
+          <span class="s3k-c">11 TRACKS · V-DEVIL PRODUCTION</span>
+        </div>
+      </div>
+      <!-- Sonic 3 & Knuckles style select -->
+      <div class="s3k-select" id="s3k-select" hidden>
+        <div class="s3k-head"><span>TRACK</span> SELECT</div>
+        <div class="s3k-row-wrap"><div class="s3k-row" id="s3k-row"></div></div>
+        <p class="s3k-now" id="s3k-now"></p>
+        <div class="s3k-ctrl">
+          <button type="button" class="s3k-arrow" id="s3k-prev" aria-label="Previous track">◀</button>
+          <button type="button" class="s3k-go" id="s3k-go">SELECT</button>
+          <button type="button" class="s3k-arrow" id="s3k-next" aria-label="Next track">▶</button>
+        </div>
+        <div class="s3k-pop" id="s3k-pop" hidden><div><b id="s3k-pop-t"></b><span>COMING SOON</span><small>Tap to go back</small></div></div>
+      </div>
+      <div class="s3k-fade" id="s3k-fade"></div>
     </div>
   </section>
 
@@ -507,7 +591,7 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
 
 <script>
 // tabs, deep-linkable as #home / #game / #credits
-const tabs = ["home", "game", "credits", "shop", "account"];
+const tabs = ["home", "game", "album", "credits", "shop", "account"];
 function show(name) {
   if (!tabs.includes(name)) name = "home";
   document.querySelectorAll("[data-panel]").forEach(p => p.hidden = p.dataset.panel !== name);
@@ -1194,6 +1278,78 @@ $("back").onclick = closeGame;
   document.addEventListener("visibilitychange", () => { if (document.hidden) av.pause(); else if (SCENES[i].id === "album") av.play().catch(() => {}); });
 })();
 
+// ===== Album: title screen -> fade -> Sonic 3 & Knuckles style track select =====
+(() => {
+  const TRACKS = [
+    ["TÊTE DE MORT", "MADARA"], ["SALSA", "KNUCKLES"], ["CHEZ MK", "KENOS"], ["CHAIR DE POULE", "MERRE"],
+    ["PHARMACIE", "SONIC"], ["MOUSQUETAIRE", "SHADOW"], ["SPORT", "BLACK GOKU"], ["ROSE", "V.JR"],
+    ["JAPON", "ISHOWSPEED"], ["BISON", "FRIEZA"], ["COURAGE", "BLACK GOKU"]
+  ];
+  const COLORS = ["#b3001b", "#c2185b", "#6a1bd6", "#e65100", "#1565c0", "#37474f", "#2e7d32", "#ad1457", "#d32f2f", "#5d4037", "#f9a825"];
+  const row = $("s3k-row"), now = $("s3k-now");
+  // first panel is the whole album, like the "no save" slot
+  const items = [{ t: "PLAY ALL", n: "MADARA · SLAP AGAIN", img: "madara-album.jpg" }].concat(TRACKS.map(([t, n], i) => ({ t, n, no: i + 1, c: COLORS[i] })));
+  items.forEach((it, i) => {
+    const card = document.createElement("div");
+    card.className = "s3k-card"; card.dataset.i = i;
+    card.innerHTML = '<div class="s3k-tv"><div class="s3k-screen" style="--c1:' + (it.c || "#000") + '">' +
+      (it.img ? '<img alt="" src="' + it.img + '">' : "<b>" + String(it.no).padStart(2, "0") + "</b>") + '</div></div>' +
+      '<div class="s3k-plate"><strong></strong><em></em></div>';
+    card.querySelector("strong").textContent = it.t;
+    card.querySelector("em").textContent = it.n;
+    card.onclick = () => { if (i === sel) choose(); else { sel = i; render(); beep(660, .05); } };
+    row.append(card);
+  });
+  let sel = 1;
+  function render() {
+    [...row.children].forEach((c, i) => c.classList.toggle("sel", i === sel));
+    const card = row.children[sel], wrap = row.parentElement;
+    row.style.transform = "translateX(" + Math.round(wrap.clientWidth / 2 - card.offsetLeft - card.offsetWidth / 2) + "px)";
+    const it = items[sel];
+    now.textContent = it.no ? String(it.no).padStart(2, "0") + " · " + it.t + " (" + it.n + ")" : "THE FULL ALBUM · " + TRACKS.length + " TRACKS";
+  }
+  function beep(f, d, type = "square", vol = .08, when = 0) {
+    const ac = AC; if (!ac || ac.state !== "running") return;
+    const t = ac.currentTime + when, o = ac.createOscillator(), g = ac.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+    o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + d + .02);
+  }
+  const move = d => { sel = (sel + d + items.length) % items.length; render(); beep(d > 0 ? 880 : 740, .06); };
+  function choose() {
+    [523, 659, 784, 1047].forEach((f, k) => beep(f, .12, "square", .09, k * .07));
+    $("s3k-pop-t").textContent = items[sel].no ? String(items[sel].no).padStart(2, "0") + " · " + items[sel].t + " (" + items[sel].n + ")" : "MADARA · SLAP AGAIN";
+    $("s3k-pop").hidden = false;
+  }
+  $("s3k-pop").onclick = () => { $("s3k-pop").hidden = true; beep(440, .08); };
+  $("s3k-prev").onclick = () => move(-1);
+  $("s3k-next").onclick = () => move(1);
+  $("s3k-go").onclick = choose;
+  // swipe on phones
+  let sx = null;
+  row.parentElement.addEventListener("touchstart", e => { sx = e.touches[0].clientX; }, { passive: true });
+  row.parentElement.addEventListener("touchend", e => { if (sx === null) return; const dx = e.changedTouches[0].clientX - sx; sx = null; if (Math.abs(dx) > 40) move(dx < 0 ? 1 : -1); });
+  // keyboard while the select is on screen
+  addEventListener("keydown", e => {
+    if ($("album").hidden || $("s3k-select").hidden) return;
+    if (e.key === "ArrowRight") { e.preventDefault(); move(1); }
+    else if (e.key === "ArrowLeft") { e.preventDefault(); move(-1); }
+    else if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if ($("s3k-pop").hidden) choose(); else $("s3k-pop").click(); }
+  });
+  // ENTER: Sega-style chime, fade to black, then the select
+  $("s3k-enter").onclick = () => {
+    audio();
+    [392, 523, 659, 784, 1047].forEach((f, k) => beep(f, .18, "square", .08, k * .06));
+    const fade = $("s3k-fade"); fade.classList.add("on");
+    setTimeout(() => {
+      $("s3k-title").hidden = true; $("s3k-select").hidden = false; render();
+      fade.classList.remove("on"); $("s3k-go").focus();
+    }, 850);
+  };
+  addEventListener("resize", () => { if (!$("s3k-select").hidden) render(); });
+  document.addEventListener("click", e => { if (e.target.closest('a[data-tab="album"]')) setTimeout(() => { if (!$("s3k-select").hidden) render(); }, 0); });
+})();
+
 // ===== Kix shop: prices in the player's own money =====
 (() => {
   // country -> currency, with rough euro rates; West/Central African CFA are pegged to the euro
@@ -1206,7 +1362,8 @@ $("back").onclick = closeGame;
   let region = "";
   for (const l of navigator.languages || [navigator.language || ""]) { const m = /-([A-Z]{2})$/i.exec(l); if (m) { region = m[1].toUpperCase(); break; } }
   const [code, rate] = CUR[region] || ["EUR", 1];
-  const fmt = new Intl.NumberFormat(navigator.language || "fr-FR", { style: "currency", currency: code, maximumFractionDigits: rate >= 100 ? 0 : 2 });
+  const opts = { style: "currency", currency: code, maximumFractionDigits: rate >= 100 ? 0 : 2 };
+  let fmt; try { fmt = new Intl.NumberFormat(navigator.language || "fr-FR", opts); } catch (_) { fmt = new Intl.NumberFormat("fr-FR", opts); }
   const local = eur => {
     if (code === "EUR") return eur;
     const x = eur * rate;

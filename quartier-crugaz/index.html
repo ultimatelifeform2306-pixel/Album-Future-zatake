@@ -369,7 +369,7 @@ items.forEach((it, i) => {
   const vhs = it.no && it.img; // track pictures play like a 2006 VHS tape
   c.innerHTML = '<div class="tv"><div class="screen' + (vhs ? " vhs" : "") + '" style="--c1:' + (it.c || "#000") + '">' +
     (it.img ? '<img alt="" src="' + it.img + '">' : "<b>" + pad(it.no) + "</b>") +
-    (vhs ? '<span class="vhs-play">PLAY ▶</span><span class="vhs-date">OCT.19 2006</span>' : "") +
+    (vhs ? '<span class="vhs-play">PLAY ▶</span>' : "") +
     '</div></div><div class="plate"><strong></strong><em></em></div>';
   c.querySelector("strong").textContent = it.t; c.querySelector("em").textContent = it.n;
   c.onclick = () => { if (i === sel) clipGo(); else { sel = i; renderClips(); beep(700, .05); } };

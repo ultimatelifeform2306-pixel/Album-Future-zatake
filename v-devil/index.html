@@ -776,6 +776,28 @@ function audio() {
 }
 // any first touch on the login screen already unlocks sound
 ["pointerdown", "touchend", "keydown"].forEach(ev => addEventListener(ev, function once() { audio(); removeEventListener(ev, once, true); }, true));
+
+// Tap sound: every touch or click on the site plays the V-Devil tap effect
+let tapBuf = null, tapLoading = null, lastTap = 0;
+const tapBytes = fetch("tap.mp3").then(r => r.arrayBuffer()).catch(() => null); // download early
+function loadTap(ac) {
+  if (tapBuf || tapLoading || !ac) return;
+  tapLoading = tapBytes.then(b => b && new Promise((ok, no) => ac.decodeAudioData(b.slice(0), ok, no)))
+    .then(buf => { tapBuf = buf || null; if (!buf) tapLoading = null; }).catch(() => { tapLoading = null; });
+}
+function playTap() {
+  const ac = audio(); if (!ac) return;
+  loadTap(ac);
+  const now = performance.now();
+  if (!tapBuf || now - lastTap < 60) return;
+  lastTap = now;
+  if (!document.getElementById("intro").hidden) return; // the reaper intro has its own sound
+  const src = ac.createBufferSource(), g = ac.createGain();
+  g.gain.value = .8; src.buffer = tapBuf; src.connect(g); g.connect(ac.destination); src.start();
+}
+addEventListener("pointerdown", playTap, true);
+// get the sound ready before the first touch (a sleeping audio engine can still decode)
+try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); loadTap(AC); } catch (_) {}
 function master(ac) {
   if (ac._out) return ac._out;
   const out = ac.createGain(); out.gain.value = .8;

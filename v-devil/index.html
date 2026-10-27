@@ -963,7 +963,7 @@ function audio() {
 // any first touch on the login screen already unlocks sound
 ["pointerdown", "touchend", "keydown"].forEach(ev => addEventListener(ev, function once() { audio(); removeEventListener(ev, once, true); }, true));
 
-// Tap sound: every touch or click on the site plays the V-Devil tap effect
+// Tap sound: plays only when a button or link is pressed (a click never fires after a scroll)
 let tapBuf = null, tapLoading = null, lastTap = 0;
 const tapBytes = fetch("tap.mp3").then(r => r.arrayBuffer()).catch(() => null); // download early
 function loadTap(ac) {
@@ -971,7 +971,9 @@ function loadTap(ac) {
   tapLoading = tapBytes.then(b => b && new Promise((ok, no) => ac.decodeAudioData(b.slice(0), ok, no)))
     .then(buf => { tapBuf = buf || null; if (!buf) tapLoading = null; }).catch(() => { tapLoading = null; });
 }
-function playTap() {
+function playTap(e) {
+  const hit = e.target.closest && e.target.closest('button, a[href], [role="button"], [role="tab"], [role="menuitem"], input[type="submit"]');
+  if (!hit || hit.disabled || hit.getAttribute("aria-disabled") === "true") return;
   const ac = audio(); if (!ac) return;
   loadTap(ac);
   const now = performance.now();
@@ -982,7 +984,7 @@ function playTap() {
   const src = ac.createBufferSource(), g = ac.createGain();
   g.gain.value = .8; src.buffer = tapBuf; src.connect(g); g.connect(ac.destination); src.start();
 }
-addEventListener("pointerdown", playTap, true);
+addEventListener("click", playTap, true);
 // get the sound ready before the first touch (a sleeping audio engine can still decode)
 try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); loadTap(AC); } catch (_) {}
 function master(ac) {

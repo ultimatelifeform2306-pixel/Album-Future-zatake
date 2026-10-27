@@ -1,3 +1,4 @@
+
 <meta charset="utf-8">
 <title>V-Devil Production</title>
 <!-- for hosting outside Claude (GitHub Pages) and for Google: the artifact wrapper adds its own viewport -->
@@ -185,6 +186,96 @@ dl.stats dd { margin: 0; }
 .role strong { font-weight: 400; font-size: 26px; }
 .small { font-size: 18px; color: var(--muted); }
 
+/* story cover: the photo fills a square frame, title stamped on a dark fade */
+.story-cover img { aspect-ratio: 1 / 1; object-fit: cover; object-position: 50% 30%; image-rendering: auto; filter: saturate(1.15) contrast(1.05); }
+.story-cover::before { content: ""; position: absolute; inset: 45% 0 0 0; z-index: 1; background: linear-gradient(transparent, rgba(18,6,58,.92)); pointer-events: none; }
+.story-title { position: absolute; z-index: 2; left: 0; right: 0; bottom: 8%; text-align: center; font: clamp(14px, 4vw, 26px)/1.3 var(--f-pixel); color: var(--gold); text-shadow: 3px 3px 0 var(--magenta), 5px 5px 0 var(--ink); }
+/* song picker: album or maxi single */
+.picks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+.pick { display: grid; gap: 14px; align-content: start; }
+.pick-label { font: 12px var(--f-pixel); letter-spacing: .2em; color: var(--magenta); }
+.pick .btn { justify-self: stretch; text-align: center; justify-content: center; }
+.pick-cover img, .pick-cover.maxi-cover img { aspect-ratio: 1 / 1; object-fit: cover; object-position: 50% 30%; image-rendering: auto; }
+.pick-cover.locked img { filter: grayscale(.75) brightness(.45) blur(1px); }
+.pick-lock { position: absolute; z-index: 2; inset: 0; display: grid; place-content: center; justify-items: center; gap: 16px; text-align: center; font: clamp(12px, 2.6vw, 18px)/1.4 var(--f-pixel); color: var(--gold); text-shadow: 3px 3px 0 var(--ink); }
+.pick-lock svg.lock { width: 64px; height: 75px; filter: drop-shadow(4px 4px 0 #000); }
+@media (max-width: 640px) { .picks { grid-template-columns: 1fr; } }
+/* locked pages */
+.locked-page { justify-items: center; text-align: center; padding-block: 40px; }
+.locked-page .btn { justify-self: center; }
+.big-lock svg.lock { width: 72px; height: 84px; filter: drop-shadow(4px 4px 0 #000); }
+/* maxi single cover */
+.maxi-cover img { object-fit: cover; image-rendering: auto; }
+.pick-cover.maxi-cover img { object-position: 62% 50%; }
+.maxi-cover::before { content: ""; position: absolute; inset: 55% 0 0 0; z-index: 1; background: linear-gradient(transparent, rgba(18,6,58,.9)); pointer-events: none; }
+
+/* ---------- Sonic 2006-style select menu, in purple ---------- */
+.s06 { position: fixed; inset: 0; z-index: 70; overflow: hidden; display: grid; grid-template-rows: auto 1fr auto; gap: 18px; color: #fff; font-family: "Russo One", "Arial Black", sans-serif;
+  padding: max(22px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(18px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  background: radial-gradient(120% 90% at 28% 45%, #8a3cff 0%, #4a14c2 40%, #1a0650 75%, #0b0228 100%); animation: s06In .45s ease-out both; }
+@keyframes s06In { from { opacity: 0; transform: scale(1.04); } to { opacity: 1; transform: none; } }
+.s06-bg { position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(115deg, rgba(255,255,255,.05) 0 2px, transparent 2px 70px); }
+.s06-bg i { position: absolute; border-radius: 50%; border: 2px solid rgba(255,255,255,.14); box-shadow: 0 0 40px rgba(200,140,255,.25) inset; animation: spin 40s linear infinite; }
+.s06-bg i:nth-child(1) { width: 110vmax; height: 110vmax; left: -30vmax; top: -20vmax; border-style: dashed; }
+.s06-bg i:nth-child(2) { width: 70vmax; height: 70vmax; right: -25vmax; bottom: -35vmax; animation-direction: reverse; animation-duration: 55s; }
+.s06-bg i:nth-child(3) { inset: 0; border: 0; border-radius: 0; box-shadow: none; background: linear-gradient(100deg, transparent 40%, rgba(255,255,255,.12) 50%, transparent 60%); background-size: 300% 100%; animation: sweep 6s ease-in-out infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes sweep { from { background-position: 150% 0; } to { background-position: -50% 0; } }
+.s06-head { position: relative; justify-self: start; max-width: 100%; padding: 12px 60px 14px 22px; background: linear-gradient(90deg, rgba(255,255,255,.22), rgba(255,255,255,.04)); clip-path: polygon(0 0, 100% 0, calc(100% - 36px) 100%, 0 100%); border-left: 6px solid #e9c7ff; }
+.s06-sub { display: block; font-size: 12px; letter-spacing: .35em; color: #e9c7ff; }
+.s06-head h1 { margin: 4px 0 0; font-weight: 400; font-size: clamp(20px, 4vw, 42px); line-height: 1.1; letter-spacing: .02em; text-shadow: 0 2px 0 #3a0f9e, 0 0 18px rgba(230,180,255,.8); text-wrap: balance; }
+.s06-main { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: clamp(18px, 4vw, 48px); align-items: center; max-width: 1100px; width: 100%; margin: 0 auto; min-height: 0; }
+.s06-list { display: grid; gap: 14px; padding-right: 30px; }
+.s06-list button { position: relative; width: 100%; text-align: left; cursor: pointer; border: 0; color: #fff; font: 400 clamp(17px, 2.4vw, 24px) "Russo One", sans-serif; letter-spacing: .06em;
+  padding: 14px 28px; border-radius: 999px 14px 999px 14px; transform: skewX(-12deg);
+  background: linear-gradient(180deg, rgba(255,255,255,.32) 0 46%, rgba(255,255,255,.06) 54%), linear-gradient(90deg, #4d1ab8, #26086e);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.28), 0 4px 0 rgba(0,0,0,.35); opacity: .78;
+  transition: transform .18s ease, opacity .18s, box-shadow .18s; }
+.s06-list button span { display: inline-block; transform: skewX(12deg); text-shadow: 0 2px 0 rgba(0,0,0,.4); }
+.s06-list button.on { opacity: 1; transform: skewX(-12deg) translateX(24px) scale(1.04);
+  background: linear-gradient(180deg, rgba(255,255,255,.55) 0 46%, rgba(255,255,255,.12) 54%), linear-gradient(90deg, #d07bff, #7a2cff);
+  box-shadow: inset 0 0 0 2px #fff, 0 0 26px rgba(220,150,255,.95), 0 4px 0 rgba(0,0,0,.35); }
+.s06-list button.on::before { content: "▶"; position: absolute; left: -26px; top: 50%; transform: translateY(-50%) skewX(12deg); color: #fff; text-shadow: 0 0 10px #e9c7ff; animation: nudge .6s ease-in-out infinite alternate; }
+@keyframes nudge { to { left: -18px; } }
+.s06-list button:focus-visible { outline: 3px dashed #fff; outline-offset: 4px; }
+.s06-preview { display: grid; gap: 14px; padding: 14px; border-radius: 22px; background: rgba(255,255,255,.08); box-shadow: inset 0 0 0 2px rgba(255,255,255,.3), 0 18px 40px rgba(0,0,0,.4); backdrop-filter: blur(6px); }
+.s06-preview img { display: block; width: 100%; aspect-ratio: 1376 / 768; object-fit: cover; border-radius: 12px; image-rendering: auto; }
+.s06-preview p { margin: 0; min-height: 2.6em; padding: 0 6px; font: 18px/1.35 var(--f-body); font-size: 22px; color: #f2e3ff; }
+.s06-preview p.soon { font-family: "Russo One", sans-serif; font-size: 20px; color: #fff; text-shadow: 0 0 14px #d07bff; }
+.s06-hints { position: relative; justify-self: end; display: flex; gap: 10px; padding: 8px 14px 8px 40px; background: linear-gradient(270deg, rgba(0,0,0,.55), rgba(0,0,0,0)); clip-path: polygon(30px 0, 100% 0, 100% 100%, 0 100%); }
+.s06-hints button { display: inline-flex; align-items: center; gap: 8px; border: 0; cursor: pointer; background: none; color: #fff; font: 400 15px "Russo One", sans-serif; letter-spacing: .08em; padding: 4px 8px; }
+.s06-hints button:focus-visible { outline: 2px dashed #fff; }
+.k { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; font: 400 14px "Russo One", sans-serif; color: #fff; box-shadow: inset 0 -3px 0 rgba(0,0,0,.3), inset 0 2px 0 rgba(255,255,255,.5); }
+.k.a { background: #27c24c; } .k.b { background: #e0303a; }
+.s06-art { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; padding: 16px; background: rgba(5,1,20,.92); cursor: pointer; animation: s06In .3s ease-out both; }
+.s06-art img { max-width: 100%; max-height: 100%; border-radius: 12px; box-shadow: 0 0 0 3px #fff, 0 0 40px rgba(208,123,255,.8); image-rendering: auto; }
+@media (max-width: 700px) {
+  .s06-main { grid-template-columns: 1fr; align-content: start; gap: 18px; }
+  .s06-preview { order: -1; padding: 10px; }
+  .s06-list { padding: 0 28px 0 30px; gap: 10px; }
+  .s06-list button.on { transform: skewX(-12deg) translateX(10px) scale(1.03); }
+}
+@media (prefers-reduced-motion: reduce) { .s06, .s06-art, .s06-bg i, .s06-list button.on::before { animation: none; } }
+
+/* Kenos Last Strike gate */
+.heart { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; padding: 20px max(16px, env(safe-area-inset-left, 0px)); background: rgba(5,2,8,.94); }
+.heart-win { width: min(100%, 460px); }
+.heart-x { width: 16px; height: 16px; flex: none; border: 0; padding: 0; cursor: pointer; background: var(--bone); box-shadow: inset -3px -3px 0 #8f7fd0; color: var(--ink); font: 9px var(--f-pixel); }
+.heart-say { margin: 0; max-width: 22ch; text-align: center; font: clamp(14px, 3.6vw, 26px)/1.7 var(--f-pixel); color: var(--bone); text-shadow: 3px 3px 0 var(--magenta), 5px 5px 0 var(--ink); }
+.heart-say.no { color: #ff4d6d; text-shadow: 3px 3px 0 #2a0006, 0 0 12px rgba(255,0,30,.7); }
+.heart-say.no.shake { animation: quake .12s steps(2) 6; }
+.heart-wall { position: fixed; inset: 0; background: #000; overflow: hidden; animation: wallIn 1.6s ease both; }
+.heart-blur { position: absolute; inset: -40px; background: center / cover no-repeat; filter: blur(28px) brightness(.55); }
+.heart-wall img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; image-rendering: auto; }
+@media (max-aspect-ratio: 3/4) { .heart-wall img { object-fit: cover; } }
+.heart-leave { position: absolute; z-index: 2; right: max(14px, env(safe-area-inset-right, 0px)); top: max(14px, env(safe-area-inset-top, 0px)); font: 9px var(--f-pixel); color: var(--bone); background: rgba(0,0,0,.5); border: 0; padding: 8px 10px; cursor: pointer; opacity: .35; }
+.heart-leave:hover, .heart-leave:focus-visible { opacity: 1; }
+.heart-title { position: absolute; z-index: 1; left: 0; right: 0; top: max(28px, env(safe-area-inset-top, 0px) + 16px); margin: 0; padding: 0 16px; display: grid; gap: 14px; justify-items: center; text-align: center; font: 400 clamp(16px, 4.2vw, 44px)/1.3 var(--f-pixel); letter-spacing: .04em; color: var(--gold); text-shadow: 3px 3px 0 var(--magenta), 6px 6px 0 var(--ink); text-wrap: balance; animation: titleIn 1.2s steps(8) .8s both; }
+.heart-title span { font-size: .55em; color: var(--bone); letter-spacing: .3em; text-shadow: 2px 2px 0 var(--ink); }
+@keyframes titleIn { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: none; } }
+@keyframes wallIn { from { opacity: 0; filter: brightness(2); } to { opacity: 1; filter: none; } }
+@media (prefers-reduced-motion: reduce) { .heart-wall, .heart-say.no.shake { animation: none; } }
 footer { text-align: center; font-family: var(--f-pixel); font-size: 9px; color: var(--muted); letter-spacing: .15em; }
 
 @media (max-width: 640px) {
@@ -344,6 +435,50 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
 </div>
 <canvas id="intro" hidden></canvas>
 
+<!-- Maxi single: purple select menu, Sonic 2006 style -->
+<div class="s06" id="s06" hidden>
+  <div class="s06-bg" aria-hidden="true"><i></i><i></i><i></i></div>
+  <header class="s06-head"><span class="s06-sub">MAXI SINGLE</span><h1>PANEL SEWI SIGMATISERIE</h1></header>
+  <div class="s06-main">
+    <div class="s06-list" role="menu" aria-label="Maxi single menu">
+      <button type="button" role="menuitem" data-act="play"><span>PLAY</span></button>
+      <button type="button" role="menuitem" data-act="tracks"><span>TRACKLIST</span></button>
+      <button type="button" role="menuitem" data-act="art"><span>ARTWORK</span></button>
+      <button type="button" role="menuitem" data-act="back"><span>BACK</span></button>
+    </div>
+    <div class="s06-preview">
+      <img src="maxi-cover.jpg" alt="">
+      <p id="s06-desc" role="status"></p>
+    </div>
+  </div>
+  <footer class="s06-hints">
+    <button type="button" id="s06-a"><b class="k a">A</b> SELECT</button>
+    <button type="button" id="s06-b"><b class="k b">B</b> BACK</button>
+  </footer>
+  <div class="s06-art" id="s06-art" hidden><img src="maxi-cover.jpg" alt="Panel Sewi Sigmatiserie artwork"></div>
+</div>
+
+<!-- Kenos Last Strike: only the people he loves get in -->
+<div class="heart" id="heart" hidden>
+  <div class="win heart-win" id="heart-ask">
+    <div class="bar"><i>■</i><b>KENOS LAST STRIKE · WHO ARE YOU?</b><i>_</i><button type="button" class="heart-x" id="heart-close" aria-label="Close">×</button></div>
+    <form class="body" id="heart-form" novalidate>
+      <div class="field">
+        <label for="heart-name">FULL NAME</label>
+        <div class="row"><input id="heart-name" type="text" autocomplete="name" autocapitalize="words" placeholder="First name and last name"></div>
+      </div>
+      <button class="btn" type="submit" style="justify-self:stretch;text-align:center;border:0;cursor:pointer">▶ ENTER</button>
+    </form>
+  </div>
+  <p class="heart-say" id="heart-say" hidden></p>
+  <div class="heart-wall" id="heart-wall" hidden>
+    <div class="heart-blur" style="background-image:url(story-wallpaper.jpg)"></div>
+    <img src="story-wallpaper.jpg" alt="Kenos sitting alone on a park bench at night under a street lamp">
+    <h1 class="heart-title">KENOS LAST STRIKE<span>2008-2026</span></h1>
+    <button type="button" class="heart-leave" id="heart-leave">× EXIT</button>
+  </div>
+</div>
+
 <div class="wrap" id="site" inert>
   <div class="news">
     <!-- real video at its own speed; if the phone blocks it (Low Power Mode, data saver) a frame player takes over at the same speed -->
@@ -376,6 +511,8 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
   <nav aria-label="Sections">
     <a href="#home" data-tab="home">HOME</a>
     <a href="#game" data-tab="game">GAME</a>
+    <a href="#story" data-tab="story">STORY</a>
+    <a href="#song" data-tab="song">SONG</a>
     <a href="#credits" data-tab="credits">CREDITS</a>
     <a href="#shop" data-tab="shop">SHOP</a>
     <a href="#shop" data-tab="shop" class="kix-chip" aria-label="Your Kix, open the shop"><img src="kix.png" alt=""><span class="kix-n">0</span></a>
@@ -429,6 +566,55 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
           <p class="small">There's a big difference between playing on PC and on mobile. You'll see it soon. Just play the game.</p>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- STORY -->
+  <section class="win" id="story" data-panel="story" hidden>
+    <div class="bar"><i>■</i><b>STORY.EXE · KENOS LAST STRIKE</b><i>_</i><i>×</i></div>
+    <div class="body">
+      <div class="game">
+        <div class="cover story-cover">
+          <img src="story-cover.jpg" alt="Kenos Last Strike cover: young Kenos in a white shirt, looking ahead">
+          <span class="story-title">KENOS<br>LAST STRIKE</span>
+        </div>
+        <div class="body" style="padding:0">
+          <h2>KENOS<br>LAST STRIKE</h2>
+          <p>Where it all began. The full story of Kenos is coming soon on this page.</p>
+          <span class="blink">▶ CHAPTER 1 · COMING SOON</span>
+          <div class="btns">
+            <button class="btn" type="button" id="story-enter" style="border:0;cursor:pointer">▶ ENTER</button>
+            <a class="btn alt" href="#home" data-tab="home">RETURN HOME</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SONG: pick the album or the maxi single -->
+  <section class="win" id="song" data-panel="song" hidden>
+    <div class="bar"><i>■</i><b>SONG.EXE · SELECT</b><i>_</i><i>×</i></div>
+    <div class="body">
+      <h2>CHOOSE YOUR MUSIC</h2>
+      <div class="picks">
+        <div class="pick">
+          <span class="pick-label">ALBUM</span>
+          <div class="cover pick-cover locked">
+            <img src="album-cover.jpg" alt="New Danger 2025 album cover: Kenos in a black hood points at the camera, with KENOS in purple letters">
+            <span class="pick-lock"><span data-lock></span>COMING SOON</span>
+          </div>
+          <span class="btn locked" role="button" aria-disabled="true">LOCKED</span>
+        </div>
+        <div class="pick">
+          <span class="pick-label">MAXI SINGLE</span>
+          <div class="cover pick-cover maxi-cover">
+            <img src="maxi-cover.jpg" alt="Panel Sewi Sigmatiserie maxi single cover: Kenos in a black hoodie looks back over his shoulder on a purple background with pink Japanese letters">
+            <span class="story-title">PANEL SEWI<br>SIGMATISERIE</span>
+          </div>
+          <button class="btn" type="button" id="maxi-enter" style="border:0;cursor:pointer">▶ ENTER</button>
+        </div>
+      </div>
+      <a class="btn alt" href="#home" data-tab="home">RETURN HOME</a>
     </div>
   </section>
 
@@ -513,7 +699,7 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
 
 <script>
 // tabs, deep-linkable as #home / #game / #credits
-const tabs = ["home", "game", "credits", "shop", "account"];
+const tabs = ["home", "game", "story", "song", "credits", "shop", "account"];
 function show(name) {
   if (!tabs.includes(name)) name = "home";
   document.querySelectorAll("[data-panel]").forEach(p => p.hidden = p.dataset.panel !== name);
@@ -792,6 +978,7 @@ function playTap() {
   if (!tapBuf || now - lastTap < 60) return;
   lastTap = now;
   if (!document.getElementById("intro").hidden) return; // the reaper intro has its own sound
+  if (document.body.classList.contains("story-mode")) return; // Story and maxi single screens stay silent
   const src = ac.createBufferSource(), g = ac.createGain();
   g.gain.value = .8; src.buffer = tapBuf; src.connect(g); g.connect(ac.destination); src.start();
 }
@@ -1197,6 +1384,7 @@ $("back").onclick = closeGame;
   ["pointerdown", "touchend", "keydown"].forEach(ev => addEventListener(ev, blessAlbum, { capture: true, once: true }));
   btn.onclick = blessAlbum;
   function startAlbum() {
+    if (document.body.classList.contains("story-mode")) return; // the Story page is silent
     try { av.currentTime = 0; } catch (_) {}
     av.muted = !soundOk;
     av.play().catch(() => { av.muted = true; av.play().catch(() => {}); });
@@ -1219,7 +1407,7 @@ $("back").onclick = closeGame;
   }
   setTimeout(next, SCENES[0].ms);
   // leaving the tab or opening the game silences the cover
-  document.addEventListener("visibilitychange", () => { if (document.hidden) av.pause(); else if (SCENES[i].id === "album") av.play().catch(() => {}); });
+  document.addEventListener("visibilitychange", () => { if (document.hidden) av.pause(); else if (SCENES[i].id === "album" && !document.body.classList.contains("story-mode")) av.play().catch(() => {}); });
 })();
 
 // ===== Kix shop: prices in the player's own money =====
@@ -1266,6 +1454,146 @@ $("back").onclick = closeGame;
   }
 })();
 
+// ===== Locked pages get the same pixel padlock as the game =====
+document.querySelectorAll("[data-lock]").forEach(s => { const l = document.querySelector("svg.lock"); if (l) s.append(l.cloneNode(true)); });
+
+// ===== Maxi single: Sonic 2006-style select menu (silent, keyboard / touch / mouse) =====
+(() => {
+  const box = $("s06"), items = [...box.querySelectorAll("[data-act]")], desc = $("s06-desc"), art = $("s06-art");
+  const DESC = {
+    play: "Listen to Panel Sewi: Sigmatiserie, the maxi single.",
+    tracks: "See every track on the maxi single.",
+    art: "Look at the cover art in full.",
+    back: "Return to the V-Devil website."
+  };
+  let sel = 0;
+  function select(i) {
+    sel = (i + items.length) % items.length;
+    items.forEach((b, k) => b.classList.toggle("on", k === sel));
+    items[sel].focus({ preventScroll: true });
+    desc.classList.remove("soon"); desc.textContent = DESC[items[sel].dataset.act];
+  }
+  function act(i) {
+    select(i);
+    const a = items[sel].dataset.act;
+    if (a === "back") return close();
+    if (a === "art") { art.hidden = false; return; }
+    desc.classList.add("soon"); desc.textContent = "COMING SOON";
+  }
+  function open() {
+    box.hidden = false; $("site").inert = true;
+    document.body.classList.add("story-mode"); // no website sound in the menu
+    try { $("album-vid").pause(); } catch (_) {}
+    document.documentElement.style.overflow = "hidden";
+    select(0);
+  }
+  function close() {
+    art.hidden = true; box.hidden = true; $("site").inert = false;
+    document.body.classList.remove("story-mode");
+    document.documentElement.style.overflow = "";
+    $("maxi-enter").focus();
+  }
+  $("maxi-enter").onclick = open;
+  items.forEach((b, i) => { b.onclick = () => act(i); b.onpointerenter = e => { if (e.pointerType === "mouse") select(i); }; });
+  $("s06-a").onclick = () => act(sel);
+  $("s06-b").onclick = () => { if (!art.hidden) { art.hidden = true; select(sel); } else close(); };
+  art.onclick = () => { art.hidden = true; select(sel); };
+  addEventListener("keydown", e => {
+    if (box.hidden) return;
+    if (!art.hidden) { if (["Escape", "Backspace", "Enter", " "].includes(e.key)) { e.preventDefault(); art.hidden = true; select(sel); } return; }
+    if (e.key === "ArrowDown" || e.key === "ArrowRight") { e.preventDefault(); select(sel + 1); }
+    else if (e.key === "ArrowUp" || e.key === "ArrowLeft") { e.preventDefault(); select(sel - 1); }
+    else if (e.key === "Escape" || e.key === "Backspace") { e.preventDefault(); close(); }
+  });
+})();
+
+// ===== Kenos Last Strike: a full-name check, then the wallpaper =====
+// Names are kept only as SHA-256 fingerprints (accents, capitals and word order ignored),
+// so the list of people is not readable in the page source.
+(() => {
+  const LOVED = new Set([
+    "a5f71fcf30d2a53f04dc6be35c7e01863a100344819f564c1a695590bf2275ba",
+    "2403e329c74813926a3be8f1f938330da5ad054a3ad8f0fabb4f89441e84df77",
+    "9cff9d8a7813a2d559448c98eb827f9f341978010f4ee05868a9ab874bc3d480",
+    "da19c9fd96e6659fed3f3024998d109dd0e4b0b3e75bae6bbd8effe03422ef4b",
+    "cb40df28d7364d4b3393b025ed739a74fc56516286ac5606dabf602f5e9be760",
+    "b2d4f30305fc2a29a070a7eec4505be7b5655f3fc870fc6baabdc4d33e973b6f"
+  ]);
+  const YES = "You were part of the people I sacrificed my heart for.";
+  const NO = "Sorry, you're not part of the people I love. Sorry, but leave.";
+  const box = $("heart"), ask = $("heart-ask"), sayEl = $("heart-say"), wall = $("heart-wall"), input = $("heart-name");
+  let busy = false, timers = [];
+  const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+  const key = s => s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().match(/[a-z]+/g)?.sort().join(" ") || "";
+  async function fingerprint(s) { return hex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(key(s)))); }
+
+  function buzz(ac) { // negative sound: two falling crushed buzzes and a low thud
+    const cr = crusher(ac), g = ac.createGain(); g.gain.value = .3; cr.connect(g); g.connect(ac.destination);
+    [0, .28].forEach((d, i) => {
+      const t = ac.currentTime + d, o = ac.createOscillator(), a = ac.createGain();
+      o.type = "square"; o.frequency.setValueAtTime(i ? 150 : 200, t); o.frequency.exponentialRampToValueAtTime(i ? 55 : 90, t + .32);
+      a.gain.setValueAtTime(.0001, t); a.gain.linearRampToValueAtTime(.9, t + .01); a.gain.exponentialRampToValueAtTime(.0001, t + (i ? .6 : .3));
+      o.connect(a); a.connect(cr); o.start(t); o.stop(t + .7);
+    });
+    heartbeat(ac, .05);
+  }
+  function chime(ac) { // accepted: a soft rising piano line
+    const t0 = ac.currentTime + .05;
+    [[62, 0], [66, 1], [69, 2], [74, 3], [78, 5]].forEach(([m, s]) => pianoNote(ac, m, t0 + s * .22, 2.4, .2));
+    [50, 57, 62].forEach(m => pianoNote(ac, m, t0 + 5 * .22, 4, .14));
+  }
+  function typeOut(text, cls, done) {
+    ask.hidden = true; sayEl.hidden = false; sayEl.className = "heart-say " + cls; sayEl.textContent = "";
+    let i = 0;
+    (function step() {
+      if (i >= text.length) return later(done, 2200);
+      sayEl.textContent += text[i++];
+      if (AC && cls === "no" && text[i - 1] !== " ") typeBlip(AC);
+      later(step, /[ ,.']/.test(text[i - 1]) ? 110 : 55);
+    })();
+  }
+  function reset() {
+    timers.forEach(clearTimeout); timers = []; busy = false;
+    ask.hidden = false; sayEl.hidden = true; wall.hidden = true; input.value = "";
+  }
+  const pageTitle = document.title;
+  function open() {
+    reset(); box.hidden = false; $("site").inert = true;
+    document.body.classList.add("story-mode"); // stop every website sound while the Story is open
+    try { $("album-vid").pause(); $("album-vid").muted = true; } catch (_) {}
+    setTimeout(() => input.focus(), 50);
+  }
+  function close() {
+    reset(); box.hidden = true; $("site").inert = false; $("site").hidden = false;
+    document.body.classList.remove("story-mode"); document.title = pageTitle;
+    try { if (document.fullscreenElement) document.exitFullscreen(); } catch (_) {}
+  }
+  $("story-enter").onclick = open;
+  $("heart-close").onclick = close;
+  $("heart-leave").onclick = close;
+  addEventListener("keydown", e => { if (e.key === "Escape" && !box.hidden) close(); });
+
+  $("heart-form").addEventListener("submit", async e => {
+    e.preventDefault();
+    if (busy || !key(input.value)) return input.focus();
+    busy = true;
+    const ac = audio(); // unlocked inside the tap
+    let ok = false;
+    try { ok = LOVED.has(await fingerprint(input.value)); } catch (_) {}
+    if (!ok) {
+      if (ac) buzz(ac);
+      typeOut(NO, "no", close);
+      later(() => sayEl.classList.add("shake"), 50);
+      return;
+    }
+    try { box.requestFullscreen && box.requestFullscreen().catch(() => {}); } catch (_) {} // inside the tap, so browsers allow it
+    typeOut(YES, "", () => { // leave the website: only the Kenos Last Strike page remains
+      sayEl.hidden = true; wall.hidden = false; $("site").hidden = true;
+      document.title = "Kenos Last Strike 2008-2026";
+    });
+  });
+})();
+
 // Logged in before on this device (until LOG OUT): open the site straight away
 (() => {
   let s = null; try { s = localStorage.getItem(SESSION); } catch (_) {}
@@ -1286,3 +1614,4 @@ $("back").onclick = closeGame;
   });
 })();
 </script>
+

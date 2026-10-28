@@ -1008,6 +1008,17 @@ function drawAvatar(cv, name) {
   c.fillStyle = "#000"; c.fillRect(2, 3, 1, 1); c.fillRect(5, 3, 1, 1);
   c.fillStyle = eye; c.fillRect(2, 2, 1, 1); c.fillRect(5, 2, 1, 1);
 }
+// The creator (the owner of this site on Claude) gets 999,000 Kix; every other account starts at 0.
+// Claude itself says who the owner is, so nobody can claim it by picking a username.
+const CREATOR_KIX = 999000;
+let isCreator = false;
+(async () => {
+  try {
+    if (!window.claude || !window.claude.use) return;
+    const user = await window.claude.use("user");
+    if (user && await user.isOwner()) { isCreator = true; if (!$("site").inert) fillAccount(); }
+  } catch (_) {}
+})();
 function fillAccount() {
   const all = loadAccounts(), a = all[myEmail] || { username: player, created: Date.now() };
   const order = Object.values(all).sort((x, y) => x.created - y.created);
@@ -1020,7 +1031,9 @@ function fillAccount() {
   $("acc-since").textContent = new Date(a.created).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
   $("acc-no").textContent = "#" + String(no).padStart(3, "0");
   $("acc-rank").textContent = "PLAYER #" + String(no).padStart(3, "0");
-  document.querySelectorAll(".kix-n").forEach(el => el.textContent = (a.kix || 0).toLocaleString());
+  const kix = isCreator ? CREATOR_KIX : (a.kix || 0);
+  document.querySelectorAll(".kix-n").forEach(el => el.textContent = kix.toLocaleString());
+  if (isCreator) $("acc-rank").textContent = "CREATOR · PLAYER #" + String(no).padStart(3, "0");
   drawAvatar($("nav-avatar"), a.username);
   drawAvatar($("big-avatar"), a.username);
 }

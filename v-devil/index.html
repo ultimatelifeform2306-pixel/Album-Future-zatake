@@ -258,6 +258,52 @@ dl.stats dd { margin: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .s06, .s06-art, .s06-bg i, .s06-list button.on::before { animation: none; } }
 
+/* ---------- GAME: console store page ---------- */
+.ps { display: grid; gap: 26px; padding: 0 0 22px; background: linear-gradient(#0b0730, #12063a 40%); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #f4f2ff; }
+.ps-hero { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 26px; align-items: end; padding: 70px 24px 26px; min-height: 340px; }
+.ps-hero-bg { position: absolute; inset: 0; background: url(shot-egypt.jpg) center / cover; }
+.ps-hero-bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(11,7,48,.92) 0%, rgba(11,7,48,.55) 55%, rgba(11,7,48,.15)), linear-gradient(transparent 40%, #0b0730); }
+.ps-box { position: relative; width: 100%; height: auto; aspect-ratio: 3 / 4; object-fit: cover; object-position: 30% 50%; border-radius: 10px; box-shadow: 0 18px 40px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.15); image-rendering: auto; }
+.ps-info { position: relative; display: grid; gap: 12px; min-width: 0; }
+.ps-pub { font-size: 13px; font-weight: 600; letter-spacing: .08em; color: #c9c2ff; }
+.ps-title { margin: 0; font: 700 clamp(28px, 5vw, 50px)/1.05 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #fff; text-shadow: 0 2px 16px rgba(0,0,0,.6); text-wrap: balance; }
+.ps-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.ps-chips span { font-size: 13px; padding: 5px 12px; border-radius: 999px; background: rgba(255,255,255,.14); backdrop-filter: blur(6px); }
+.ps-buy { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 6px; }
+.ps-price { font-size: 22px; font-weight: 700; }
+.ps-cta { display: inline-flex; align-items: center; gap: 10px; padding: 13px 26px; border-radius: 999px; font-size: 15px; font-weight: 700; letter-spacing: .04em; color: #1b1450; background: #b8b2d6; cursor: not-allowed; }
+.ps-cta svg.lock { width: 18px; height: 21px; }
+.ps-media { display: grid; gap: 12px; padding: 0 24px; }
+.ps-view { position: relative; margin: 0; aspect-ratio: 16 / 9; max-width: 100%; border-radius: 14px; overflow: hidden; background: #000; box-shadow: 0 0 0 1px rgba(255,255,255,.12); cursor: zoom-in; }
+.ps-view-bg { position: absolute; inset: -30px; background: center / cover; filter: blur(22px) brightness(.5); }
+.ps-view img { position: relative; display: block; width: 100%; height: 100%; object-fit: contain; image-rendering: auto; }
+.ps-view img.px { image-rendering: pixelated; }
+.ps-view figcaption { position: absolute; left: 14px; bottom: 12px; font-size: 13px; font-weight: 600; letter-spacing: .06em; padding: 6px 12px; border-radius: 8px; background: rgba(0,0,0,.6); }
+.ps-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%; border: 0; cursor: pointer; font-size: 28px; line-height: 1; color: #fff; background: rgba(0,0,0,.5); }
+.ps-nav.prev { left: 10px; } .ps-nav.next { right: 10px; }
+.ps-nav:hover { background: rgba(0,0,0,.75); }
+.ps-thumbs { display: flex; gap: 10px; overflow-x: auto; padding: 4px 2px 8px; scrollbar-width: thin; }
+.ps-thumbs button { flex: none; width: 150px; aspect-ratio: 16 / 9; padding: 0; border: 0; border-radius: 10px; overflow: hidden; cursor: pointer; background: #000; opacity: .65; transition: opacity .15s, transform .15s, box-shadow .15s; }
+.ps-thumbs button img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ps-thumbs button.on { opacity: 1; transform: scale(1.04); box-shadow: 0 0 0 3px #fff, 0 6px 18px rgba(0,0,0,.5); }
+.ps-thumbs button:focus-visible, .ps-nav:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.ps-about { display: grid; gap: 14px; padding: 0 24px; }
+.ps-about h3 { margin: 0; font-size: 22px; }
+.ps-about p { margin: 0; max-width: 68ch; line-height: 1.55; font-size: 16px; color: #ddd8ff; }
+.ps-facts { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 8px 22px; font-size: 15px; }
+.ps-facts dt { color: #9f97d6; }
+.ps-facts dd { margin: 0; }
+.ps-about .btn { justify-self: start; }
+.ps-zoom { position: fixed; inset: 0; z-index: 48; display: grid; place-items: center; padding: 16px; background: rgba(4,2,16,.94); cursor: zoom-out; }
+.ps-zoom img { max-width: 100%; max-height: 100%; border-radius: 10px; image-rendering: auto; }
+.ps-zoom img.px { image-rendering: pixelated; width: 100%; height: auto; }
+@media (max-width: 640px) {
+  .ps-hero { grid-template-columns: 1fr; padding-top: 30px; }
+  .ps-box { width: 150px; }
+  .ps-media, .ps-about { padding: 0 14px; }
+  .ps-thumbs button { width: 120px; }
+}
+
 /* ---------- maxi single tracklist: King of Fighters title style ---------- */
 .kof-wrap { position: absolute; inset: 0; z-index: 4; background: #2a0858; }
 .kof-bg { position: absolute; inset: 0; background: url(maxi-bg.jpg) 50% 30% / cover no-repeat; }
@@ -592,31 +638,50 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
     </div>
   </section>
 
-  <!-- GAME -->
+  <!-- GAME: game store page -->
   <section class="win" id="game" data-panel="game" hidden>
     <div class="bar"><i>■</i><b>GAME.EXE · PANEL SEWI</b><i>_</i><i>×</i></div>
-    <div class="body">
-      <div class="game">
-        <div class="cover">
-          <img src="cover.jpg" alt="Panel Sewi Sigmatiserie title screen with PRESS START">
-          <span class="lock-badge"><svg class="lock" viewBox="0 0 12 14" width="12" height="14" shape-rendering="crispEdges" aria-hidden="true"><rect x="3" y="0" width="1" height="1" fill="#12063a"/><rect x="4" y="0" width="1" height="1" fill="#12063a"/><rect x="5" y="0" width="1" height="1" fill="#12063a"/><rect x="6" y="0" width="1" height="1" fill="#12063a"/><rect x="7" y="0" width="1" height="1" fill="#12063a"/><rect x="8" y="0" width="1" height="1" fill="#12063a"/><rect x="2" y="1" width="1" height="1" fill="#12063a"/><rect x="3" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="4" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="5" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="6" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="7" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="8" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="9" y="1" width="1" height="1" fill="#12063a"/><rect x="2" y="2" width="1" height="1" fill="#12063a"/><rect x="3" y="2" width="1" height="1" fill="#c7b8ff"/><rect x="8" y="2" width="1" height="1" fill="#c7b8ff"/><rect x="9" y="2" width="1" height="1" fill="#12063a"/><rect x="1" y="3" width="1" height="1" fill="#12063a"/><rect x="2" y="3" width="1" height="1" fill="#c7b8ff"/><rect x="9" y="3" width="1" height="1" fill="#c7b8ff"/><rect x="10" y="3" width="1" height="1" fill="#12063a"/><rect x="1" y="4" width="1" height="1" fill="#12063a"/><rect x="2" y="4" width="1" height="1" fill="#c7b8ff"/><rect x="9" y="4" width="1" height="1" fill="#c7b8ff"/><rect x="10" y="4" width="1" height="1" fill="#12063a"/><rect x="1" y="5" width="1" height="1" fill="#12063a"/><rect x="2" y="5" width="1" height="1" fill="#c7b8ff"/><rect x="9" y="5" width="1" height="1" fill="#c7b8ff"/><rect x="10" y="5" width="1" height="1" fill="#12063a"/><rect x="0" y="6" width="1" height="1" fill="#12063a"/><rect x="1" y="6" width="1" height="1" fill="#12063a"/><rect x="2" y="6" width="1" height="1" fill="#12063a"/><rect x="3" y="6" width="1" height="1" fill="#12063a"/><rect x="4" y="6" width="1" height="1" fill="#12063a"/><rect x="5" y="6" width="1" height="1" fill="#12063a"/><rect x="6" y="6" width="1" height="1" fill="#12063a"/><rect x="7" y="6" width="1" height="1" fill="#12063a"/><rect x="8" y="6" width="1" height="1" fill="#12063a"/><rect x="9" y="6" width="1" height="1" fill="#12063a"/><rect x="10" y="6" width="1" height="1" fill="#12063a"/><rect x="11" y="6" width="1" height="1" fill="#12063a"/><rect x="0" y="7" width="1" height="1" fill="#12063a"/><rect x="1" y="7" width="1" height="1" fill="#ffc531"/><rect x="2" y="7" width="1" height="1" fill="#ffc531"/><rect x="3" y="7" width="1" height="1" fill="#ffc531"/><rect x="4" y="7" width="1" height="1" fill="#ffc531"/><rect x="5" y="7" width="1" height="1" fill="#ffc531"/><rect x="6" y="7" width="1" height="1" fill="#ffc531"/><rect x="7" y="7" width="1" height="1" fill="#ffc531"/><rect x="8" y="7" width="1" height="1" fill="#ffc531"/><rect x="9" y="7" width="1" height="1" fill="#ffc531"/><rect x="10" y="7" width="1" height="1" fill="#ffc531"/><rect x="11" y="7" width="1" height="1" fill="#12063a"/><rect x="0" y="8" width="1" height="1" fill="#12063a"/><rect x="1" y="8" width="1" height="1" fill="#ffc531"/><rect x="2" y="8" width="1" height="1" fill="#ffc531"/><rect x="3" y="8" width="1" height="1" fill="#ffc531"/><rect x="4" y="8" width="1" height="1" fill="#ffc531"/><rect x="5" y="8" width="1" height="1" fill="#12063a"/><rect x="6" y="8" width="1" height="1" fill="#12063a"/><rect x="7" y="8" width="1" height="1" fill="#ffc531"/><rect x="8" y="8" width="1" height="1" fill="#ffc531"/><rect x="9" y="8" width="1" height="1" fill="#ffc531"/><rect x="10" y="8" width="1" height="1" fill="#ffc531"/><rect x="11" y="8" width="1" height="1" fill="#12063a"/><rect x="0" y="9" width="1" height="1" fill="#12063a"/><rect x="1" y="9" width="1" height="1" fill="#ffc531"/><rect x="2" y="9" width="1" height="1" fill="#ffc531"/><rect x="3" y="9" width="1" height="1" fill="#ffc531"/><rect x="4" y="9" width="1" height="1" fill="#ffc531"/><rect x="5" y="9" width="1" height="1" fill="#12063a"/><rect x="6" y="9" width="1" height="1" fill="#12063a"/><rect x="7" y="9" width="1" height="1" fill="#ffc531"/><rect x="8" y="9" width="1" height="1" fill="#ffc531"/><rect x="9" y="9" width="1" height="1" fill="#ffc531"/><rect x="10" y="9" width="1" height="1" fill="#ffc531"/><rect x="11" y="9" width="1" height="1" fill="#12063a"/><rect x="0" y="10" width="1" height="1" fill="#12063a"/><rect x="1" y="10" width="1" height="1" fill="#ffc531"/><rect x="2" y="10" width="1" height="1" fill="#ffc531"/><rect x="3" y="10" width="1" height="1" fill="#ffc531"/><rect x="4" y="10" width="1" height="1" fill="#ffc531"/><rect x="5" y="10" width="1" height="1" fill="#ffc531"/><rect x="6" y="10" width="1" height="1" fill="#12063a"/><rect x="7" y="10" width="1" height="1" fill="#ffc531"/><rect x="8" y="10" width="1" height="1" fill="#ffc531"/><rect x="9" y="10" width="1" height="1" fill="#ffc531"/><rect x="10" y="10" width="1" height="1" fill="#ffc531"/><rect x="11" y="10" width="1" height="1" fill="#12063a"/><rect x="0" y="11" width="1" height="1" fill="#12063a"/><rect x="1" y="11" width="1" height="1" fill="#ffc531"/><rect x="2" y="11" width="1" height="1" fill="#ffc531"/><rect x="3" y="11" width="1" height="1" fill="#ffc531"/><rect x="4" y="11" width="1" height="1" fill="#ffc531"/><rect x="5" y="11" width="1" height="1" fill="#ffc531"/><rect x="6" y="11" width="1" height="1" fill="#12063a"/><rect x="7" y="11" width="1" height="1" fill="#ffc531"/><rect x="8" y="11" width="1" height="1" fill="#ffc531"/><rect x="9" y="11" width="1" height="1" fill="#ffc531"/><rect x="10" y="11" width="1" height="1" fill="#ffc531"/><rect x="11" y="11" width="1" height="1" fill="#12063a"/><rect x="0" y="12" width="1" height="1" fill="#12063a"/><rect x="1" y="12" width="1" height="1" fill="#ffc531"/><rect x="2" y="12" width="1" height="1" fill="#ffc531"/><rect x="3" y="12" width="1" height="1" fill="#ffc531"/><rect x="4" y="12" width="1" height="1" fill="#ffc531"/><rect x="5" y="12" width="1" height="1" fill="#ffc531"/><rect x="6" y="12" width="1" height="1" fill="#ffc531"/><rect x="7" y="12" width="1" height="1" fill="#ffc531"/><rect x="8" y="12" width="1" height="1" fill="#ffc531"/><rect x="9" y="12" width="1" height="1" fill="#ffc531"/><rect x="10" y="12" width="1" height="1" fill="#ffc531"/><rect x="11" y="12" width="1" height="1" fill="#12063a"/><rect x="0" y="13" width="1" height="1" fill="#12063a"/><rect x="1" y="13" width="1" height="1" fill="#12063a"/><rect x="2" y="13" width="1" height="1" fill="#12063a"/><rect x="3" y="13" width="1" height="1" fill="#12063a"/><rect x="4" y="13" width="1" height="1" fill="#12063a"/><rect x="5" y="13" width="1" height="1" fill="#12063a"/><rect x="6" y="13" width="1" height="1" fill="#12063a"/><rect x="7" y="13" width="1" height="1" fill="#12063a"/><rect x="8" y="13" width="1" height="1" fill="#12063a"/><rect x="9" y="13" width="1" height="1" fill="#12063a"/><rect x="10" y="13" width="1" height="1" fill="#12063a"/><rect x="11" y="13" width="1" height="1" fill="#12063a"/></svg>NOT PLAYABLE YET</span>
-        </div>
-        <div class="body" style="padding:0">
-          <h2>PANEL SEWI<br>SIGMATISERIE</h2>
-          <p>A fighting game with characters from every gang. After Kenos and a few others left the Kanel Gang (the full lore is coming soon on a new page), they all moved to another country, where Madara wants to rule the music scene and every group's territory. But Kenos doesn't give up: he wants to shine too, alongside the others.</p>
-          <dl class="stats">
-            <dt>GENRE</dt><dd>Arcade / Fighting intro</dd>
-            <dt>PLAYERS</dt><dd>1</dd>
-            <dt>PLAYS ON</dt><dd>Phone, tablet, computer</dd>
-            <dt>YEAR</dt><dd>2026</dd>
-          </dl>
-          <div class="btns">
-            <a class="btn alt" href="#home" data-tab="home">RETURN HOME</a>
+    <div class="ps">
+      <div class="ps-hero">
+        <div class="ps-hero-bg" aria-hidden="true"></div>
+        <img class="ps-box" src="cover.jpg" alt="Panel Sewi Sigmatiserie box art">
+        <div class="ps-info">
+          <span class="ps-pub">V-DEVIL PRODUCTION</span>
+          <h2 class="ps-title">Panel Sewi: Sigmatiserie</h2>
+          <div class="ps-chips"><span>Fighting</span><span>Arcade</span><span>1 player</span><span>Phone · Tablet · PC</span></div>
+          <div class="ps-buy">
+            <span class="ps-price">Coming soon</span>
+            <span class="ps-cta" role="button" aria-disabled="true"><svg class="lock" viewBox="0 0 12 14" width="12" height="14" shape-rendering="crispEdges" aria-hidden="true"><rect x="3" y="0" width="1" height="1" fill="#12063a"/><rect x="4" y="0" width="1" height="1" fill="#12063a"/><rect x="5" y="0" width="1" height="1" fill="#12063a"/><rect x="6" y="0" width="1" height="1" fill="#12063a"/><rect x="7" y="0" width="1" height="1" fill="#12063a"/><rect x="8" y="0" width="1" height="1" fill="#12063a"/><rect x="2" y="1" width="1" height="1" fill="#12063a"/><rect x="3" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="4" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="5" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="6" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="7" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="8" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="9" y="1" width="1" height="1" fill="#12063a"/><rect x="2" y="2" width="1" height="1" fill="#12063a"/><rect x="3" y="2" width="1" height="1" fill="#c7b8ff"/><rect x="8" y="2" width="1" height="1" fill="#c7b8ff"/><rect x="9" y="2" width="1" height="1" fill="#12063a"/><rect x="1" y="3" width="1" height="1" fill="#12063a"/><rect x="2" y="3" width="1" height="1" fill="#c7b8ff"/><rect x="9" y="3" width="1" height="1" fill="#c7b8ff"/><rect x="10" y="3" width="1" height="1" fill="#12063a"/><rect x="1" y="4" width="1" height="1" fill="#12063a"/><rect x="2" y="4" width="1" height="1" fill="#c7b8ff"/><rect x="9" y="4" width="1" height="1" fill="#c7b8ff"/><rect x="10" y="4" width="1" height="1" fill="#12063a"/><rect x="1" y="5" width="1" height="1" fill="#12063a"/><rect x="2" y="5" width="1" height="1" fill="#c7b8ff"/><rect x="9" y="5" width="1" height="1" fill="#c7b8ff"/><rect x="10" y="5" width="1" height="1" fill="#12063a"/><rect x="0" y="6" width="1" height="1" fill="#12063a"/><rect x="1" y="6" width="1" height="1" fill="#12063a"/><rect x="2" y="6" width="1" height="1" fill="#12063a"/><rect x="3" y="6" width="1" height="1" fill="#12063a"/><rect x="4" y="6" width="1" height="1" fill="#12063a"/><rect x="5" y="6" width="1" height="1" fill="#12063a"/><rect x="6" y="6" width="1" height="1" fill="#12063a"/><rect x="7" y="6" width="1" height="1" fill="#12063a"/><rect x="8" y="6" width="1" height="1" fill="#12063a"/><rect x="9" y="6" width="1" height="1" fill="#12063a"/><rect x="10" y="6" width="1" height="1" fill="#12063a"/><rect x="11" y="6" width="1" height="1" fill="#12063a"/><rect x="0" y="7" width="1" height="1" fill="#12063a"/><rect x="1" y="7" width="1" height="1" fill="#ffc531"/><rect x="2" y="7" width="1" height="1" fill="#ffc531"/><rect x="3" y="7" width="1" height="1" fill="#ffc531"/><rect x="4" y="7" width="1" height="1" fill="#ffc531"/><rect x="5" y="7" width="1" height="1" fill="#ffc531"/><rect x="6" y="7" width="1" height="1" fill="#ffc531"/><rect x="7" y="7" width="1" height="1" fill="#ffc531"/><rect x="8" y="7" width="1" height="1" fill="#ffc531"/><rect x="9" y="7" width="1" height="1" fill="#ffc531"/><rect x="10" y="7" width="1" height="1" fill="#ffc531"/><rect x="11" y="7" width="1" height="1" fill="#12063a"/><rect x="0" y="8" width="1" height="1" fill="#12063a"/><rect x="1" y="8" width="1" height="1" fill="#ffc531"/><rect x="2" y="8" width="1" height="1" fill="#ffc531"/><rect x="3" y="8" width="1" height="1" fill="#ffc531"/><rect x="4" y="8" width="1" height="1" fill="#ffc531"/><rect x="5" y="8" width="1" height="1" fill="#12063a"/><rect x="6" y="8" width="1" height="1" fill="#12063a"/><rect x="7" y="8" width="1" height="1" fill="#ffc531"/><rect x="8" y="8" width="1" height="1" fill="#ffc531"/><rect x="9" y="8" width="1" height="1" fill="#ffc531"/><rect x="10" y="8" width="1" height="1" fill="#ffc531"/><rect x="11" y="8" width="1" height="1" fill="#12063a"/><rect x="0" y="9" width="1" height="1" fill="#12063a"/><rect x="1" y="9" width="1" height="1" fill="#ffc531"/><rect x="2" y="9" width="1" height="1" fill="#ffc531"/><rect x="3" y="9" width="1" height="1" fill="#ffc531"/><rect x="4" y="9" width="1" height="1" fill="#ffc531"/><rect x="5" y="9" width="1" height="1" fill="#12063a"/><rect x="6" y="9" width="1" height="1" fill="#12063a"/><rect x="7" y="9" width="1" height="1" fill="#ffc531"/><rect x="8" y="9" width="1" height="1" fill="#ffc531"/><rect x="9" y="9" width="1" height="1" fill="#ffc531"/><rect x="10" y="9" width="1" height="1" fill="#ffc531"/><rect x="11" y="9" width="1" height="1" fill="#12063a"/><rect x="0" y="10" width="1" height="1" fill="#12063a"/><rect x="1" y="10" width="1" height="1" fill="#ffc531"/><rect x="2" y="10" width="1" height="1" fill="#ffc531"/><rect x="3" y="10" width="1" height="1" fill="#ffc531"/><rect x="4" y="10" width="1" height="1" fill="#ffc531"/><rect x="5" y="10" width="1" height="1" fill="#ffc531"/><rect x="6" y="10" width="1" height="1" fill="#12063a"/><rect x="7" y="10" width="1" height="1" fill="#ffc531"/><rect x="8" y="10" width="1" height="1" fill="#ffc531"/><rect x="9" y="10" width="1" height="1" fill="#ffc531"/><rect x="10" y="10" width="1" height="1" fill="#ffc531"/><rect x="11" y="10" width="1" height="1" fill="#12063a"/><rect x="0" y="11" width="1" height="1" fill="#12063a"/><rect x="1" y="11" width="1" height="1" fill="#ffc531"/><rect x="2" y="11" width="1" height="1" fill="#ffc531"/><rect x="3" y="11" width="1" height="1" fill="#ffc531"/><rect x="4" y="11" width="1" height="1" fill="#ffc531"/><rect x="5" y="11" width="1" height="1" fill="#ffc531"/><rect x="6" y="11" width="1" height="1" fill="#12063a"/><rect x="7" y="11" width="1" height="1" fill="#ffc531"/><rect x="8" y="11" width="1" height="1" fill="#ffc531"/><rect x="9" y="11" width="1" height="1" fill="#ffc531"/><rect x="10" y="11" width="1" height="1" fill="#ffc531"/><rect x="11" y="11" width="1" height="1" fill="#12063a"/><rect x="0" y="12" width="1" height="1" fill="#12063a"/><rect x="1" y="12" width="1" height="1" fill="#ffc531"/><rect x="2" y="12" width="1" height="1" fill="#ffc531"/><rect x="3" y="12" width="1" height="1" fill="#ffc531"/><rect x="4" y="12" width="1" height="1" fill="#ffc531"/><rect x="5" y="12" width="1" height="1" fill="#ffc531"/><rect x="6" y="12" width="1" height="1" fill="#ffc531"/><rect x="7" y="12" width="1" height="1" fill="#ffc531"/><rect x="8" y="12" width="1" height="1" fill="#ffc531"/><rect x="9" y="12" width="1" height="1" fill="#ffc531"/><rect x="10" y="12" width="1" height="1" fill="#ffc531"/><rect x="11" y="12" width="1" height="1" fill="#12063a"/><rect x="0" y="13" width="1" height="1" fill="#12063a"/><rect x="1" y="13" width="1" height="1" fill="#12063a"/><rect x="2" y="13" width="1" height="1" fill="#12063a"/><rect x="3" y="13" width="1" height="1" fill="#12063a"/><rect x="4" y="13" width="1" height="1" fill="#12063a"/><rect x="5" y="13" width="1" height="1" fill="#12063a"/><rect x="6" y="13" width="1" height="1" fill="#12063a"/><rect x="7" y="13" width="1" height="1" fill="#12063a"/><rect x="8" y="13" width="1" height="1" fill="#12063a"/><rect x="9" y="13" width="1" height="1" fill="#12063a"/><rect x="10" y="13" width="1" height="1" fill="#12063a"/><rect x="11" y="13" width="1" height="1" fill="#12063a"/></svg>NOT PLAYABLE YET</span>
           </div>
-          <p class="small">There's a big difference between playing on PC and on mobile. You'll see it soon. Just play the game.</p>
         </div>
       </div>
+
+      <div class="ps-media" aria-label="Screenshots">
+        <figure class="ps-view">
+          <div class="ps-view-bg" id="ps-view-bg" aria-hidden="true"></div>
+          <img id="ps-big" src="shot-london.jpg" alt="">
+          <button type="button" class="ps-nav prev" id="ps-prev" aria-label="Previous screenshot">‹</button>
+          <button type="button" class="ps-nav next" id="ps-next" aria-label="Next screenshot">›</button>
+          <figcaption id="ps-cap"></figcaption>
+        </figure>
+        <div class="ps-thumbs" id="ps-thumbs"></div>
+      </div>
+
+      <div class="ps-about">
+        <h3>About this game</h3>
+        <p>A fighting game with characters from every gang. After Kenos and a few others left the Kanel Gang (the full lore is coming soon on a new page), they all moved to another country, where Madara wants to rule the music scene and every group's territory. But Kenos doesn't give up: he wants to shine too, alongside the others.</p>
+        <dl class="ps-facts">
+          <dt>Publisher</dt><dd>V-Devil Production</dd>
+          <dt>Genre</dt><dd>Arcade / Fighting</dd>
+          <dt>Players</dt><dd>1</dd>
+          <dt>Plays on</dt><dd>Phone, tablet, computer</dd>
+          <dt>Release</dt><dd>2026</dd>
+        </dl>
+        <p class="small">There's a big difference between playing on PC and on mobile. You'll see it soon. Just play the game.</p>
+        <a class="btn alt" href="#home" data-tab="home">RETURN HOME</a>
+      </div>
     </div>
+    <div class="ps-zoom" id="ps-zoom" hidden><img id="ps-zoom-img" alt=""></div>
   </section>
 
   <!-- STORY -->
@@ -1656,6 +1721,46 @@ document.querySelectorAll("[data-lock]").forEach(s => { const l = document.query
       document.title = "Kenos Last Strike 2008-2026";
     });
   });
+})();
+
+// ===== GAME store page: screenshot gallery =====
+(() => {
+  const SHOTS = [
+    { src: "shot-london.jpg", cap: "LONDON · TOWER BRIDGE STAGE", px: true },
+    { src: "shot-egypt.jpg", cap: "EGYPT · GIZA STAGE" },
+    { src: "shot-rotterdam.jpg", cap: "ROTTERDAM · CENTRAAL STATION STAGE" },
+    { src: "shot-cafe.jpg", cap: "STORY SCENE · THE CAFÉ" }
+  ];
+  const big = $("ps-big"), bg = $("ps-view-bg"), cap = $("ps-cap"), thumbs = $("ps-thumbs"), zoom = $("ps-zoom"), zimg = $("ps-zoom-img");
+  let cur = 0;
+  SHOTS.forEach((sh, i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.setAttribute("aria-label", "Screenshot " + (i + 1) + ": " + sh.cap);
+    const im = document.createElement("img"); im.src = sh.src; im.alt = ""; b.append(im);
+    b.onclick = () => pick(i);
+    thumbs.append(b);
+  });
+  function pick(i) {
+    cur = (i + SHOTS.length) % SHOTS.length;
+    const sh = SHOTS[cur];
+    big.src = sh.src; big.alt = sh.cap; big.classList.toggle("px", !!sh.px);
+    bg.style.backgroundImage = "url(" + sh.src + ")";
+    cap.textContent = sh.cap;
+    [...thumbs.children].forEach((b, k) => b.classList.toggle("on", k === cur));
+  }
+  $("ps-prev").onclick = e => { e.stopPropagation(); pick(cur - 1); };
+  $("ps-next").onclick = e => { e.stopPropagation(); pick(cur + 1); };
+  big.parentElement.onclick = () => { zimg.src = SHOTS[cur].src; zimg.alt = SHOTS[cur].cap; zimg.classList.toggle("px", !!SHOTS[cur].px); zoom.hidden = false; };
+  zoom.onclick = () => { zoom.hidden = true; };
+  addEventListener("keydown", e => {
+    if (!zoom.hidden && e.key === "Escape") zoom.hidden = true;
+    if ($("game").hidden || !zoom.hidden) return;
+    if (e.key === "ArrowRight") pick(cur + 1); else if (e.key === "ArrowLeft") pick(cur - 1);
+  });
+  let sx = null; // swipe through screenshots on phones
+  big.parentElement.addEventListener("touchstart", e => { sx = e.touches[0].clientX; }, { passive: true });
+  big.parentElement.addEventListener("touchend", e => { if (sx === null) return; const dx = e.changedTouches[0].clientX - sx; sx = null; if (Math.abs(dx) > 40) pick(cur + (dx < 0 ? 1 : -1)); });
+  pick(0);
 })();
 
 // Logged in before on this device (until LOG OUT): open the site straight away

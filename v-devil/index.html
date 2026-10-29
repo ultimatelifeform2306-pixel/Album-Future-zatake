@@ -395,6 +395,29 @@ nav a.kix-chip img { width: 20px; height: 20px; }
 .pack .buy { justify-self: stretch; text-align: center; border: 0; cursor: pointer; }
 @media (max-width: 640px) { .packs { grid-template-columns: 1fr; } }
 
+/* ---------- DLC: CD jewel cases ---------- */
+.dlc-h { margin-top: 10px; }
+.dlcs { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 22px; }
+.dlc { display: grid; gap: 12px; justify-items: center; text-align: center; }
+.cd { position: relative; width: min(100%, 230px); aspect-ratio: 1; }
+/* the disc peeks out of the case and turns a little on hover */
+.cd-disc { position: absolute; top: 4%; left: 28%; width: 92%; aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle, #12063a 0 7%, #d9d9e8 7.5% 9%, transparent 9.5%),
+    conic-gradient(from 20deg, #c0c4d6, #f4f4ff, #9fa6c8, #ffd6f2, #b8f0ff, #c0c4d6, #f4f4ff, #a6aed0, #c0c4d6);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.6), 0 4px 10px rgba(0,0,0,.5); transition: transform .4s ease; }
+.dlc:hover .cd-disc { transform: translateX(10%) rotate(40deg); }
+.cd-case { position: absolute; inset: 0; display: block; overflow: hidden; border-radius: 4px;
+  box-shadow: 0 0 0 2px #0a0a14, 0 0 0 4px rgba(255,255,255,.35), 8px 10px 0 2px rgba(0,0,0,.45); }
+.cd-case img { display: block; width: 100%; height: 100%; object-fit: cover; image-rendering: auto; }
+.cd-spine { position: absolute; top: 0; bottom: 0; left: 0; width: 9%; background: linear-gradient(90deg, rgba(255,255,255,.35), rgba(0,0,0,.35) 60%, rgba(255,255,255,.15));
+  box-shadow: inset -1px 0 0 rgba(255,255,255,.5); }
+.cd-spine::before, .cd-spine::after { content: ""; position: absolute; left: 30%; width: 40%; height: 10%; background: rgba(255,255,255,.45); border-radius: 2px; }
+.cd-spine::before { top: 8%; } .cd-spine::after { bottom: 8%; }
+.cd-shine { position: absolute; inset: 0; background: linear-gradient(125deg, rgba(255,255,255,.45) 0%, rgba(255,255,255,.08) 28%, transparent 40%, transparent 70%, rgba(255,255,255,.12) 85%, transparent); pointer-events: none; }
+.dlc-name { font: 400 13px/1.5 var(--f-pixel); color: var(--gold); text-shadow: 2px 2px 0 var(--ink); }
+.dlc-soon { font: 9px var(--f-pixel); letter-spacing: .2em; color: var(--bone); background: var(--ink); padding: 6px 10px; box-shadow: 0 0 0 2px var(--lilac); }
+@media (prefers-reduced-motion: reduce) { .cd-disc { transition: none; } }
+
 /* ---------- sign-in gate ---------- */
 .gate {
   position: fixed; inset: 0; z-index: 50; overflow-y: auto;
@@ -764,6 +787,22 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
       </div>
       <p class="small" id="cur-note">Prices in euros.</p>
       <p class="msg" id="shop-msg" role="status"></p>
+
+      <h2 class="dlc-h">DLC</h2>
+      <div class="dlcs">
+        <div class="dlc">
+          <div class="cd">
+            <span class="cd-disc" aria-hidden="true"></span>
+            <span class="cd-case">
+              <img src="dlc-eva.jpg" alt="Evangelion DLC pack cover: Rei, Misato and Asuka on a blue background">
+              <span class="cd-spine" aria-hidden="true"></span>
+              <span class="cd-shine" aria-hidden="true"></span>
+            </span>
+          </div>
+          <strong class="dlc-name">DLC PACK EVANGELION</strong>
+          <span class="dlc-soon">COMING SOON</span>
+        </div>
+      </div>
     </div>
   </section>
 

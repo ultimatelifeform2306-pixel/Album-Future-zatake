@@ -417,6 +417,15 @@ nav a.kix-chip img { width: 20px; height: 20px; }
 }
 
 /* ---------- For E-Star pack: members-only blue squares ---------- */
+/* page 2 of the Shop: a full-width blue page of its own, reached by scrolling */
+.estar-page { display: grid; gap: 22px; align-content: start; min-height: 85vh; margin: 34px -20px -20px; padding: 0 20px 34px;
+  background: linear-gradient(#0a1f6b, #061344); box-shadow: inset 0 6px 0 #6fb6ff, inset 0 10px 0 var(--ink); scroll-margin-top: 10px; }
+.estar-head { display: grid; justify-items: center; gap: 12px; text-align: center; padding: 40px 0 10px; }
+.estar-pg { font: 9px var(--f-pixel); letter-spacing: .3em; color: #7cceff; background: var(--ink); padding: 6px 10px; box-shadow: 0 0 0 2px #6fb6ff; }
+.estar-head img { width: min(100%, 300px); height: auto; image-rendering: pixelated; }
+.estar-head h2 { margin: 0; font: 400 clamp(18px, 4vw, 28px) var(--f-pixel); color: #fff; text-shadow: 3px 3px 0 #0b5cf0, 6px 6px 0 var(--ink); }
+.estar-head p { margin: 0; max-width: 40ch; color: #b9dcff; }
+.estar-page .msg { justify-self: center; text-align: center; }
 .estars { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 22px; }
 .estar { display: grid; gap: 12px; justify-items: center; text-align: center; }
 .estar-sq { width: min(100%, 260px); aspect-ratio: 1; padding: 10px;
@@ -424,7 +433,7 @@ nav a.kix-chip img { width: 20px; height: 20px; }
   box-shadow: 0 0 0 3px var(--ink), 0 0 0 6px #6fb6ff, 6px 6px 0 6px rgba(0,0,0,.5); }
 .estar-sq img { display: block; width: 100%; height: 100%; object-fit: cover; box-shadow: 0 0 0 3px #002a80; image-rendering: auto; }
 .estar-name { font: 400 14px/1.5 var(--f-pixel); color: #7cceff; text-shadow: 2px 2px 0 #002a80, 4px 4px 0 var(--ink); }
-.estar-get { border: 0; cursor: pointer; color: #fff; background: #0b5cf0; box-shadow: inset -4px -4px 0 #002a80, inset 4px 4px 0 #7cceff, 4px 4px 0 var(--ink); }
+.estar-get { justify-self: center; border: 0; cursor: pointer; color: #fff; background: #0b5cf0; box-shadow: inset -4px -4px 0 #002a80, inset 4px 4px 0 #7cceff, 4px 4px 0 var(--ink); }
 
 /* ---------- DLC: CD jewel cases ---------- */
 .dlc-h { margin-top: 10px; }
@@ -889,7 +898,14 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
       </div>
       <p class="msg" id="addon-msg" role="status"></p>
 
-      <h2 class="dlc-h">FOR E-STAR PACK</h2>
+      <!-- second page of the Shop: its own E-Star catalogue -->
+      <div class="estar-page" id="estar-page">
+      <div class="estar-head">
+        <span class="estar-pg">SHOP · PAGE 2</span>
+        <img src="sstar-logo.png" alt="S-Star">
+        <h2>FOR E-STAR PACK</h2>
+        <p>Members only. Everything on this page comes with the E-Star membership.</p>
+      </div>
       <div class="estars">
         <div class="estar">
           <div class="estar-sq"><img src="estar-amsterdon.jpg" alt="An S-Star high-speed train at sunset, with London on one side and Amsterdam on the other"></div>
@@ -898,6 +914,7 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
         </div>
       </div>
       <p class="msg" id="estar-msg" role="status"></p>
+      </div>
     </div>
   </section>
 

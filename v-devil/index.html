@@ -418,6 +418,20 @@ nav a.kix-chip img { width: 20px; height: 20px; }
 .dlc-soon { font: 9px var(--f-pixel); letter-spacing: .2em; color: var(--bone); background: var(--ink); padding: 6px 10px; box-shadow: 0 0 0 2px var(--lilac); }
 @media (prefers-reduced-motion: reduce) { .cd-disc { transition: none; } }
 
+/* ---------- ADD-ON: bought with Kix ---------- */
+.addons { display: grid; gap: 18px; }
+.addon { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); background: #12063a; box-shadow: 0 0 0 3px var(--ink), 0 0 0 6px #e0201a, 0 0 22px rgba(255,40,30,.35); }
+.addon > * { min-width: 0; }
+.addon-img { display: block; width: 100%; height: 100%; aspect-ratio: 16 / 9; object-fit: cover; image-rendering: pixelated; }
+.addon-info { display: grid; gap: 12px; align-content: center; justify-items: start; padding: 18px; }
+.addon-name { font: 400 15px/1.5 var(--f-pixel); color: var(--bone); text-shadow: 2px 2px 0 var(--magenta); }
+.addon-price { display: inline-flex; align-items: center; gap: 8px; font: 400 22px var(--f-pixel); color: var(--gold); }
+.addon-price img { width: 34px; height: 34px; }
+.addon-price small { font-size: 10px; color: var(--muted); }
+.addon-buy { border: 0; cursor: pointer; }
+.addon.owned .addon-buy { background: #3ddc84; box-shadow: inset -4px -4px 0 #1f9b57, inset 4px 4px 0 #b9ffd6, 4px 4px 0 var(--ink); cursor: default; }
+@media (max-width: 640px) { .addon { grid-template-columns: 1fr; } }
+
 /* ---------- sign-in gate ---------- */
 .gate {
   position: fixed; inset: 0; z-index: 50; overflow-y: auto;
@@ -803,6 +817,19 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
           <span class="dlc-soon">COMING SOON</span>
         </div>
       </div>
+
+      <h2 class="dlc-h">ADD-ON</h2>
+      <div class="addons">
+        <div class="addon" data-addon="brussels" data-price="120">
+          <img class="addon-img" src="addon-brussels.jpg" alt="A red high-speed train with the Kix logo racing through a purple night">
+          <div class="addon-info">
+            <strong class="addon-name">TRAVEL FOR BRUSSELS</strong>
+            <span class="addon-price"><img src="kix.png" alt="">120 <small>KIX</small></span>
+            <button class="btn addon-buy" type="button">BUY</button>
+          </div>
+        </div>
+      </div>
+      <p class="msg" id="addon-msg" role="status"></p>
     </div>
   </section>
 
@@ -893,7 +920,7 @@ async function cloudSave(email, patch) {
   try {
     const ref = await cloud(); if (!ref) return markSaved(false);
     const a = loadAccounts()[email]; if (!a) return markSaved(false);
-    await ref.set({ email, username: a.username, salt: a.salt, hash: a.hash, created: a.created, kix: a.kix || 0, loggedOut: false, ...patch });
+    await ref.set({ email, username: a.username, salt: a.salt, hash: a.hash, created: a.created, kix: a.kix || 0, spent: a.spent || 0, owned: a.owned || {}, loggedOut: false, ...patch });
     markSaved(true);
   } catch (_) { markSaved(false); }
 }
@@ -910,7 +937,7 @@ async function cloudLoad() {
 }
 function adopt(c) { // put a cloud account back into this browser's list
   const all = loadAccounts();
-  all[c.email] = { username: c.username, salt: c.salt, hash: c.hash, created: c.created, kix: c.kix || 0 };
+  all[c.email] = { username: c.username, salt: c.salt, hash: c.hash, created: c.created, kix: c.kix || 0, spent: c.spent || 0, owned: c.owned || {} };
   saveAccounts(all);
 }
 try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (_) {}
@@ -1058,6 +1085,7 @@ let isCreator = false;
     if (user && await user.isOwner()) { isCreator = true; if (!$("site").inert) fillAccount(); }
   } catch (_) {}
 })();
+function kixBalance(a) { return (isCreator ? CREATOR_KIX : (a.kix || 0)) - (a.spent || 0); }
 function fillAccount() {
   const all = loadAccounts(), a = all[myEmail] || { username: player, created: Date.now() };
   const order = Object.values(all).sort((x, y) => x.created - y.created);
@@ -1070,11 +1098,12 @@ function fillAccount() {
   $("acc-since").textContent = new Date(a.created).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
   $("acc-no").textContent = "#" + String(no).padStart(3, "0");
   $("acc-rank").textContent = "PLAYER #" + String(no).padStart(3, "0");
-  const kix = isCreator ? CREATOR_KIX : (a.kix || 0);
+  const kix = kixBalance(a);
   document.querySelectorAll(".kix-n").forEach(el => el.textContent = kix.toLocaleString());
   if (isCreator) $("acc-rank").textContent = "CREATOR · PLAYER #" + String(no).padStart(3, "0");
   drawAvatar($("nav-avatar"), a.username);
   drawAvatar($("big-avatar"), a.username);
+  if (typeof showOwned === "function") showOwned();
 }
 function openSite(withToast, back) {
   $("site").inert = false;
@@ -1814,6 +1843,29 @@ document.querySelectorAll("[data-lock]").forEach(s => { const l = document.query
   big.parentElement.addEventListener("touchend", e => { if (sx === null) return; const dx = e.changedTouches[0].clientX - sx; sx = null; if (Math.abs(dx) > 40) pick(cur + (dx < 0 ? 1 : -1)); });
   pick(0);
 })();
+
+// ===== Add-ons: spend Kix =====
+function showOwned() {
+  const a = loadAccounts()[myEmail] || {};
+  document.querySelectorAll(".addon").forEach(el => {
+    const own = !!(a.owned && a.owned[el.dataset.addon]);
+    el.classList.toggle("owned", own);
+    el.querySelector(".addon-buy").textContent = own ? "OWNED ✓" : "BUY";
+  });
+}
+document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy").onclick = () => {
+  const msg = $("addon-msg"), all = loadAccounts(), a = all[myEmail];
+  const id = el.dataset.addon, price = +el.dataset.price, name = el.querySelector(".addon-name").textContent;
+  msg.classList.remove("ok");
+  if (!a) { msg.textContent = "Log in to buy add-ons."; return; }
+  if (a.owned && a.owned[id]) { msg.classList.add("ok"); msg.textContent = "You already own " + name + "."; return; }
+  if (kixBalance(a) < price) { msg.textContent = "Not enough Kix: " + name + " costs " + price + " Kix and you have " + kixBalance(a).toLocaleString() + ". Get Kix with the packs above."; return; }
+  a.spent = (a.spent || 0) + price;
+  a.owned = Object.assign({}, a.owned, { [id]: Date.now() });
+  saveAccounts(all); cloudSave(myEmail, {});
+  fillAccount(); showOwned();
+  msg.classList.add("ok"); msg.textContent = name + " unlocked! " + price + " Kix spent.";
+});
 
 // Logged in before on this device (until LOG OUT): open the site straight away
 (() => {

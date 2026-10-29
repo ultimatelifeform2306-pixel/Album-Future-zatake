@@ -395,6 +395,27 @@ nav a.kix-chip img { width: 20px; height: 20px; }
 .pack .buy { justify-self: stretch; text-align: center; border: 0; cursor: pointer; }
 @media (max-width: 640px) { .packs { grid-template-columns: 1fr; } }
 
+/* ---------- S-Star subscription: three blue 16-bit squares ---------- */
+.sstar { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
+.ss-sq { position: relative; aspect-ratio: 1; display: grid; place-content: center; justify-items: center; gap: 12px; padding: 12px; text-align: center; overflow: hidden;
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 2px, transparent 2px 4px),
+    repeating-conic-gradient(#0a4fd6 0 25%, #0b5cf0 0 50%) 0 0 / 16px 16px,
+    #0b5cf0;
+  box-shadow: 0 0 0 3px var(--ink), 0 0 0 6px #6fb6ff, 6px 6px 0 6px rgba(0,0,0,.5); image-rendering: pixelated; }
+.ss-sq::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 50% 40%, rgba(150,210,255,.45), transparent 65%); pointer-events: none; }
+.ss-sq > * { position: relative; }
+.ss-logo img { width: 92%; height: auto; filter: drop-shadow(3px 3px 0 #002a80) drop-shadow(0 0 10px rgba(180,225,255,.7)); }
+.ss-len { font: 400 14px var(--f-pixel); color: #fff; text-shadow: 2px 2px 0 #002a80; letter-spacing: .1em; }
+.ss-price { font: 400 22px var(--f-pixel); color: var(--gold); text-shadow: 3px 3px 0 #002a80; font-weight: 400; }
+.ss-plan .buy { border: 0; cursor: pointer; font-size: 11px; padding: 10px 12px; }
+@media (max-width: 640px) {
+  .sstar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ss-logo { grid-column: 1 / -1; order: -1; aspect-ratio: 2 / 1; }
+  .ss-price { font-size: 16px; }
+  .ss-len { font-size: 11px; }
+}
+
 /* ---------- DLC: CD jewel cases ---------- */
 .dlc-h { margin-top: 10px; }
 .dlcs { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 22px; }
@@ -801,6 +822,21 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
       </div>
       <p class="small" id="cur-note">Prices in euros.</p>
       <p class="msg" id="shop-msg" role="status"></p>
+
+      <h2 class="dlc-h">S-STAR SUBSCRIPTION PACK</h2>
+      <div class="sstar">
+        <div class="ss-sq ss-plan">
+          <span class="ss-len">1 MONTH</span>
+          <b class="ss-price" data-eur="19.99"></b>
+          <button class="btn buy" type="button" data-pack="sstar-month">SUBSCRIBE</button>
+        </div>
+        <div class="ss-sq ss-logo"><img src="sstar-logo.png" alt="S-Star"></div>
+        <div class="ss-sq ss-plan">
+          <span class="ss-len">1 YEAR</span>
+          <b class="ss-price" data-eur="239.88"></b>
+          <button class="btn buy" type="button" data-pack="sstar-year">SUBSCRIBE</button>
+        </div>
+      </div>
 
       <h2 class="dlc-h">DLC</h2>
       <div class="dlcs">
@@ -1644,7 +1680,7 @@ $("back").onclick = closeGame;
   $("cur-note").textContent = code === "EUR" ? "Prices in euros." : "Prices shown in " + code + " for your country, converted from euros (approximate).";
   // Paste each pack's Stripe Payment Link here to open payments ("" = not open yet).
   // In Stripe, set each link's "After payment" page to this site with ?paid=<pack>.
-  const PAY_LINKS = { 500: "", 1000: "", 5000: "" };
+  const PAY_LINKS = { 500: "", 1000: "", 5000: "", "sstar-month": "", "sstar-year": "" };
   document.querySelectorAll(".buy").forEach(b => b.onclick = () => {
     const m = $("shop-msg"), link = PAY_LINKS[b.dataset.pack];
     m.classList.remove("ok");

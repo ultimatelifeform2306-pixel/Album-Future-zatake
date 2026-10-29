@@ -1,0 +1,451 @@
+<meta charset="utf-8">
+<title>Quartier Crugaz</title>
+<!-- for hosting outside Claude (GitHub Pages): the artifact wrapper adds its own viewport -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Quartier Crugaz: the group's home. Skull of Death, the last group album, with the radio track select and video clips.">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Press+Start+2P&family=Share+Tech+Mono&family=VT323&display=swap">
+<style>
+/* Layout: a field base. A stencilled gate you ENTER, then a home with three sections: HOME, RADIO (track select on a field radio), VIDEO CLIPS (a scrolling row of field monitors). Black only. */
+:root {
+  --ink: #070707;        /* night black */
+  --panel: #111210;      /* dossier sheet, a touch of olive in the black */
+  --line: #2a2b26;       /* worn edges */
+  --bone: #d9d3c1;       /* stencil paint */
+  --olive: #6b7a3a;      /* army green */
+  --dim: #8b8676;        /* worn label grey */
+  --blood: #c1121f;      /* the album's red */
+  --lcd: #b6ff5c;        /* radio display */
+  --f-stencil: "Black Ops One", "Impact", "Arial Black", sans-serif;
+  --f-mono: "Share Tech Mono", "Courier New", monospace;
+  --f-pixel: "Press Start 2P", "Courier New", monospace;   /* video clips select only */
+  --gold: #ffc531;
+  color-scheme: dark;
+}
+[hidden] { display: none !important; }
+html, body { background: var(--ink); }
+body {
+  margin: 0; min-height: 100%;
+  color: var(--bone); font: 17px/1.55 var(--f-mono);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 48px;
+  box-sizing: border-box;
+  background: radial-gradient(80% 60% at 50% 0%, rgba(107,122,58,.10), transparent 70%), var(--ink);
+}
+*, *::before, *::after { box-sizing: inherit; }
+a { color: inherit; }
+button { font: inherit; }
+:focus-visible { outline: 2px dashed var(--olive); outline-offset: 4px; }
+
+/* ---------- gate ---------- */
+.gate {
+  position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; overflow: hidden;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background: var(--ink); transition: opacity 1.2s ease;
+}
+.gate.out { opacity: 0; pointer-events: none; }
+.gate canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .5; }
+.gate-in { position: relative; display: grid; justify-items: center; gap: 18px; text-align: center; }
+.code { font-size: 12px; letter-spacing: .35em; color: var(--dim); text-transform: uppercase; }
+.gate h1 { margin: 0; font: 400 clamp(44px, 12vw, 120px)/.92 var(--f-stencil); letter-spacing: .02em; color: var(--bone); text-wrap: balance; }
+.gate h1 span { display: block; color: var(--olive); }
+.tag-btn {
+  padding: 14px 38px; cursor: pointer; text-decoration: none; display: inline-block;
+  font: 400 22px var(--f-stencil); letter-spacing: .2em; color: var(--ink);
+  background: var(--bone); border: 0; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  transition: background .15s, color .15s;
+}
+.tag-btn:hover { background: var(--olive); color: var(--bone); }
+.tag-btn.small { font-size: 16px; padding: 11px 22px; }
+.warn { font-size: 12px; color: var(--dim); letter-spacing: .2em; }
+
+/* ---------- frame ---------- */
+.page { max-width: 1080px; margin: 0 auto; display: grid; gap: 34px; padding-top: 22px; }
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 12px 0; background: var(--ink); border-bottom: 2px solid var(--line); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--ink); }
+.brand { font: 400 22px var(--f-stencil); letter-spacing: .06em; text-decoration: none; }
+.brand span { color: var(--olive); }
+nav { display: flex; gap: 6px; flex-wrap: wrap; }
+nav a { text-decoration: none; font: 400 15px var(--f-stencil); letter-spacing: .12em; padding: 8px 12px; color: var(--dim); border: 1px solid transparent; }
+nav a:hover { color: var(--bone); }
+nav a[aria-current="page"] { color: var(--ink); background: var(--bone); }
+.sec-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin: 0; }
+.sec-head h2 { margin: 0; font: 400 clamp(30px, 6vw, 52px)/1 var(--f-stencil); letter-spacing: .03em; }
+.sec-head span { font-size: 13px; letter-spacing: .3em; color: var(--dim); text-transform: uppercase; }
+
+/* ---------- home ---------- */
+.home-hero { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 32px; align-items: center; }
+.home-hero > * { min-width: 0; }
+.home-hero h1 { margin: 0; font: 400 clamp(46px, 9vw, 104px)/.9 var(--f-stencil); text-wrap: balance; }
+.home-hero h1 span { color: var(--olive); display: block; }
+.lead { margin: 16px 0 22px; max-width: 46ch; }
+.lead b { color: var(--blood); font-weight: 400; }
+.feature { position: relative; display: block; text-decoration: none; background: #000; box-shadow: 0 0 0 1px var(--line), 0 30px 60px -20px rgba(193,18,31,.35); }
+.feature img { display: block; width: 100%; height: auto; aspect-ratio: 596 / 540; object-fit: cover; }
+.feature .stamp { position: absolute; left: 14px; bottom: 14px; margin: 0; }
+.stamp { display: inline-block; padding: 6px 14px; transform: rotate(-4deg); font: 400 24px var(--f-stencil); letter-spacing: .14em; color: var(--blood); border: 4px solid var(--blood); background: rgba(7,7,7,.75); }
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.tile { display: grid; gap: 8px; padding: 22px; text-decoration: none; background: var(--panel); border-left: 4px solid var(--olive); transition: background .15s; }
+.tile:hover { background: #181a14; }
+.tile b { font: 400 26px var(--f-stencil); letter-spacing: .05em; }
+.tile span { color: var(--dim); }
+.tile.red { border-left-color: var(--blood); }
+.cmd { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 24px; align-items: center; padding: 22px; background: var(--panel); border-left: 4px solid var(--blood); }
+.cmd img { width: 100%; height: auto; display: block; filter: grayscale(.4) contrast(1.1); }
+.cmd p { margin: 0; max-width: 60ch; }
+.cmd b { font: 400 24px var(--f-stencil); letter-spacing: .06em; display: block; margin-bottom: 6px; }
+
+/* ---------- radio track select ---------- */
+.radio { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 28px; align-items: stretch; }
+.radio > * { min-width: 0; }
+.cover { position: relative; aspect-ratio: 596 / 540; background: #000; box-shadow: 0 0 0 1px var(--line); }
+.cover video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.cover::before, .cover::after { content: ""; position: absolute; width: 26px; height: 26px; border: 3px solid var(--bone); z-index: 1; }
+.cover::before { top: -8px; left: -8px; border-right: 0; border-bottom: 0; }
+.cover::after { bottom: -8px; right: -8px; border-left: 0; border-top: 0; }
+.sound { position: absolute; z-index: 2; right: 12px; bottom: 12px; cursor: pointer; font: 13px var(--f-mono); letter-spacing: .15em; color: var(--bone); background: rgba(7,7,7,.8); border: 1px solid var(--bone); padding: 8px 12px; }
+.set { display: grid; gap: 16px; align-content: start; padding: 20px; background: linear-gradient(#2b2f22, #1a1c15); box-shadow: inset 0 0 0 2px #3c4230, inset 0 -6px 0 #10110d; }
+.set-top { display: flex; justify-content: space-between; align-items: center; font-size: 12px; letter-spacing: .3em; color: var(--dim); }
+.led { width: 10px; height: 10px; border-radius: 50%; background: var(--blood); box-shadow: 0 0 8px var(--blood); animation: led 1.2s steps(1) infinite; }
+@keyframes led { 50% { opacity: .25; } }
+.lcd { display: grid; gap: 6px; padding: 16px 18px; background: #0d1406; box-shadow: inset 0 0 0 2px #000, inset 0 0 24px rgba(182,255,92,.12); color: var(--lcd); text-shadow: 0 0 6px rgba(182,255,92,.6); font-variant-numeric: tabular-nums; }
+.lcd .fm { font-size: 13px; letter-spacing: .3em; opacity: .8; }
+.lcd .ch { font: 400 clamp(26px, 4.5vw, 38px)/1.05 var(--f-stencil); overflow-wrap: anywhere; }
+.lcd .with { font-size: 15px; letter-spacing: .2em; text-transform: uppercase; }
+.lcd .air { font-size: 14px; letter-spacing: .25em; min-height: 1.4em; }
+.lcd .air.on { animation: led .8s steps(1) infinite; }
+.dial { position: relative; height: 26px; background: repeating-linear-gradient(90deg, #4a503c 0 2px, transparent 2px 10px) center / 100% 60% no-repeat, #15170f; box-shadow: inset 0 0 0 1px #000; }
+.dial i { position: absolute; top: 0; bottom: 0; width: 3px; background: var(--blood); box-shadow: 0 0 8px var(--blood); transition: left .25s steps(5); }
+.knobs { display: flex; gap: 10px; flex-wrap: wrap; }
+.knob { cursor: pointer; font: 400 15px var(--f-stencil); letter-spacing: .12em; padding: 12px 16px; color: var(--ink); background: var(--bone); border: 0; box-shadow: inset 0 -4px 0 #9a947f; }
+.knob.go { background: var(--olive); color: var(--bone); box-shadow: inset 0 -4px 0 #3f4822; flex: 1; }
+.knob:active { transform: translateY(2px); box-shadow: none; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th { text-align: left; font-weight: 400; font-size: 12px; letter-spacing: .3em; color: var(--dim); padding: 8px 12px; border-bottom: 2px solid var(--olive); text-transform: uppercase; }
+td { padding: 14px 12px; border-bottom: 1px solid #23241f; }
+tbody tr { cursor: pointer; }
+tbody tr:hover { background: rgba(107,122,58,.12); }
+tbody tr.sel { background: rgba(107,122,58,.28); box-shadow: inset 4px 0 0 var(--lcd); }
+td.no { width: 64px; color: var(--olive); font: 400 20px var(--f-stencil); }
+td.t { font: 400 20px var(--f-stencil); letter-spacing: .05em; }
+td.w { color: var(--dim); letter-spacing: .12em; text-transform: uppercase; }
+
+/* ---------- video clips: Sonic 3 & Knuckles data-select look, 16-bit ---------- */
+.clips { position: relative; overflow: hidden; display: grid; grid-template-rows: auto 1fr auto auto; gap: 8px; padding: 16px 0 18px; min-height: 520px; font-family: var(--f-pixel);
+  background: repeating-conic-gradient(#7a0010 0 25%, #a8001a 0 50%) 0 0 / 48px 48px; animation: s3kScroll 3s linear infinite; box-shadow: 0 0 0 3px #000, 0 0 0 6px #ff1a3c; container-type: inline-size; }
+@keyframes s3kScroll { to { background-position: 48px 48px; } }
+.clips-head { justify-self: center; font-size: clamp(14px, 3.4cqw, 24px); color: var(--gold); background: #1b1bb5; padding: 10px 18px; box-shadow: 0 0 0 3px #000, 0 0 0 6px var(--gold), 6px 6px 0 6px rgba(0,0,0,.5); text-shadow: 3px 3px 0 #000; }
+.row-wrap { position: relative; overflow: hidden; display: flex; align-items: center; }
+.row { display: flex; gap: 22px; padding: 30px 0; transition: transform .32s steps(6); }
+.card { flex: none; width: 150px; display: grid; gap: 8px; justify-items: center; cursor: pointer; transition: transform .2s steps(3); }
+.tv { width: 150px; aspect-ratio: 4 / 3; padding: 9px; background: linear-gradient(#d8d8e8, #8f8fa8); border-radius: 14px; box-shadow: inset -4px -4px 0 #5d5d78, inset 4px 4px 0 #fff, 4px 4px 0 #000; }
+.screen { position: relative; width: 100%; height: 100%; border-radius: 8px; overflow: hidden; display: grid; place-items: center;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 2px, transparent 2px 4px), var(--c1, #8a0f2a); box-shadow: inset 0 0 0 3px #000; }
+.screen::before { content: ""; position: absolute; inset: 0; background: linear-gradient(160deg, rgba(255,255,255,.35), transparent 40%); }
+.screen b { font: 400 34px var(--f-pixel); color: #fff; text-shadow: 4px 4px 0 #000; }
+.screen img { width: 100%; height: 100%; object-fit: cover; }
+.plate { width: 150px; padding: 8px 6px; background: #000; box-shadow: 0 0 0 3px #fff; text-align: center; display: grid; gap: 6px; }
+.plate strong { font: 400 9px/1.4 var(--f-pixel); color: var(--gold); overflow-wrap: anywhere; }
+.plate em { font: 400 8px/1.3 var(--f-pixel); color: #ffb3b3; font-style: normal; text-transform: uppercase; }
+.card.sel { transform: scale(1.14); }
+.card.sel .tv { animation: s3kBlink .5s steps(1) infinite; }
+@keyframes s3kBlink { 50% { box-shadow: inset -4px -4px 0 #5d5d78, inset 4px 4px 0 #fff, 0 0 0 4px var(--gold), 4px 4px 0 4px #000; } }
+.now { margin: 0; justify-self: center; text-align: center; font: 400 clamp(9px, 2.2cqw, 13px)/1.6 var(--f-pixel); color: #fff; text-shadow: 2px 2px 0 #000; padding: 0 16px; text-transform: uppercase; }
+.ctrl { display: flex; justify-content: center; gap: 14px; }
+.s3k-btn { font: 14px var(--f-pixel); border: 0; cursor: pointer; padding: 12px 16px; color: #000; background: #fff; box-shadow: inset -4px -4px 0 #9d8fd6, 4px 4px 0 #000; }
+.s3k-btn.go { background: var(--gold); box-shadow: inset -4px -4px 0 #c28a00, inset 4px 4px 0 #fff0a8, 4px 4px 0 #000; padding: 12px 26px; }
+.s3k-btn:active { transform: translate(2px, 2px); box-shadow: none; }
+.s3k-btn:focus-visible { outline: 3px dashed #fff; outline-offset: 3px; }
+.pop { position: absolute; inset: 0; z-index: 5; display: grid; place-items: center; background: rgba(0,0,0,.7); cursor: pointer; }
+.pop > div { display: grid; gap: 14px; justify-items: center; text-align: center; padding: 22px 26px; background: #1b1bb5; box-shadow: 0 0 0 3px #000, 0 0 0 6px var(--gold); animation: s3kPop .3s steps(4) both; max-width: 90%; }
+.pop b { font: 400 14px/1.5 var(--f-pixel); color: #fff; }
+.pop span { font: 400 16px var(--f-pixel); color: var(--gold); animation: s3kFlash 1s steps(1) infinite; }
+.pop small { font: 16px var(--f-mono); color: #c7b8ff; }
+@keyframes s3kPop { from { transform: scale(0); } }
+/* VHS 2006: tracking band rolling down, a little jitter, camcorder text */
+.screen.vhs img { animation: vhsJit 2.6s steps(1) infinite; filter: saturate(1.15) contrast(1.05); }
+.screen.vhs::after { content: ""; position: absolute; left: 0; right: 0; height: 14%; top: -20%; z-index: 1;
+  background: linear-gradient(transparent, rgba(255,255,255,.28) 40%, rgba(255,255,255,.08) 60%, transparent); mix-blend-mode: screen; animation: vhsTrack 3.2s linear infinite; }
+.vhs-play, .vhs-date { position: absolute; z-index: 2; font: 400 9px/1 "VT323", var(--f-mono); color: #fff; text-shadow: 1px 0 0 #ff2a6d, -1px 0 0 #2af0ff, 0 0 3px rgba(0,0,0,.8); letter-spacing: .06em; }
+.vhs-play { top: 6px; left: 7px; font-size: 13px; animation: s3kFlash 1.4s steps(1) infinite; }
+.vhs-date { bottom: 6px; right: 7px; font-size: 12px; }
+@keyframes vhsTrack { to { top: 110%; } }
+@keyframes vhsJit { 0%, 86%, 100% { transform: none; } 88% { transform: translateX(2px) skewX(-2deg); } 90% { transform: translateX(-3px); } 92% { transform: translateY(1px); } }
+@keyframes s3kFlash { 50% { opacity: 0; } }
+
+footer { font-size: 12px; letter-spacing: .3em; color: var(--dim); text-align: center; text-transform: uppercase; }
+
+@media (max-width: 720px) {
+  .home-hero, .radio, .cmd { grid-template-columns: 1fr; }
+  .tiles { grid-template-columns: 1fr; }
+  .cmd img { max-width: 220px; }
+}
+@media (prefers-reduced-motion: reduce) { .gate { transition: none; } .clips, .card.sel .tv, .led, .lcd .air.on, .pop span, .screen.vhs img, .screen.vhs::after, .vhs-play { animation: none; } }
+</style>
+
+<div class="gate" id="gate">
+  <canvas id="grid" aria-hidden="true"></canvas>
+  <div class="gate-in">
+    <span class="code">File 01 · Restricted access</span>
+    <h1>QUARTIER <span>CRUGAZ</span></h1>
+    <span class="warn">SKULL OF DEATH · THE LAST GROUP ALBUM</span>
+    <button class="tag-btn" id="enter" type="button">ENTER</button>
+  </div>
+</div>
+
+<div class="page" id="page" inert>
+  <header class="top">
+    <a class="brand" href="#home" data-tab="home">QUARTIER <span>CRUGAZ</span></a>
+    <nav aria-label="Sections">
+      <a href="#home" data-tab="home">HOME</a>
+      <a href="#radio" data-tab="radio">RADIO</a>
+      <a href="#clips" data-tab="clips">VIDEO CLIPS</a>
+    </nav>
+  </header>
+
+  <!-- HOME -->
+  <main id="home" data-panel="home" class="page" style="padding-top:0">
+    <section class="home-hero">
+      <div>
+        <h1>QUARTIER <span>CRUGAZ</span></h1>
+        <p class="lead">The group's home base. <b>Skull of Death</b>, the last group album with Madara, is out now: tune in on the radio or pick a video clip.</p>
+        <a class="tag-btn small" href="#radio" data-tab="radio">OPEN THE RADIO</a>
+      </div>
+      <a class="feature" href="#radio" data-tab="radio" aria-label="Skull of Death on the radio">
+        <img src="cover.jpg" alt="Skull of Death cover: Madara in a gold matador suit under red lightning">
+        <span class="stamp">OUT NOW</span>
+      </a>
+    </section>
+    <section class="tiles">
+      <a class="tile" href="#radio" data-tab="radio"><b>RADIO</b><span>Track select: 11 tracks from Skull of Death.</span></a>
+      <a class="tile red" href="#clips" data-tab="clips"><b>VIDEO CLIPS</b><span>Pick a clip on the field monitors.</span></a>
+    </section>
+    <section class="cmd">
+      <img src="madara.jpg" alt="Madara in a gold matador suit, presenting the album">
+      <div>
+        <b>MADARA</b>
+        <p>Skull of Death is the last album from the group. Eleven tracks, out now.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- RADIO -->
+  <main id="radio" data-panel="radio" class="page" style="padding-top:0" hidden>
+    <div class="sec-head"><h2>RADIO</h2><span>Track select · Skull of Death</span></div>
+    <section class="radio">
+      <div class="cover">
+        <video id="vid" src="skull-of-death.mp4" poster="cover.jpg" playsinline loop preload="auto"></video>
+        <button class="sound" id="sound" type="button">SOUND ON</button>
+      </div>
+      <div class="set">
+        <div class="set-top"><span>CRUGAZ FIELD RADIO</span><span class="led" aria-hidden="true"></span></div>
+        <div class="lcd" aria-live="polite">
+          <span class="fm" id="lcd-fm">FM 101.0 · CH 01</span>
+          <span class="ch" id="lcd-t">TÊTE DE MORT</span>
+          <span class="with" id="lcd-w">WITH MADARA</span>
+          <span class="air" id="lcd-air"></span>
+        </div>
+        <div class="dial" aria-hidden="true"><i id="needle"></i></div>
+        <div class="knobs">
+          <button class="knob" id="r-prev" type="button" aria-label="Previous track">◀</button>
+          <button class="knob go" id="r-go" type="button">SELECT</button>
+          <button class="knob" id="r-next" type="button" aria-label="Next track">▶</button>
+        </div>
+      </div>
+    </section>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>No.</th><th>Title</th><th>With</th></tr></thead>
+        <tbody id="tracks"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- VIDEO CLIPS -->
+  <main id="clips" data-panel="clips" class="page" style="padding-top:0" hidden>
+    <div class="sec-head"><h2>VIDEO CLIPS</h2><span>Clip select · Skull of Death</span></div>
+    <section class="clips" id="clip-box">
+      <div class="clips-head">TRACK SELECT</div>
+      <div class="row-wrap"><div class="row" id="row"></div></div>
+      <p class="now" id="now"></p>
+      <div class="ctrl">
+        <button class="s3k-btn" id="c-prev" type="button" aria-label="Previous clip">◀</button>
+        <button class="s3k-btn go" id="c-go" type="button">SELECT</button>
+        <button class="s3k-btn" id="c-next" type="button" aria-label="Next clip">▶</button>
+      </div>
+      <div class="pop" id="pop" hidden><div><b id="pop-t"></b><span>CLIP COMING SOON</span><small>Tap to go back</small></div></div>
+    </section>
+  </main>
+
+  <footer>© 2026 Quartier Crugaz</footer>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const TRACKS = [
+  ["TÊTE DE MORT", "Madara"], ["SALSA", "Knuckles"], ["CHEZ MK", "Kenos"], ["CHAIR DE POULE", "Merre"],
+  ["PHARMACIE", "Sonic"], ["MOUSQUETAIRE", "Shadow"], ["SPORT", "Black Goku"], ["ROSE", "V.JR"],
+  ["JAPON", "IShowSpeed"], ["BISON", "Frieza"], ["COURAGE", "Black Goku"]
+];
+const pad = n => String(n).padStart(2, "0");
+
+// ---------- little field-radio sounds ----------
+let AC = null;
+function audio() { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state !== "running") AC.resume(); } catch (_) { AC = null; } }
+function beep(f, d, type = "square", vol = .06, when = 0) {
+  if (!AC || AC.state !== "running") return;
+  const t = AC.currentTime + when, o = AC.createOscillator(), g = AC.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, t);
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+  o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + d + .02);
+}
+function hiss(d = .12) {
+  if (!AC || AC.state !== "running") return;
+  const n = AC.createBufferSource(), b = AC.createBuffer(1, AC.sampleRate * d, AC.sampleRate), x = b.getChannelData(0);
+  for (let i = 0; i < x.length; i++) x[i] = Math.random() * 2 - 1;
+  const g = AC.createGain(), f = AC.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = 2400;
+  g.gain.setValueAtTime(.08, AC.currentTime); g.gain.exponentialRampToValueAtTime(.0001, AC.currentTime + d);
+  n.buffer = b; n.connect(f); f.connect(g); g.connect(AC.destination); n.start();
+}
+
+// ---------- sections ----------
+const tabs = ["home", "radio", "clips"];
+const vid = $("vid");
+function show(name) {
+  if (!tabs.includes(name)) name = "home";
+  document.querySelectorAll("[data-panel]").forEach(p => p.hidden = p.dataset.panel !== name);
+  document.querySelectorAll("nav a").forEach(a => a.dataset.tab === name ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
+  if (name !== "radio") vid.pause();
+  else if (entered) vid.play().catch(() => {});
+  if (name === "clips") requestAnimationFrame(renderClips);
+}
+document.addEventListener("click", e => {
+  const a = e.target.closest("a[data-tab]"); if (!a) return;
+  e.preventDefault(); show(a.dataset.tab);
+  try { history.replaceState(null, "", "#" + a.dataset.tab); } catch (_) {}
+  window.scrollTo({ top: 0 });
+});
+
+// ---------- radio track select ----------
+let ch = 0;
+const tb = $("tracks");
+TRACKS.forEach(([t, w], i) => {
+  const tr = document.createElement("tr");
+  tr.innerHTML = '<td class="no"></td><td class="t"></td><td class="w"></td>';
+  tr.children[0].textContent = pad(i + 1); tr.children[1].textContent = t; tr.children[2].textContent = w;
+  tr.onclick = () => { if (ch === i) radioGo(); else tune(i); };
+  tb.append(tr);
+});
+function tune(i) {
+  ch = (i + TRACKS.length) % TRACKS.length;
+  const [t, w] = TRACKS[ch];
+  $("lcd-fm").textContent = "FM " + (101 + ch * .8).toFixed(1) + " · CH " + pad(ch + 1);
+  $("lcd-t").textContent = t; $("lcd-w").textContent = "WITH " + w.toUpperCase();
+  $("lcd-air").textContent = ""; $("lcd-air").classList.remove("on");
+  $("needle").style.left = (4 + ch / (TRACKS.length - 1) * 92) + "%";
+  [...tb.children].forEach((r, k) => r.classList.toggle("sel", k === ch));
+  hiss(); beep(1200, .03);
+}
+function radioGo() { $("lcd-air").textContent = "● ON AIR SOON"; $("lcd-air").classList.add("on"); [660, 880].forEach((f, k) => beep(f, .1, "square", .06, k * .08)); }
+$("r-prev").onclick = () => tune(ch - 1);
+$("r-next").onclick = () => tune(ch + 1);
+$("r-go").onclick = radioGo;
+tune(0);
+
+// ---------- video clips: Sonic 3 & Knuckles style select ----------
+const row = $("row");
+const COLORS = ["#8a0f2a", "#c2185b", "#6a1bd6", "#e65100", "#1565c0", "#37474f", "#2e7d32", "#ad1457", "#d32f2f", "#5d4037", "#f9a825"];
+// a track's TV shows its own picture when it has one
+const SHOTS = { 1: "track-01.jpg", 2: "track-02.jpg", 3: "track-03.jpg", 5: "track-05.jpg" };
+const items = [{ t: "PLAY ALL", n: "Skull of Death", img: "cover.jpg" }].concat(TRACKS.map(([t, n], i) => ({ t, n, no: i + 1, c: COLORS[i], img: SHOTS[i + 1] })));
+let sel = 1;
+items.forEach((it, i) => {
+  const c = document.createElement("div");
+  c.className = "card";
+  const vhs = it.no && it.img; // track pictures play like a 2006 VHS tape
+  c.innerHTML = '<div class="tv"><div class="screen' + (vhs ? " vhs" : "") + '" style="--c1:' + (it.c || "#000") + '">' +
+    (it.img ? '<img alt="" src="' + it.img + '">' : "<b>" + pad(it.no) + "</b>") +
+    (vhs ? '<span class="vhs-play">PLAY ▶</span>' : "") +
+    '</div></div><div class="plate"><strong></strong><em></em></div>';
+  c.querySelector("strong").textContent = it.t; c.querySelector("em").textContent = it.n;
+  c.onclick = () => { if (i === sel) clipGo(); else { sel = i; renderClips(); beep(700, .05); } };
+  row.append(c);
+});
+function renderClips() {
+  [...row.children].forEach((c, i) => c.classList.toggle("sel", i === sel));
+  const c = row.children[sel], wrap = row.parentElement;
+  row.style.transform = "translateX(" + Math.round(wrap.clientWidth / 2 - c.offsetLeft - c.offsetWidth / 2) + "px)";
+  const it = items[sel];
+  $("now").textContent = it.no ? pad(it.no) + " · " + it.t + " (" + it.n + ")" : "Play all · Skull of Death";
+}
+const moveClip = d => { sel = (sel + d + items.length) % items.length; renderClips(); beep(d > 0 ? 880 : 740, .06); };
+function clipGo() {
+  [523, 659, 784].forEach((f, k) => beep(f, .1, "square", .07, k * .07));
+  const it = items[sel];
+  $("pop-t").textContent = it.no ? pad(it.no) + " · " + it.t + " (" + it.n.toUpperCase() + ")" : "SKULL OF DEATH";
+  $("pop").hidden = false;
+}
+$("pop").onclick = () => { $("pop").hidden = true; beep(440, .07); };
+$("c-prev").onclick = () => moveClip(-1);
+$("c-next").onclick = () => moveClip(1);
+$("c-go").onclick = clipGo;
+let sx = null;
+row.parentElement.addEventListener("touchstart", e => { sx = e.touches[0].clientX; }, { passive: true });
+row.parentElement.addEventListener("touchend", e => { if (sx === null) return; const dx = e.changedTouches[0].clientX - sx; sx = null; if (Math.abs(dx) > 40) moveClip(dx < 0 ? 1 : -1); });
+addEventListener("resize", () => { if (!$("clips").hidden) renderClips(); });
+addEventListener("keydown", e => {
+  const onClips = !$("clips").hidden, onRadio = !$("radio").hidden;
+  if (!onClips && !onRadio) return;
+  if (e.key === "ArrowRight") { e.preventDefault(); onClips ? moveClip(1) : tune(ch + 1); }
+  else if (e.key === "ArrowLeft") { e.preventDefault(); onClips ? moveClip(-1) : tune(ch - 1); }
+  else if (e.key === "Enter" && e.target === document.body) { e.preventDefault(); if (onClips) { $("pop").hidden ? clipGo() : $("pop").click(); } else radioGo(); }
+});
+
+// ---------- gate: radar sweep, then ENTER ----------
+(() => {
+  const cv = $("grid"), c = cv.getContext("2d");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let W, H, raf;
+  const size = () => { const d = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = W * d; cv.height = H * d; c.setTransform(d, 0, 0, d, 0, 0); };
+  size(); addEventListener("resize", size);
+  function draw(t) {
+    c.clearRect(0, 0, W, H);
+    c.strokeStyle = "rgba(107,122,58,.35)"; c.lineWidth = 1;
+    for (let x = (W / 2) % 48; x < W; x += 48) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x, H); c.stroke(); }
+    for (let y = (H / 2) % 48; y < H; y += 48) { c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); }
+    const cx = W / 2, cy = H / 2, r = Math.hypot(W, H) / 2;
+    c.strokeStyle = "rgba(217,211,193,.25)";
+    [.18, .32, .46].forEach(k => { c.beginPath(); c.arc(cx, cy, Math.min(W, H) * k, 0, Math.PI * 2); c.stroke(); });
+    if (!reduce && c.createConicGradient) {
+      const g = c.createConicGradient((t / 2600) % (Math.PI * 2) - .6, cx, cy);
+      g.addColorStop(0, "rgba(107,122,58,0)"); g.addColorStop(.1, "rgba(107,122,58,.45)"); g.addColorStop(.1001, "rgba(107,122,58,0)");
+      c.fillStyle = g; c.beginPath(); c.arc(cx, cy, r, 0, Math.PI * 2); c.fill();
+    }
+    if (!reduce) raf = requestAnimationFrame(draw);
+  }
+  raf = requestAnimationFrame(draw);
+  $("enter").addEventListener("click", () => setTimeout(() => cancelAnimationFrame(raf), 1300));
+})();
+
+let entered = false;
+const soundBtn = $("sound");
+function setSound(on) { vid.muted = !on; soundBtn.textContent = on ? "SOUND OFF" : "SOUND ON"; }
+$("enter").onclick = () => {
+  audio(); entered = true;
+  $("gate").classList.add("out");
+  $("page").inert = false;
+  setSound(true);
+  const h = location.hash.slice(1);
+  show(tabs.includes(h) ? h : "home");
+  // the tap lets the album play with sound later on the radio
+  vid.play().then(() => { if ($("radio").hidden) vid.pause(); }).catch(() => setSound(false));
+  setTimeout(() => { $("gate").hidden = true; }, 1250);
+};
+soundBtn.onclick = () => { setSound(vid.muted); if (vid.paused) vid.play().catch(() => {}); };
+document.addEventListener("visibilitychange", () => { if (document.hidden) vid.pause(); });
+show("home");
+</script>

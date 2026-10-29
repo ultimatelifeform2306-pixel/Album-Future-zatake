@@ -416,6 +416,16 @@ nav a.kix-chip img { width: 20px; height: 20px; }
   .ss-len { font-size: 11px; }
 }
 
+/* ---------- For E-Star pack: members-only blue squares ---------- */
+.estars { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 22px; }
+.estar { display: grid; gap: 12px; justify-items: center; text-align: center; }
+.estar-sq { width: min(100%, 260px); aspect-ratio: 1; padding: 10px;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 2px, transparent 2px 4px), repeating-conic-gradient(#0a4fd6 0 25%, #0b5cf0 0 50%) 0 0 / 16px 16px, #0b5cf0;
+  box-shadow: 0 0 0 3px var(--ink), 0 0 0 6px #6fb6ff, 6px 6px 0 6px rgba(0,0,0,.5); }
+.estar-sq img { display: block; width: 100%; height: 100%; object-fit: cover; box-shadow: 0 0 0 3px #002a80; image-rendering: auto; }
+.estar-name { font: 400 14px/1.5 var(--f-pixel); color: #7cceff; text-shadow: 2px 2px 0 #002a80, 4px 4px 0 var(--ink); }
+.estar-get { border: 0; cursor: pointer; color: #fff; background: #0b5cf0; box-shadow: inset -4px -4px 0 #002a80, inset 4px 4px 0 #7cceff, 4px 4px 0 var(--ink); }
+
 /* ---------- DLC: CD jewel cases ---------- */
 .dlc-h { margin-top: 10px; }
 .dlcs { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 22px; }
@@ -878,6 +888,16 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
         </div>
       </div>
       <p class="msg" id="addon-msg" role="status"></p>
+
+      <h2 class="dlc-h">FOR E-STAR PACK</h2>
+      <div class="estars">
+        <div class="estar">
+          <div class="estar-sq"><img src="estar-amsterdon.jpg" alt="An S-Star high-speed train at sunset, with London on one side and Amsterdam on the other"></div>
+          <strong class="estar-name">ROAD TO AMSTERDON</strong>
+          <button class="btn estar-get" type="button">🔒 E-STAR MEMBER</button>
+        </div>
+      </div>
+      <p class="msg" id="estar-msg" role="status"></p>
     </div>
   </section>
 
@@ -1891,6 +1911,13 @@ document.querySelectorAll("[data-lock]").forEach(s => { const l = document.query
   big.parentElement.addEventListener("touchend", e => { if (sx === null) return; const dx = e.changedTouches[0].clientX - sx; sx = null; if (Math.abs(dx) > 40) pick(cur + (dx < 0 ? 1 : -1)); });
   pick(0);
 })();
+
+// ===== For E-Star pack: only E-Star members get these =====
+document.querySelectorAll(".estar-get").forEach(b => b.onclick = () => {
+  const m = $("estar-msg"), name = b.parentElement.querySelector(".estar-name").textContent;
+  m.classList.remove("ok");
+  m.textContent = name + " is for E-Star members only. Subscribe to the S-Star pack above to unlock it.";
+});
 
 // ===== Add-ons: spend Kix =====
 function showOwned() {

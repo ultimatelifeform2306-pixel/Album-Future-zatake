@@ -91,8 +91,13 @@ video.album { position: absolute; top: 0; bottom: 0; left: 50%; height: 100%; as
 .news.red { box-shadow: 0 0 0 3px var(--ink), 0 0 0 6px #ff1a3c, 10px 10px 0 6px rgba(0,0,0,.55); }
 .head .h1.blood { font-size: 4.6cqw; color: #ff2238; -webkit-text-stroke: .25cqw #2a0006; filter: drop-shadow(0 0 .7cqw rgba(255,0,30,.9)) drop-shadow(.3cqw .3cqw 0 #000); }
 .head .h3.dimwit { font-size: 4.2cqw; color: #ff2238; text-shadow: .2cqw .2cqw 0 #000, 0 0 .8cqw #ff0018; }
-.sound-btn { position: absolute; z-index: 4; right: 8%; top: 12%; font: 1.4cqw var(--f-pixel); color: #fff; background: #c8002e; border: 0; padding: .9cqw 1.2cqw; box-shadow: .3cqw .3cqw 0 #000; cursor: pointer; animation: blink 1.1s steps(1) infinite; }
-@media (max-width: 640px) { .sound-btn { font-size: 9px; padding: 6px 8px; } }
+/* Kix announcement scene */
+#scene-kix { display: grid; place-items: center; background: repeating-linear-gradient(0deg, rgba(0,0,0,.25) 0 2px, transparent 2px 4px), radial-gradient(70% 80% at 50% 40%, #5a0b10, #1a0306 70%, #000); }
+.kix-banner { width: 62%; height: auto; margin-top: -14%; image-rendering: pixelated; filter: drop-shadow(0 0 1.5cqw rgba(255,60,30,.7)) drop-shadow(.4cqw .4cqw 0 #000); }
+#scene-kix.on .kix-banner, #scene-kix.in .kix-banner { animation: kixPulse 1.6s ease-in-out infinite; }
+@keyframes kixPulse { 50% { transform: scale(1.04); filter: drop-shadow(0 0 2.6cqw rgba(255,90,40,.95)) drop-shadow(.4cqw .4cqw 0 #000); } }
+.head .h1.kix-t { font-size: 4.4cqw; color: #ff3b1f; -webkit-text-stroke: .25cqw #2a0006; filter: drop-shadow(0 0 .7cqw rgba(255,60,20,.9)) drop-shadow(.3cqw .3cqw 0 #000); }
+@media (prefers-reduced-motion: reduce) { #scene-kix .kix-banner { animation: none !important; } }
 /* headline drawn by the page, in the frame's text spot */
 .heads { position: absolute; z-index: 3; inset: 0; pointer-events: none; }
 .head { position: absolute; left: 25%; right: 25%; top: 58.5%; height: 22%; margin: 0; display: grid; justify-items: center; align-content: center; gap: .2cqw; text-align: center; visibility: hidden; font-family: "Russo One", "Arial Black", sans-serif; line-height: 1; white-space: nowrap; }
@@ -663,16 +668,17 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
       <div class="scene" id="scene-kenos"><img class="fill" src="kenos.jpg" alt=""></div>
       <div class="scene" id="scene-album">
         <img class="fill album-bg" src="madara-album-bg.jpg" alt="">
-        <video class="album" id="album-vid" src="madara-album.mp4" poster="madara-album.jpg" playsinline preload="auto" disablepictureinpicture></video>
+        <video class="album" id="album-vid" src="madara-album.mp4" poster="madara-album.jpg" muted playsinline preload="auto" disablepictureinpicture></video>
         <div class="reaper-pop left"></div><div class="reaper-pop right"></div>
       </div>
+      <div class="scene" id="scene-kix"><img class="kix-banner" src="kix-logo.png" alt=""></div>
     </div>
     <img class="banner" src="banner-frame.webp" alt="">
-    <button class="sound-btn" id="sound-btn" type="button" hidden>♪ TAP FOR SOUND</button>
     <a class="ann-enter" id="ann-enter" href="https://ultimatelifeform2306-pixel.github.io/Album-Future-zatake/quartier-crugaz/" target="_blank" rel="noopener" hidden>▶ ENTER</a>
     <div class="heads">
       <p class="head on" id="head-madara"><img src="madara-head.webp" alt="Madara wants to come back, this 19 October"></p>
       <p class="head" id="head-album"><b class="h1 blood">MADARA ALBUM</b><span class="h3 dimwit">IS OUT</span></p>
+      <p class="head" id="head-kix"><b class="h1 kix-t">THE KIX WILL START</b><span class="h2">WORKING IN NOVEMBER</span></p>
       <p class="head" id="head-kenos"><b class="h1 blue">NEW DANGER 2025</b><span class="h2">GONNA DROP OUT SOON</span><span class="h3 kenos-tag">KENOS</span></p>
     </div>
   </div>
@@ -1653,27 +1659,18 @@ $("back").onclick = closeGame;
 // Banner swap: Madara clip -> Kenos picture -> album cover (red frame, reaper, sound) -> again.
 // Each scene brings its own headline in with the same 16-bit switch.
 (() => {
-  const SCENES = [{ id: "madara", ms: 11300 }, { id: "kenos", ms: 5500 }, { id: "album", ms: 15200 }];
+  const SCENES = [{ id: "madara", ms: 11300 }, { id: "kenos", ms: 5500 }, { id: "album", ms: 15200 }, { id: "kix", ms: 6500 }];
   let i = 0;
-  const v = $("news-vid"), av = $("album-vid"), slot = document.querySelector(".slot"), news = document.querySelector(".news"), btn = $("sound-btn");
+  const v = $("news-vid"), av = $("album-vid"), slot = document.querySelector(".slot"), news = document.querySelector(".news");
   const scene = id => $("scene-" + id), head = id => $("head-" + id);
-  // sound: browsers only allow it after a tap, so any tap on the page turns it on
-  let soundOk = false;
-  function blessAlbum() { // a play() inside a tap lets this video use sound later on iPhone
-    if (soundOk) return; soundOk = true; btn.hidden = true;
-    av.muted = false;
-    if (av.paused) av.play().then(() => { if (SCENES[i].id !== "album") av.pause(); }).catch(() => {});
-  }
-  ["pointerdown", "touchend", "keydown"].forEach(ev => addEventListener(ev, blessAlbum, { capture: true, once: true }));
-  btn.onclick = blessAlbum;
+  av.muted = true; // the Skull of Death cover plays without its music
   function startAlbum() {
     if (document.body.classList.contains("story-mode")) return; // the Story page is silent
     try { av.currentTime = 0; } catch (_) {}
-    av.muted = !soundOk;
-    av.play().catch(() => { av.muted = true; av.play().catch(() => {}); });
-    btn.hidden = soundOk;
+    av.muted = true;
+    av.play().catch(() => {});
   }
-  function stopAlbum() { av.pause(); btn.hidden = true; }
+  function stopAlbum() { av.pause(); }
   function next() {
     const from = SCENES[i].id; i = (i + 1) % SCENES.length; const to = SCENES[i].id;
     if (to === "madara") { try { v.currentTime = 0; } catch (_) {} dispatchEvent(new Event("news-restart")); }

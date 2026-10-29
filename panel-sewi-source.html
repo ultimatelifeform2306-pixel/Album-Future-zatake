@@ -151,7 +151,7 @@ body {
 /* drop announcement: loading bar, then the skull and a typed red line */
 .drop {
   position: absolute; inset: 0; display: none; background: #000;
-  grid-template-rows: 1fr auto auto; place-items: center; padding: 5cqw 5cqw 4cqw; gap: 2.5cqw;
+  grid-template-rows: minmax(0, 1fr) auto auto; place-items: center; padding: 4cqw 4cqw 3.4cqw; gap: 2cqw;
 }
 .cover:is([data-phase="load"],[data-phase="drop"],[data-phase="fadeout"]) .drop { display: grid; }
 .cover:is([data-phase="load"],[data-phase="drop"],[data-phase="fadeout"],[data-phase="black"],[data-phase="pick"]) :is(.vert,.title,.copy,.shade) { visibility: hidden; }
@@ -179,9 +179,9 @@ body {
 .drop-txt, .drop-again { position: relative; z-index: 2; }
 @keyframes skull-in { 0% { opacity: 0; transform: scale(1.3); } 40% { opacity: 1; } 55% { opacity: .2; } 100% { opacity: 1; transform: none; } }
 .drop-txt {
-  margin: 0; font-family: var(--f-pixel); font-size: 2.9cqw; line-height: 1.75; text-align: center;
-  color: #e01324; text-shadow: .35cqw .35cqw 0 #350006, 0 0 2cqw rgba(224,19,36,.6);
-  letter-spacing: .06em; min-height: 3em;
+  margin: 0; font-family: var(--f-pixel); font-size: 2.2cqw; line-height: 1.6; text-align: center;
+  color: #e01324; text-shadow: .3cqw .3cqw 0 #350006, 0 0 2cqw rgba(224,19,36,.6);
+  letter-spacing: .04em; min-height: 6.4em; text-wrap: balance;
 }
 .drop-txt .caret { color: #ff4d5e; }
 .drop-again { font-family: var(--f-pixel); font-size: 2.2cqw; color: #b8102a; letter-spacing: .2em; animation: blink-soft 1.05s steps(1) infinite; }
@@ -463,7 +463,7 @@ body.pick-mode .pads { display: block; }
 .pc .boot .pres { font-size: 1.7cqw; }
 .pc .drop { padding: 3cqw 5cqw 2.4cqw; gap: 1.6cqw; }
 .pc .skull { max-width: min(34cqw, 100%); }
-.pc .drop-txt { font-size: 1.5cqw; line-height: 1.7; }
+.pc .drop-txt { font-size: 1.25cqw; line-height: 1.7; min-height: 3.4em; }
 .pc .drop-again { font-size: 1.2cqw; }
 .pc .load-txt { font-size: 2cqw; }
 .pc .load-bar { width: 32cqw; height: 2.2cqw; border-width: .35cqw; padding: .35cqw; }
@@ -1034,7 +1034,10 @@ html.off .off-note { display: block; }
   }
 
   // ---------- PRESS START after the intro: the drop announcement ----------
-  const DROP_LINE = 'SKULL OF DEATH FROM MADARA GONNA DROP OUT TOO THE 19 OCTOBER';
+  const DROP_LINE = 'WARNING : MADARA ALBUM IS HERE BE CAREFUL WE WILL STOP YOU FOR WINNING THE BEST SELLER BETWEEN PANEL SEWI AND SKULL OF DEATH';
+  // the warning spoken over the typing: a formant synthesiser pitched into
+  // the floor and crushed to a console, laughing once it has had its say
+  const DROP_VOICE = "assets/voice-warning.mp3";
   const dropTxt = document.getElementById('drop-txt');
   const loadFill = document.getElementById('load-fill');
   const startIcons = [...document.querySelectorAll('.start-icon')];
@@ -1311,7 +1314,7 @@ html.off .off-note { display: block; }
     // 3. the skull, then the line types itself out
     dLater(2400, () => {
       cover.dataset.phase = 'drop';
-      drone(DROP_LINE.length * .055 + 3);
+      drone(DROP_LINE.length * .045 + 4);
       if (!muted && ac) {
         const t = ac.currentTime + .02;
         const o = ac.createOscillator(), g = ac.createGain();
@@ -1320,12 +1323,13 @@ html.off .off-note { display: block; }
         g.gain.setValueAtTime(.14, t); g.gain.exponentialRampToValueAtTime(.0001, t + .8);
         o.connect(g).connect(ac.destination); o.start(t); o.stop(t + .85);
       }
-      [...DROP_LINE].forEach((c, i) => dLater(700 + i * 55, () => {
+      dLater(700, () => playSnd(DROP_VOICE, .95)); // he speaks as the first letter lands
+      [...DROP_LINE].forEach((c, i) => dLater(700 + i * 45, () => {
         dropTxt.textContent = DROP_LINE.slice(0, i + 1);
         if (c !== ' ') typeBlip(i);
       }));
       // 4. five-second wait, fade to black, hold, then the character select
-      const typed = 700 + DROP_LINE.length * 55 + 200;
+      const typed = 700 + DROP_LINE.length * 45 + 200;
       for (let k = 5; k >= 1; k--) dLater(typed + (5 - k) * 1000, () => {
         dropWait.textContent = 'WAIT ' + k + (k === 1 ? ' SECOND' : ' SECONDS');
         blip(520, 420, .05, .035);

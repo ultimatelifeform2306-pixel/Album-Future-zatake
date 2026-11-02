@@ -1909,7 +1909,7 @@ document.querySelectorAll("[data-lock]").forEach(s => { const l = document.query
     const sh = SHOTS[cur];
     big.src = sh.src; big.alt = sh.cap; big.classList.toggle("px", !!sh.px);
     bg.style.backgroundImage = "url(" + sh.src + ")";
-    cap.textContent = sh.cap;
+    cap.textContent = (cur + 1) + "-"; // just the picture's number on screen; the name stays for screen readers
     [...thumbs.children].forEach((b, k) => b.classList.toggle("on", k === cur));
   }
   $("ps-prev").onclick = e => { e.stopPropagation(); pick(cur - 1); };

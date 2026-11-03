@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Panel Sewi Demo Story</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+<style>
+/* Layout: one wide 16:9 black screen. Itachi's lines run as movie subtitles at the bottom,
+   then a stepped fade and the ACT 1 card in the same black. */
+:root {
+  --void: #000000;
+  --sub: #f4f1ff;        /* subtitle white */
+  --sub-edge: #000000;
+  --muted: #7d7a99;
+  --gold: #ffd25a;       /* ACT title */
+  --ember: #8a1408;
+  --flame: #e8301c;
+  --font-pixel: "Press Start 2P", "Courier New", ui-monospace, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--void);
+  color: var(--sub);
+  font-family: var(--font-pixel);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 12px;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+#stage {
+  position: relative;
+  width: min(100%, calc((100dvh - 24px) * 16 / 9));
+  max-width: 100%;
+  aspect-ratio: 16 / 9;
+  container-type: inline-size;
+  background: var(--void);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+/* movie subtitle */
+#sub {
+  position: absolute;
+  left: 6%; right: 6%; bottom: 9%;
+  margin: 0;
+  text-align: center;
+  font-size: 2.3cqw;
+  line-height: 1.8;
+  min-height: 1.8em;
+  color: var(--sub);
+  text-shadow:
+    0.25cqw 0 0 var(--sub-edge), -0.25cqw 0 0 var(--sub-edge),
+    0 0.25cqw 0 var(--sub-edge), 0 -0.25cqw 0 var(--sub-edge),
+    0.3cqw 0.3cqw 0 var(--sub-edge);
+  overflow-wrap: anywhere;
+}
+#sub .name { color: var(--gold); }
+
+.hint {
+  position: absolute; left: 0; right: 0;
+  text-align: center;
+  font-size: 1.4cqw;
+  color: var(--muted);
+}
+#start { top: 50%; transform: translateY(-50%); font-size: 2cqw; color: var(--sub); animation: blink 1s steps(2) infinite; }
+#prompt { bottom: 3%; display: flex; flex-direction: column; align-items: center; gap: 1cqw; }
+#prompt span { animation: blink 1s steps(2) infinite; }
+#timer { width: 18cqw; height: 0.8cqw; background: #1a1a1a; }
+#timer-fill { height: 100%; width: 100%; background: var(--muted); }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* ACT card */
+#fade { position: absolute; inset: 0; background: var(--void); opacity: 0; pointer-events: none; }
+#fade.on { animation: fade-out 900ms steps(5) forwards; }
+@keyframes fade-out { to { opacity: 1; } }
+#act {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3.5cqw;
+  background: var(--void);
+}
+#act-title {
+  margin: 0;
+  font-size: 9cqw;
+  font-weight: 400;
+  color: var(--gold);
+  letter-spacing: 0.12em;
+  text-shadow: 0.7cqw 0.7cqw 0 var(--ember);
+  display: flex;
+}
+#act-title .ch { display: inline-block; min-width: 0.6em; opacity: 0; }
+#act-title .ch.in { animation: drop 360ms steps(4) forwards; }
+@keyframes drop { from { opacity: 1; transform: translateY(-3cqw); } to { opacity: 1; transform: none; } }
+#act-rule { height: 0.6cqw; width: 0; background: var(--flame); box-shadow: 0 0.6cqw 0 var(--ember); transition: width 700ms steps(14); }
+#act-rule.in { width: 40cqw; }
+#replay { position: static; opacity: 0; transition: opacity 400ms steps(3); }
+#replay.in { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  #start, #prompt span, #act-title .ch.in { animation: none; }
+  #act-title .ch.in { opacity: 1; }
+  #fade.on { animation-duration: 1ms; }
+}
+</style>
+</head>
+<body>
+<div id="stage" role="application" aria-label="Demo story. Click or press Space to continue.">
+  <p id="sub" aria-live="polite"></p>
+  <div id="start" class="hint" hidden>&#9654; TAP TO START</div>
+  <div id="prompt" class="hint" hidden>
+    <span>CLICK TO CONTINUE</span>
+    <div id="timer"><div id="timer-fill"></div></div>
+  </div>
+  <div id="fade"></div>
+  <div id="act" hidden>
+    <h2 id="act-title" aria-label="Act 1"></h2>
+    <div id="act-rule"></div>
+    <div id="replay" class="hint">CLICK TO REPLAY</div>
+  </div>
+</div>
+
+<script>
+(() => {
+  // ---- who is watching: the profile name from the V-Devil site ----
+  function profileName() {
+    try {
+      const q = new URLSearchParams(location.search).get("name");
+      if (q && q.trim()) return q.trim().slice(0, 15);
+    } catch (_) {}
+    try {
+      const s = localStorage.getItem("vdevil.session");
+      const all = JSON.parse(localStorage.getItem("vdevil.accounts") || "{}");
+      if (s && all[s] && all[s].username) return all[s].username;
+      if (s && !s.includes("@")) return s; // older sessions kept the username itself
+    } catch (_) {}
+    return "Player";
+  }
+  const NAME = profileName();
+
+  // Voice line timings (seconds), measured from the pauses in the Itachi recording.
+  const LINES = [
+    { t0: 0.47, t1: 2.19, text: "You passed the test great......" },
+    { t0: 2.41, t1: 4.79, text: "You now into the new story Of this game" },
+    { t0: 5.19, t1: 6.29, text: "prepare to see the...." },
+    { t0: 6.72, t1: 8.06, text: "Fate of a young boy...." },
+    // "Mister" is spoken; the profile name types right after it
+    { t0: 8.50, t1: 9.09 + NAME.length * 0.07, text: "Mister " + NAME, name: NAME },
+  ];
+  const STORY_END = LINES[4].t1 + 0.3;
+  const AUTO_WAIT = 10;
+
+  const $ = (id) => document.getElementById(id);
+  const stage = $("stage"), sub = $("sub"), startEl = $("start");
+  const prompt = $("prompt"), timerFill = $("timer-fill");
+  const fade = $("fade"), act = $("act");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const voice = new Audio("itachi_intro.mp3");
+  voice.preload = "auto";
+  voice.setAttribute("playsinline", "");
+  let voiceOK = true;
+  voice.addEventListener("error", () => { voiceOK = false; });
+
+  // ---- 16-bit sound chip ----
+  let ac = null;
+  function chip() {
+    if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { ac = null; } }
+    if (ac && ac.state === "suspended") ac.resume();
+    return ac;
+  }
+  function beep(freq, dur, type = "square", vol = 0.04, when = 0) {
+    const a = chip(); if (!a) return;
+    const t = a.currentTime + when;
+    const o = a.createOscillator(), g = a.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t);
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g).connect(a.destination);
+    o.start(t); o.stop(t + dur + 0.02);
+  }
+
+  // states: idle (waiting for a tap) -> story -> wait -> fading -> act
+  let state = "idle", startClock = 0, waitStart = 0, shown = "";
+
+  function storyTime() {
+    if (voiceOK && voice.currentTime > 0 && !voice.paused) return voice.currentTime;
+    if (voiceOK && voice.ended) return Math.max(voice.duration, (performance.now() - startClock) / 1000);
+    return (performance.now() - startClock) / 1000;
+  }
+
+  function render(t) {
+    let line = null;
+    for (const l of LINES) if (t >= l.t0) line = l;   // a subtitle stays until the next one starts
+    let html = "";
+    if (line) {
+      const k = Math.max(0, Math.min(1, (t - line.t0) / (line.t1 - line.t0)));
+      const n = Math.floor(line.text.length * k);
+      const typed = line.text.slice(0, n);
+      if (line.name) {
+        const cut = line.text.length - line.name.length;
+        html = esc(typed.slice(0, cut)) + (n > cut ? '<span class="name">' + esc(typed.slice(cut)) + "</span>" : "");
+      } else html = esc(typed);
+    }
+    if (html !== shown) { shown = html; sub.innerHTML = html; }
+  }
+  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  function begin() {
+    startEl.hidden = true;
+    state = "story";
+    shown = ""; sub.innerHTML = "";
+    startClock = performance.now();
+  }
+
+  function tryStart(fromTap) {
+    voice.currentTime = 0;
+    const p = voice.play();
+    if (p && p.then) {
+      p.then(begin).catch(() => {
+        if (fromTap) { voiceOK = false; begin(); }   // no sound at all: still show the story
+        else { state = "idle"; startEl.hidden = false; }
+      });
+    } else begin();
+  }
+
+  function enterWait() { state = "wait"; waitStart = performance.now(); prompt.hidden = false; }
+
+  function goToAct() {
+    state = "fading";
+    voice.pause();
+    prompt.hidden = true;
+    fade.classList.remove("on"); void fade.offsetWidth; fade.classList.add("on");
+    setTimeout(showAct, reduce ? 50 : 1000);
+  }
+
+  function showAct() {
+    state = "act";
+    sub.innerHTML = ""; shown = "";
+    act.hidden = false;
+    const title = $("act-title");
+    title.textContent = "";
+    const chars = [..."ACT 1"];
+    chars.forEach((ch, i) => {
+      const s = document.createElement("span");
+      s.className = "ch"; s.textContent = ch === " " ? " " : ch;
+      s.setAttribute("aria-hidden", "true");
+      title.appendChild(s);
+      setTimeout(() => {
+        s.classList.add("in");
+        if (ch !== " ") beep([392, 523, 659, 0, 784][i], 0.16, "square", 0.05);
+      }, 350 + i * 180);
+    });
+    const done = 350 + chars.length * 180;
+    setTimeout(() => { $("act-rule").classList.add("in"); beep(1047, 0.5, "triangle", 0.08); beep(784, 0.5, "triangle", 0.06, 0.02); }, done);
+    setTimeout(() => $("replay").classList.add("in"), done + 3000);
+  }
+
+  function replay() {
+    act.hidden = true;
+    $("act-rule").classList.remove("in");
+    $("replay").classList.remove("in");
+    fade.classList.remove("on");
+    voiceOK = true;
+    tryStart(true);
+  }
+
+  function press() {
+    chip();
+    if (state === "idle") tryStart(true);
+    else if (state === "wait") goToAct();
+    else if (state === "act" && $("replay").classList.contains("in")) replay();
+  }
+  stage.addEventListener("pointerdown", (e) => { e.preventDefault(); press(); });
+  addEventListener("keydown", (e) => {
+    if (e.key === " " || e.key === "Enter") { e.preventDefault(); press(); }
+  });
+
+  function frame(now) {
+    if (state === "story") {
+      const t = storyTime();
+      render(t);
+      if (t >= STORY_END) { render(99); enterWait(); }
+    } else if (state === "wait") {
+      const left = Math.max(0, 1 - (now - waitStart) / 1000 / AUTO_WAIT);
+      timerFill.style.width = (Math.ceil(left * 20) * 5) + "%";
+      if (left <= 0) goToAct();
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  // Opened from the site's button the tap usually allows sound right away; otherwise ask for a tap.
+  tryStart(false);
+})();
+</script>
+</body>
+</html>

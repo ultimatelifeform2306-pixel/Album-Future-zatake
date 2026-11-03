@@ -552,14 +552,13 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
 .acct #logout { border: 0; cursor: pointer; }
 .acct-btns { display: flex; gap: 12px; flex-wrap: wrap; }
 .acct-btns .btn { border: 0; cursor: pointer; }
-/* ---------- PROFILE PHOTOS page ---------- */
+/* ---------- WALLPAPERS page ---------- */
 .pfp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 22px; }
 .pfp-card { display: grid; background: #12063a; box-shadow: 0 0 0 3px var(--ink), 0 0 0 6px var(--lilac); min-width: 0; }
 .pfp-card.owned { box-shadow: 0 0 0 3px var(--ink), 0 0 0 6px #3ddc84; }
 .pfp-card.current { box-shadow: 0 0 0 3px var(--ink), 0 0 0 6px var(--gold), 0 0 22px rgba(255,197,49,.45); }
 .pfp-pic { position: relative; }
-.pfp-pic img { display: block; width: 100%; aspect-ratio: 1 / 1; object-fit: cover; }
-.pfp-pic canvas { position: absolute; right: 8px; bottom: 8px; width: 56px; height: 56px; image-rendering: pixelated; box-shadow: 0 0 0 2px var(--ink), 0 0 0 4px var(--gold); background: var(--ink); }
+.pfp-pic img { display: block; width: 100%; aspect-ratio: 1 / 1; object-fit: cover; image-rendering: pixelated; image-rendering: crisp-edges; }
 .pfp-info { display: grid; gap: 10px; padding: 14px; justify-items: start; }
 .pfp-name { font: 400 12px/1.5 var(--f-pixel); color: var(--bone); text-shadow: 2px 2px 0 var(--magenta); }
 .pfp-price { display: inline-flex; align-items: center; gap: 6px; font: 400 16px var(--f-pixel); color: var(--gold); }
@@ -725,7 +724,7 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
     <a href="#song" data-tab="song">SONG</a>
     <a href="#credits" data-tab="credits">CREDITS</a>
     <a href="#shop" data-tab="shop">SHOP</a>
-    <a href="#photos" data-tab="photos">PROFILE PHOTOS</a>
+    <a href="#wallpapers" data-tab="wallpapers">WALLPAPERS</a>
     <a href="#shop" data-tab="shop" class="kix-chip" aria-label="Your Kix, open the shop"><img src="kix.png" alt=""><span class="kix-n">0</span></a>
     <a href="#account" data-tab="account" class="acct-tab"><canvas class="avatar" id="nav-avatar" width="8" height="8" aria-hidden="true"></canvas><span id="nav-name">ACCOUNT</span></a>
   </nav>
@@ -958,12 +957,12 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
   </section>
 
   <!-- ACCOUNT -->
-  <!-- PROFILE PHOTOS: pictures for your badge, some free, some for Kix -->
-  <section class="win" id="photos" data-panel="photos" hidden>
-    <div class="bar"><i>■</i><b>PHOTOS.EXE · PROFILE PHOTOS</b><i>_</i><i>×</i></div>
+  <!-- WALLPAPERS: 16-bit pictures for your profile badge, some free, some for Kix -->
+  <section class="win" id="wallpapers" data-panel="wallpapers" hidden>
+    <div class="bar"><i>■</i><b>WALLPAPERS.EXE</b><i>_</i><i>×</i></div>
     <div class="body">
-      <h2>PROFILE PHOTOS</h2>
-      <p class="small">Pick a picture for your badge. It turns into 16-bit on the website, like the small preview in the corner. Get one here, then choose it in Account → EDIT PROFILE.</p>
+      <h2>WALLPAPERS</h2>
+      <p class="small">16-bit pictures for your profile. Get one here, then wear it with USE AS PROFILE or in Account → EDIT PROFILE.</p>
       <div class="pfp-grid" id="pfp-grid"></div>
       <p class="msg" id="pfp-msg" role="status"></p>
     </div>
@@ -994,7 +993,7 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
           <canvas id="photo-prev" width="48" height="48" role="img" aria-label="Your badge in 16-bit"></canvas>
           <div style="display:grid;gap:12px;min-width:0;flex:1">
             <div class="pfp-pick" id="pfp-pick" role="group" aria-label="Your profile pictures"></div>
-            <a class="small" href="#photos" data-tab="photos" style="color:var(--gold)">▶ GET MORE IN PROFILE PHOTOS</a>
+            <a class="small" href="#wallpapers" data-tab="wallpapers" style="color:var(--gold)">▶ GET MORE IN WALLPAPERS</a>
           </div>
         </div>
         <p class="msg-ok" id="photo-msg" role="status"></p>
@@ -1033,7 +1032,7 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
 
 <script>
 // tabs, deep-linkable as #home / #game / #credits
-const tabs = ["home", "game", "story", "song", "credits", "shop", "photos", "account"];
+const tabs = ["home", "game", "story", "song", "credits", "shop", "wallpapers", "account"];
 function show(name) {
   if (!tabs.includes(name)) name = "home";
   document.querySelectorAll("[data-panel]").forEach(p => p.hidden = p.dataset.panel !== name);
@@ -1214,7 +1213,7 @@ function enter(email, ac) {
 }
 // Pixel badge: a mirrored 8x8 sprite seeded by the username
 // or, when the player saved one, their own photo already turned 16-bit (48x48)
-const PHOTO_SIZE = 48;
+const PHOTO_SIZE = 64;
 function drawAvatar(cv, name, photo) {
   if (photo) {
     const im = new Image();
@@ -1279,30 +1278,8 @@ function openSite(withToast, back) {
     setTimeout(() => { t.style.opacity = 0; setTimeout(() => t.remove(), 700); }, 3200);
   }
 }
-// ===== Edit profile: your own photo, turned into 16-bit pixel art =====
-// The photo is cropped square, shrunk to 48x48, then given a 16-bit palette (few shades per colour)
-// with an ordered dither, like a sprite. Only that small picture is kept, never the original.
-const BAYER4 = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
-function photoTo16bit(img) {
-  const cv = document.createElement("canvas"); cv.width = cv.height = PHOTO_SIZE;
-  const c = cv.getContext("2d", { willReadFrequently: true });
-  const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height, side = Math.min(w, h);
-  c.imageSmoothingEnabled = true; c.imageSmoothingQuality = "high";
-  c.drawImage(img, (w - side) / 2, Math.max(0, (h - side) * 0.35), side, side, 0, 0, PHOTO_SIZE, PHOTO_SIZE); // keep faces: crop a bit above centre
-  const im = c.getImageData(0, 0, PHOTO_SIZE, PHOTO_SIZE), d = im.data, lv = 6;
-  for (let y = 0; y < PHOTO_SIZE; y++) for (let x = 0; x < PHOTO_SIZE; x++) {
-    const i = (y * PHOTO_SIZE + x) * 4, t = (BAYER4[(y & 3) * 4 + (x & 3)] / 16 - 0.5) * (255 / lv);
-    const g = (d[i] + d[i + 1] + d[i + 2]) / 3;
-    for (let ch = 0; ch < 3; ch++) {
-      const v = g + (d[i + ch] - g) * 1.25;            // a little more colour, like a sprite
-      d[i + ch] = Math.max(0, Math.min(255, Math.round((v + t) / 255 * (lv - 1)) * (255 / (lv - 1))));
-    }
-    d[i + 3] = 255;
-  }
-  c.putImageData(im, 0, 0);
-  return cv.toDataURL("image/png");
-}
-// The profile pictures. free: everyone has it; the others cost Kix on the PROFILE PHOTOS page.
+// ===== Edit profile: wear one of your 16-bit wallpapers =====
+// The wallpapers. price 0: everyone has it; the others cost Kix on the WALLPAPERS page.
 const PFPS = [
   { id: "pfp1", name: "PIXEL PENGUIN",   price: 0 },
   { id: "pfp2", name: "SOFA DAY",        price: 20 },
@@ -1312,19 +1289,13 @@ const PFPS = [
   { id: "pfp6", name: "MOONLIGHT",       price: 20 },
   { id: "pfp7", name: "GYM MODE",        price: 0 },
 ];
-const pfpSrc = (p) => "pfp/" + p.id + ".jpg";
-const pfp16 = {};   // id -> 16-bit picture, made once
-function pfpTo16(p) {
-  if (!pfp16[p.id]) pfp16[p.id] = new Promise((ok, no) => {
-    const im = new Image();
-    im.onload = () => { try { ok(photoTo16bit(im)); } catch (e) { no(e); } };
-    im.onerror = no; im.src = pfpSrc(p);
-  });
-  return pfp16[p.id];
-}
+// Each picture's 16-bit version is made ahead of time: cropped on the face, 64x64 pixels,
+// flat video-game colours, so every phone shows exactly the same crisp sprite.
+const pfpSrc = (p) => "pfp/" + p.id + "-16.png";
+function pfpTo16(p) { return Promise.resolve(pfpSrc(p)); }
 const ownsPfp = (a, p) => p.price === 0 || !!(a && a.owned && a.owned[p.id]);
 
-// --- PROFILE PHOTOS page ---
+// --- WALLPAPERS page ---
 function renderPfpShop() {
   const a = loadAccounts()[myEmail], grid = $("pfp-grid");
   if (!grid) return;
@@ -1334,10 +1305,8 @@ function renderPfpShop() {
     const card = document.createElement("div");
     card.className = "pfp-card" + (own ? " owned" : "") + (current ? " current" : "");
     const pic = document.createElement("div"); pic.className = "pfp-pic";
-    const img = document.createElement("img"); img.src = pfpSrc(p); img.alt = p.name; img.loading = "lazy";
-    const mini = document.createElement("canvas"); mini.width = mini.height = PHOTO_SIZE; mini.setAttribute("aria-hidden", "true");
-    pfpTo16(p).then(src => drawAvatar(mini, "", src)).catch(() => {});
-    pic.append(img, mini);
+    const img = document.createElement("img"); img.src = pfpSrc(p); img.alt = p.name + " in 16-bit"; img.loading = "lazy";
+    pic.append(img);
     const info = document.createElement("div"); info.className = "pfp-info";
     const name = document.createElement("strong"); name.className = "pfp-name"; name.textContent = p.name;
     const price = document.createElement("span");
@@ -1354,7 +1323,7 @@ function renderPfpShop() {
 function pfpAction(p) {
   const msg = $("pfp-msg"), all = loadAccounts(), a = all[myEmail];
   msg.classList.remove("ok");
-  if (!a) { msg.textContent = "Log in to get profile pictures."; return; }
+  if (!a) { msg.textContent = "Log in to get wallpapers."; return; }
   if (!ownsPfp(a, p)) {
     if (kixBalance(a) < p.price) { msg.textContent = "Not enough Kix: " + p.name + " costs " + p.price + " Kix and you have " + kixBalance(a).toLocaleString() + ". Get Kix in the Shop."; return; }
     a.spent = (a.spent || 0) + p.price;

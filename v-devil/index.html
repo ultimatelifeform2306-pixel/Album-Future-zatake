@@ -552,10 +552,31 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
 .acct #logout { border: 0; cursor: pointer; }
 .acct-btns { display: flex; gap: 12px; flex-wrap: wrap; }
 .acct-btns .btn { border: 0; cursor: pointer; }
+/* ---------- PROFILE PHOTOS page ---------- */
+.pfp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 22px; }
+.pfp-card { display: grid; background: #12063a; box-shadow: 0 0 0 3px var(--ink), 0 0 0 6px var(--lilac); min-width: 0; }
+.pfp-card.owned { box-shadow: 0 0 0 3px var(--ink), 0 0 0 6px #3ddc84; }
+.pfp-card.current { box-shadow: 0 0 0 3px var(--ink), 0 0 0 6px var(--gold), 0 0 22px rgba(255,197,49,.45); }
+.pfp-pic { position: relative; }
+.pfp-pic img { display: block; width: 100%; aspect-ratio: 1 / 1; object-fit: cover; }
+.pfp-pic canvas { position: absolute; right: 8px; bottom: 8px; width: 56px; height: 56px; image-rendering: pixelated; box-shadow: 0 0 0 2px var(--ink), 0 0 0 4px var(--gold); background: var(--ink); }
+.pfp-info { display: grid; gap: 10px; padding: 14px; justify-items: start; }
+.pfp-name { font: 400 12px/1.5 var(--f-pixel); color: var(--bone); text-shadow: 2px 2px 0 var(--magenta); }
+.pfp-price { display: inline-flex; align-items: center; gap: 6px; font: 400 16px var(--f-pixel); color: var(--gold); }
+.pfp-price img { width: 26px; height: 26px; }
+.pfp-price small { font-size: 9px; color: var(--muted); }
+.pfp-price.free { color: #8dffb0; }
+.pfp-card .btn { border: 0; cursor: pointer; font-size: 11px; padding: 10px 12px; }
+.pfp-card.owned .pfp-buy { background: #3ddc84; box-shadow: inset -4px -4px 0 #1f9b57, inset 4px 4px 0 #b9ffd6, 4px 4px 0 var(--ink); }
+.pfp-pick { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 12px; }
+.pfp-pick button { display: grid; gap: 6px; justify-items: center; padding: 6px; border: 0; cursor: pointer; background: var(--ink); color: var(--bone); font: 8px/1.3 var(--f-pixel); box-shadow: 0 0 0 3px var(--lilac); }
+.pfp-pick button[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--gold), 0 0 14px rgba(255,197,49,.5); }
+.pfp-pick button:focus-visible { outline: 3px dashed var(--gold); outline-offset: 3px; }
+.pfp-pick canvas { width: 64px; height: 64px; image-rendering: pixelated; }
 .edit-prof { display: grid; gap: 14px; padding: 16px; background: rgba(0,0,0,.35); box-shadow: inset 0 0 0 3px var(--lilac); }
 .edit-prof h3 { margin: 0; font: 12px var(--f-pixel); letter-spacing: .12em; color: var(--gold); }
 .edit-row { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
-.edit-prof canvas { width: 144px; height: 144px; image-rendering: pixelated; background: var(--ink); box-shadow: 0 0 0 3px var(--ink), 0 0 0 6px var(--gold); flex: none; }
+#photo-prev { width: 144px; height: 144px; image-rendering: pixelated; background: var(--ink); box-shadow: 0 0 0 3px var(--ink), 0 0 0 6px var(--gold); flex: none; }
 .edit-prof .pick { display: inline-block; cursor: pointer; }
 .edit-prof input[type=file] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .edit-prof .pick:focus-within { outline: 3px dashed var(--gold); outline-offset: 3px; }
@@ -704,6 +725,7 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
     <a href="#song" data-tab="song">SONG</a>
     <a href="#credits" data-tab="credits">CREDITS</a>
     <a href="#shop" data-tab="shop">SHOP</a>
+    <a href="#photos" data-tab="photos">PROFILE PHOTOS</a>
     <a href="#shop" data-tab="shop" class="kix-chip" aria-label="Your Kix, open the shop"><img src="kix.png" alt=""><span class="kix-n">0</span></a>
     <a href="#account" data-tab="account" class="acct-tab"><canvas class="avatar" id="nav-avatar" width="8" height="8" aria-hidden="true"></canvas><span id="nav-name">ACCOUNT</span></a>
   </nav>
@@ -936,6 +958,17 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
   </section>
 
   <!-- ACCOUNT -->
+  <!-- PROFILE PHOTOS: pictures for your badge, some free, some for Kix -->
+  <section class="win" id="photos" data-panel="photos" hidden>
+    <div class="bar"><i>■</i><b>PHOTOS.EXE · PROFILE PHOTOS</b><i>_</i><i>×</i></div>
+    <div class="body">
+      <h2>PROFILE PHOTOS</h2>
+      <p class="small">Pick a picture for your badge. It turns into 16-bit on the website, like the small preview in the corner. Get one here, then choose it in Account → EDIT PROFILE.</p>
+      <div class="pfp-grid" id="pfp-grid"></div>
+      <p class="msg" id="pfp-msg" role="status"></p>
+    </div>
+  </section>
+
   <section class="win" id="account" data-panel="account" hidden>
     <div class="bar"><i>■</i><b>ACCOUNT.EXE</b><i>_</i><i>×</i></div>
     <div class="body acct">
@@ -956,22 +989,21 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
         <dt>SAVED ON</dt><dd id="acc-saved">Checking…</dd>
       </dl>
       <div class="edit-prof" id="edit-prof" hidden>
-        <h3>EDIT PROFILE · PHOTO</h3>
+        <h3>EDIT PROFILE · PROFILE PICTURE</h3>
         <div class="edit-row">
-          <canvas id="photo-prev" width="48" height="48" role="img" aria-label="Your photo in 16-bit"></canvas>
-          <div style="display:grid;gap:12px;min-width:0">
-            <label class="btn pick" for="photo-file">▶ CHOOSE A PHOTO<input id="photo-file" type="file" accept="image/*"></label>
-            <p class="small" style="margin:0">Pick any photo from your phone or computer. It turns into 16-bit pixel art for your badge.</p>
+          <canvas id="photo-prev" width="48" height="48" role="img" aria-label="Your badge in 16-bit"></canvas>
+          <div style="display:grid;gap:12px;min-width:0;flex:1">
+            <div class="pfp-pick" id="pfp-pick" role="group" aria-label="Your profile pictures"></div>
+            <a class="small" href="#photos" data-tab="photos" style="color:var(--gold)">▶ GET MORE IN PROFILE PHOTOS</a>
           </div>
         </div>
         <p class="msg-ok" id="photo-msg" role="status"></p>
         <div class="acct-btns">
           <button class="btn" id="photo-save" type="button" disabled>SAVE</button>
-          <button class="btn alt" id="photo-remove" type="button">USE PIXEL BADGE</button>
           <button class="btn alt" id="photo-cancel" type="button">CANCEL</button>
         </div>
       </div>
-      <p class="small">Your badge is made from your username, or from your own photo turned 16-bit with EDIT PROFILE. Your password is never shown or stored as text.</p>
+      <p class="small">Your badge is made from your username, or from a profile picture turned 16-bit with EDIT PROFILE. Your password is never shown or stored as text.</p>
       <div class="acct-btns">
         <button class="btn" id="edit-profile" type="button">✎ EDIT PROFILE</button>
         <button class="btn alt" id="logout" type="button">LOG OUT</button>
@@ -1001,7 +1033,7 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
 
 <script>
 // tabs, deep-linkable as #home / #game / #credits
-const tabs = ["home", "game", "story", "song", "credits", "shop", "account"];
+const tabs = ["home", "game", "story", "song", "credits", "shop", "photos", "account"];
 function show(name) {
   if (!tabs.includes(name)) name = "home";
   document.querySelectorAll("[data-panel]").forEach(p => p.hidden = p.dataset.panel !== name);
@@ -1041,7 +1073,7 @@ async function cloudSave(email, patch) {
   try {
     const ref = await cloud(); if (!ref) return markSaved(false);
     const a = loadAccounts()[email]; if (!a) return markSaved(false);
-    await ref.set({ email, username: a.username, salt: a.salt, hash: a.hash, created: a.created, kix: a.kix || 0, spent: a.spent || 0, owned: a.owned || {}, photo: a.photo || "", loggedOut: false, ...patch });
+    await ref.set({ email, username: a.username, salt: a.salt, hash: a.hash, created: a.created, kix: a.kix || 0, spent: a.spent || 0, owned: a.owned || {}, photo: a.photo || "", pfp: a.pfp || "", loggedOut: false, ...patch });
     markSaved(true);
   } catch (_) { markSaved(false); }
 }
@@ -1058,7 +1090,7 @@ async function cloudLoad() {
 }
 function adopt(c) { // put a cloud account back into this browser's list
   const all = loadAccounts();
-  all[c.email] = { username: c.username, salt: c.salt, hash: c.hash, created: c.created, kix: c.kix || 0, spent: c.spent || 0, owned: c.owned || {}, photo: c.photo || "" };
+  all[c.email] = { username: c.username, salt: c.salt, hash: c.hash, created: c.created, kix: c.kix || 0, spent: c.spent || 0, owned: c.owned || {}, photo: c.photo || "", pfp: c.pfp || "" };
   saveAccounts(all);
 }
 try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (_) {}
@@ -1234,6 +1266,7 @@ function fillAccount() {
   drawAvatar($("nav-avatar"), a.username, a.photo);
   drawAvatar($("big-avatar"), a.username, a.photo);
   if (typeof showOwned === "function") showOwned();
+  if (typeof renderPfpShop === "function") renderPfpShop();
 }
 function openSite(withToast, back) {
   $("site").inert = false;
@@ -1269,44 +1302,127 @@ function photoTo16bit(img) {
   c.putImageData(im, 0, 0);
   return cv.toDataURL("image/png");
 }
-let pendingPhoto = null;
-function previewPhoto(src) {
-  const pv = $("photo-prev");
-  if (!src) { const a = loadAccounts()[myEmail] || {}; drawAvatar(pv, a.username || player, a.photo); return; }
-  drawAvatar(pv, "", src);
+// The profile pictures. free: everyone has it; the others cost Kix on the PROFILE PHOTOS page.
+const PFPS = [
+  { id: "pfp1", name: "PIXEL PENGUIN",   price: 0 },
+  { id: "pfp2", name: "SOFA DAY",        price: 20 },
+  { id: "pfp3", name: "SHADOW SHADES",   price: 20 },
+  { id: "pfp4", name: "GOLDEN DRIP",     price: 20 },
+  { id: "pfp5", name: "GOLDEN EMPEROR",  price: 20 },
+  { id: "pfp6", name: "MOONLIGHT",       price: 20 },
+  { id: "pfp7", name: "GYM MODE",        price: 0 },
+];
+const pfpSrc = (p) => "pfp/" + p.id + ".jpg";
+const pfp16 = {};   // id -> 16-bit picture, made once
+function pfpTo16(p) {
+  if (!pfp16[p.id]) pfp16[p.id] = new Promise((ok, no) => {
+    const im = new Image();
+    im.onload = () => { try { ok(photoTo16bit(im)); } catch (e) { no(e); } };
+    im.onerror = no; im.src = pfpSrc(p);
+  });
+  return pfp16[p.id];
+}
+const ownsPfp = (a, p) => p.price === 0 || !!(a && a.owned && a.owned[p.id]);
+
+// --- PROFILE PHOTOS page ---
+function renderPfpShop() {
+  const a = loadAccounts()[myEmail], grid = $("pfp-grid");
+  if (!grid) return;
+  grid.textContent = "";
+  PFPS.forEach(p => {
+    const own = ownsPfp(a, p), current = !!(a && a.pfp === p.id);
+    const card = document.createElement("div");
+    card.className = "pfp-card" + (own ? " owned" : "") + (current ? " current" : "");
+    const pic = document.createElement("div"); pic.className = "pfp-pic";
+    const img = document.createElement("img"); img.src = pfpSrc(p); img.alt = p.name; img.loading = "lazy";
+    const mini = document.createElement("canvas"); mini.width = mini.height = PHOTO_SIZE; mini.setAttribute("aria-hidden", "true");
+    pfpTo16(p).then(src => drawAvatar(mini, "", src)).catch(() => {});
+    pic.append(img, mini);
+    const info = document.createElement("div"); info.className = "pfp-info";
+    const name = document.createElement("strong"); name.className = "pfp-name"; name.textContent = p.name;
+    const price = document.createElement("span");
+    if (p.price) { price.className = "pfp-price"; price.innerHTML = '<img src="kix.png" alt="">' + p.price + " <small>KIX</small>"; }
+    else { price.className = "pfp-price free"; price.textContent = "FREE"; }
+    const btn = document.createElement("button"); btn.type = "button"; btn.className = "btn pfp-buy";
+    btn.textContent = current ? "YOUR PICTURE ✓" : own ? "USE AS PROFILE" : "BUY";
+    btn.onclick = () => pfpAction(p);
+    info.append(name, price, btn);
+    card.append(pic, info);
+    grid.append(card);
+  });
+}
+function pfpAction(p) {
+  const msg = $("pfp-msg"), all = loadAccounts(), a = all[myEmail];
+  msg.classList.remove("ok");
+  if (!a) { msg.textContent = "Log in to get profile pictures."; return; }
+  if (!ownsPfp(a, p)) {
+    if (kixBalance(a) < p.price) { msg.textContent = "Not enough Kix: " + p.name + " costs " + p.price + " Kix and you have " + kixBalance(a).toLocaleString() + ". Get Kix in the Shop."; return; }
+    a.spent = (a.spent || 0) + p.price;
+    a.owned = Object.assign({}, a.owned, { [p.id]: Date.now() });
+    saveAccounts(all); cloudSave(myEmail, {});
+    fillAccount();
+    msg.classList.add("ok"); msg.textContent = p.name + " is yours! " + p.price + " Kix spent. Tap USE AS PROFILE to wear it.";
+    renderPfpShop();
+    return;
+  }
+  pfpTo16(p).then(src => { setPhoto(src, p.id, "PROFILE PICTURE: " + p.name); renderPfpShop(); msg.classList.add("ok"); msg.textContent = "You're now wearing " + p.name + "."; })
+    .catch(() => { msg.textContent = "This picture couldn't load. Try again."; });
+}
+
+// --- EDIT PROFILE: choose among your pictures (or the pixel badge) ---
+let pendingPick = null;   // { id, src } ; id "" = pixel badge
+function renderPfpPick() {
+  const a = loadAccounts()[myEmail] || {}, box = $("pfp-pick");
+  box.textContent = "";
+  const choices = [{ id: "", name: "PIXEL BADGE" }].concat(PFPS.filter(p => ownsPfp(a, p)));
+  choices.forEach(p => {
+    const b = document.createElement("button"); b.type = "button";
+    const cv = document.createElement("canvas"); cv.width = cv.height = 8;
+    const label = document.createElement("span"); label.textContent = p.name;
+    b.append(cv, label);
+    const selected = pendingPick ? pendingPick.id === p.id : (a.pfp || "") === p.id;
+    b.setAttribute("aria-pressed", selected ? "true" : "false");
+    if (p.id) pfpTo16(p).then(src => drawAvatar(cv, "", src)).catch(() => {});
+    else drawAvatar(cv, a.username || player);
+    b.onclick = () => {
+      const done = (src) => {
+        pendingPick = { id: p.id, src };
+        box.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
+        drawAvatar($("photo-prev"), a.username || player, src);
+        $("photo-save").disabled = false;
+        $("photo-msg").textContent = p.id ? p.name + " in 16-bit. Tap SAVE to keep it." : "Your pixel badge. Tap SAVE to go back to it.";
+      };
+      if (p.id) pfpTo16(p).then(done).catch(() => { $("photo-msg").textContent = "This picture couldn't load. Try again."; });
+      else done("");
+    };
+    box.append(b);
+  });
 }
 $("edit-profile").onclick = () => {
-  pendingPhoto = null; $("photo-save").disabled = true; $("photo-msg").textContent = ""; $("photo-file").value = "";
-  previewPhoto(null);
+  const a = loadAccounts()[myEmail] || {};
+  pendingPick = null; $("photo-save").disabled = true; $("photo-msg").textContent = "";
+  drawAvatar($("photo-prev"), a.username || player, a.photo);
+  renderPfpPick();
   $("edit-prof").hidden = false;
   $("edit-prof").scrollIntoView({ block: "nearest" });
 };
-$("photo-cancel").onclick = () => { $("edit-prof").hidden = true; pendingPhoto = null; };
-$("photo-file").addEventListener("change", () => {
-  const f = $("photo-file").files && $("photo-file").files[0];
-  if (!f) return;
-  if (!/^image\//.test(f.type)) { $("photo-msg").textContent = "That file isn't a photo. Pick a JPG, PNG or HEIC picture."; return; }
-  const url = URL.createObjectURL(f), img = new Image();
-  img.onload = () => {
-    try { pendingPhoto = photoTo16bit(img); previewPhoto(pendingPhoto); $("photo-save").disabled = false; $("photo-msg").textContent = "Here it is in 16-bit. Tap SAVE to keep it."; }
-    catch (_) { $("photo-msg").textContent = "This photo couldn't be read. Try another one."; }
-    URL.revokeObjectURL(url);
-  };
-  img.onerror = () => { $("photo-msg").textContent = "This photo couldn't be opened. Try a JPG or PNG."; URL.revokeObjectURL(url); };
-  img.src = url;
-});
-function setPhoto(photo, note) {
+$("photo-cancel").onclick = () => { $("edit-prof").hidden = true; pendingPick = null; };
+function setPhoto(photo, id, note) {
   const all = loadAccounts();
-  if (myEmail && all[myEmail]) { all[myEmail].photo = photo; saveAccounts(all); cloudSave(myEmail, { photo }); }
+  if (myEmail && all[myEmail]) { all[myEmail].photo = photo; all[myEmail].pfp = id; saveAccounts(all); cloudSave(myEmail, { photo, pfp: id }); }
   fillAccount();
-  $("edit-prof").hidden = true; pendingPhoto = null;
+  $("edit-prof").hidden = true; pendingPick = null;
   const t = document.createElement("div");
   t.className = "toast"; t.textContent = note;
   document.body.append(t);
   setTimeout(() => { t.style.opacity = 0; setTimeout(() => t.remove(), 700); }, 2600);
 }
-$("photo-save").onclick = () => { if (pendingPhoto) setPhoto(pendingPhoto, "PROFILE PHOTO SAVED"); };
-$("photo-remove").onclick = () => setPhoto("", "BACK TO YOUR PIXEL BADGE");
+$("photo-save").onclick = () => {
+  if (!pendingPick) return;
+  const p = PFPS.find(x => x.id === pendingPick.id);
+  setPhoto(pendingPick.src, pendingPick.id, p ? "PROFILE PICTURE: " + p.name : "BACK TO YOUR PIXEL BADGE");
+  renderPfpShop();
+};
 
 $("logout").onclick = () => {
   if (myEmail) cloudSave(myEmail, { loggedOut: true });

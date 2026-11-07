@@ -1809,7 +1809,7 @@ $("back").onclick = closeGame;
 // Demo story: Itachi's prologue on a black screen, ending on "Mister <your username>" and ACT 1
 $("demo-story").onclick = () => {
   const f = $("game-frame");
-  f.src = "demo-story/index.html?v=20261107b&name=" + encodeURIComponent(player); // new v= on each update: no old copy
+  f.src = "demo-story/index.html?v=20261107c&name=" + encodeURIComponent(player); // new v= on each update: no old copy
   $("player").hidden = false; $("site").inert = true;
   document.documentElement.style.overflow = "hidden";
   $("back").focus();

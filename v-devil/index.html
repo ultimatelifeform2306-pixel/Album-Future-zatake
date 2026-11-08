@@ -338,6 +338,62 @@ dl.stats dd { margin: 0; }
 @keyframes kofFlash { from { opacity: 1; transform: scaleX(0); } 50% { opacity: 1; transform: scaleX(1); } to { opacity: 0; transform: scaleX(1) scaleY(.2); } }
 .kof-soon .kof-t { background: linear-gradient(180deg, #ffffff 0%, #e9c7ff 40%, #b46bff 70%, #6a1bd6 100%); -webkit-background-clip: text; background-clip: text; }
 .kof-back { position: absolute; z-index: 2; top: max(14px, env(safe-area-inset-top, 0px)); left: max(14px, env(safe-area-inset-left, 0px)); font: 11px var(--f-pixel); color: #fff; background: rgba(0,0,0,.55); border: 2px solid #fff; padding: 9px 12px; cursor: pointer; }
+/* ---------- now playing: the maxi single player ---------- */
+.kof-play { font: 12px var(--f-pixel); letter-spacing: .2em; color: #1a0505; background: #ffe14a; border: 0; cursor: pointer; padding: 12px 18px; transform: skewX(-12deg); box-shadow: 4px 4px 0 #000; }
+.kof-sec:not(.kof-intro) .kof-play { opacity: 0; }
+.kof-sec.in .kof-play { animation: kofTag .35s steps(4) .6s both; }
+.kof-play:focus-visible { outline: 3px dashed #fff; outline-offset: 4px; }
+.np { position: absolute; inset: 0; z-index: 6; display: grid; grid-template-rows: auto 1fr auto; color: #fff; overflow: hidden;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  padding: max(10px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  background: linear-gradient(180deg, #5a2aa8 0%, #2c1066 38%, #12062e 78%, #0a0318 100%); animation: npUp .32s ease-out both; }
+@keyframes npUp { from { transform: translateY(100%); } to { transform: none; } }
+.np-glow { position: absolute; inset: -20% -20% auto; height: 70%; background: url(maxi-cover.jpg) center / cover; filter: blur(60px) saturate(1.4); opacity: .45; pointer-events: none; }
+.np > *:not(.np-glow):not(.np-sheet) { position: relative; }
+.np-top { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; text-align: center; }
+.np-top small { display: block; font-size: 11px; letter-spacing: .14em; color: #e4d2ff; text-transform: uppercase; }
+.np-top b { display: block; font-size: 14px; font-weight: 700; }
+.np-ico { display: grid; place-items: center; width: 44px; height: 44px; border: 0; background: none; color: #fff; cursor: pointer; border-radius: 50%; padding: 0; }
+.np-ico svg { width: 26px; height: 26px; }
+.np-ico:focus-visible, .np-big:focus-visible, .np-row:focus-visible, .np-opt:focus-visible { outline: 3px dashed var(--gold); outline-offset: 2px; }
+.np-ico.on { color: #c38bff; }
+.np-ico.on::after { content: ""; position: absolute; width: 5px; height: 5px; border-radius: 50%; background: #c38bff; transform: translateY(18px); }
+.np-ico { position: relative; }
+.np-body { display: grid; align-content: center; gap: clamp(14px, 3vh, 26px); width: min(100%, 460px); margin: 0 auto; min-height: 0; }
+.np-cover { width: min(100%, 42vh); aspect-ratio: 1; justify-self: center; object-fit: cover; object-position: 62% 50%; border-radius: 6px; box-shadow: 0 18px 50px rgba(0,0,0,.6); }
+.np-meta { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px; }
+.np-meta h3 { margin: 0; font: 400 clamp(22px, 6vw, 28px)/1.15 "Russo One", "Arial Black", sans-serif; letter-spacing: .01em; overflow-wrap: anywhere; }
+.np-meta p { margin: 4px 0 0; font-size: 16px; color: #d9c8f5; }
+.np-heart { --fill: none; }
+.np-heart.on { color: var(--magenta); --fill: var(--magenta); }
+.np-bar { display: grid; gap: 6px; }
+.np-bar input { width: 100%; height: 22px; margin: 0; background: none; accent-color: #fff; cursor: pointer; }
+.np-times { display: flex; justify-content: space-between; font-size: 12px; color: #d9c8f5; font-variant-numeric: tabular-nums; }
+.np-msg { min-height: 1.3em; margin: 0; text-align: center; font: 11px/1.6 var(--f-pixel); color: var(--gold); }
+.np-ctrl { display: grid; grid-template-columns: repeat(5, 1fr); align-items: center; justify-items: center; }
+.np-ctrl .np-ico svg { width: 30px; height: 30px; }
+.np-ctrl .np-ico.small svg { width: 26px; height: 26px; }
+.np-big { width: 68px; height: 68px; border-radius: 50%; border: 0; background: #fff; color: #12062e; display: grid; place-items: center; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,.4); }
+.np-big svg { width: 32px; height: 32px; }
+.np-bottom { display: flex; justify-content: space-between; width: min(100%, 460px); margin: 0 auto; }
+/* the ⋯ sheet */
+.np-sheet { position: absolute; inset: 0; z-index: 2; display: grid; grid-template-rows: auto auto 1fr auto; gap: 18px; align-content: start; text-align: center; overflow-y: auto;
+  padding: max(24px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(18px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  background: rgba(10,3,24,.93); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); animation: s06In .25s ease-out both; }
+.np-sheet img { width: min(46vw, 240px); aspect-ratio: 1; object-fit: cover; object-position: 62% 50%; justify-self: center; border-radius: 4px; box-shadow: 0 12px 30px rgba(0,0,0,.6); }
+.np-sheet h4 { margin: 0; font: 400 22px "Russo One", sans-serif; }
+.np-sheet .sub { margin: 4px 0 0; color: #cdb9ef; font-size: 15px; }
+.np-opts3 { display: grid; grid-template-columns: repeat(3, 1fr); width: min(100%, 420px); justify-self: center; }
+.np-opt { display: grid; justify-items: center; gap: 6px; border: 0; background: none; color: #fff; cursor: pointer; font: 600 13px system-ui, sans-serif; padding: 8px 4px; }
+.np-opt svg { width: 28px; height: 28px; }
+.np-opt.on { color: #c38bff; }
+.np-list { display: grid; width: min(100%, 420px); justify-self: center; text-align: left; }
+.np-row { display: flex; align-items: center; gap: 16px; border: 0; background: none; color: #fff; cursor: pointer; font: 500 18px system-ui, sans-serif; padding: 14px 6px; text-align: left; }
+.np-row svg { width: 26px; height: 26px; flex: none; color: #d9c8f5; }
+.np-row.cur { color: #c38bff; }
+.np-row small { display: block; font-size: 13px; color: #b9a6dc; }
+.np-cancel { justify-self: center; border: 0; background: none; color: #fff; font: 600 17px system-ui, sans-serif; padding: 14px 30px; cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { .np, .np-sheet { animation: none; } }
 .kof-back:focus-visible { outline: 3px dashed #fff; outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { .kof-sec .kof-t, .kof-sec .kof-sm { opacity: 1 !important; animation: none !important; } .kof-sec.in::after { display: none; } }
 
@@ -657,11 +713,55 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
         <span class="kof-part">KENUKI 1</span>
         <span class="kof-scroll">SCROLL ▼</span>
       </section>
-      <section class="kof-sec"><span class="kof-sm">TRACK 01</span><h3 class="kof-t">RICH PANTIN</h3></section>
-      <section class="kof-sec"><span class="kof-sm">TRACK 02</span><h3 class="kof-t">QUESTION MYSELF</h3></section>
-      <section class="kof-sec"><span class="kof-sm">TRACK 03</span><h3 class="kof-t">ROTTERDON</h3></section>
-      <section class="kof-sec"><span class="kof-sm">TRACK 04</span><h3 class="kof-t">FLAMENCO</h3></section>
+      <section class="kof-sec"><span class="kof-sm">TRACK 01</span><h3 class="kof-t">RICH PANTIN</h3><button type="button" class="kof-play" data-track="0">▶ PLAY</button></section>
+      <section class="kof-sec"><span class="kof-sm">TRACK 02</span><h3 class="kof-t">QUESTION MYSELF</h3><button type="button" class="kof-play" data-track="1">▶ PLAY</button></section>
+      <section class="kof-sec"><span class="kof-sm">TRACK 03</span><h3 class="kof-t">ROTTERDON</h3><button type="button" class="kof-play" data-track="2">▶ PLAY</button></section>
+      <section class="kof-sec"><span class="kof-sm">TRACK 04</span><h3 class="kof-t">FLAMENCO</h3><button type="button" class="kof-play" data-track="3">▶ PLAY</button></section>
       <section class="kof-sec kof-soon"><span class="kof-sm">PART 2</span><h3 class="kof-t">KENUKI 2</h3><span class="kof-wait">COMING SOON</span></section>
+    </div>
+  </div>
+  <!-- now playing: the maxi single player -->
+  <div class="np" id="np" role="dialog" aria-label="Now playing" hidden>
+    <div class="np-glow" aria-hidden="true"></div>
+    <header class="np-top">
+      <button type="button" class="np-ico" id="np-close" aria-label="Close the player"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div><small>Playing from the maxi single</small><b>Panel Sewi: Sigmatiserie</b></div>
+      <button type="button" class="np-ico" id="np-more" aria-label="More options"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="19" cy="12" r="2" fill="currentColor"/></svg></button>
+    </header>
+    <div class="np-body">
+      <img class="np-cover" src="maxi-cover.jpg" alt="Panel Sewi Sigmatiserie cover">
+      <div class="np-meta">
+        <div><h3 id="np-title">RICH PANTIN</h3><p>Kenos</p></div>
+      </div>
+      <div class="np-bar">
+        <input type="range" id="np-seek" min="0" max="1000" value="0" step="1" aria-label="Song position">
+        <div class="np-times"><span id="np-cur">0:00</span><span id="np-left">-0:00</span></div>
+      </div>
+      <div class="np-ctrl">
+        <button type="button" class="np-ico np-heart" id="np-like" aria-label="Like" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7.5-4.6-9.2-9.1C1.6 7.6 3.9 4.5 7.1 4.5c2 0 3.6 1.1 4.9 2.9 1.3-1.8 2.9-2.9 4.9-2.9 3.2 0 5.5 3.1 4.3 6.4C19.5 15.4 12 20 12 20z" fill="var(--fill,none)" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></button>
+        <button type="button" class="np-ico" id="np-prev" aria-label="Previous song"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="2.6" height="14" rx="1" fill="currentColor"/><path d="M20 5.5v13a1 1 0 0 1-1.6.8L8.6 12.8a1 1 0 0 1 0-1.6l9.8-6.5A1 1 0 0 1 20 5.5z" fill="currentColor"/></svg></button>
+        <button type="button" class="np-big" id="np-toggle" aria-label="Play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.6v12.8a1 1 0 0 0 1.5.9l10.2-6.4a1 1 0 0 0 0-1.7L9.5 4.7A1 1 0 0 0 8 5.6z" fill="currentColor"/></svg></button>
+        <button type="button" class="np-ico" id="np-next" aria-label="Next song"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="17.4" y="5" width="2.6" height="14" rx="1" fill="currentColor"/><path d="M4 5.5v13a1 1 0 0 0 1.6.8l9.8-6.5a1 1 0 0 0 0-1.6L5.6 4.7A1 1 0 0 0 4 5.5z" fill="currentColor"/></svg></button>
+        <button type="button" class="np-ico small" id="np-shuffle" aria-label="Shuffle" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h3.5c2 0 3.2 1 4.3 2.6l2.4 4.8c1.1 1.6 2.3 2.6 4.3 2.6H20M3 17h3.5c1.4 0 2.4-.5 3.2-1.4M14.3 8.4c.8-.9 1.8-1.4 3.2-1.4H20M17.5 4.5 20 7l-2.5 2.5M17.5 14.5 20 17l-2.5 2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <p class="np-msg" id="np-msg" role="status"></p>
+    </div>
+    <footer class="np-bottom">
+      <button type="button" class="np-ico" id="np-queue" aria-label="Queue"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h11M4 12h11M4 17h7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M15 15.5v5l4-2.5z" fill="currentColor"/></svg></button>
+      <button type="button" class="np-ico" id="np-share" aria-label="Share"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M8 7.5 12 3.5l4 4M6 11H5a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7a1 1 0 0 0-1-1h-1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </footer>
+    <div class="np-sheet" id="np-sheet" hidden>
+      <img src="maxi-cover.jpg" alt="">
+      <div><h4 id="np-s-title">RICH PANTIN</h4><p class="sub">Kenos · Panel Sewi: Sigmatiserie</p></div>
+      <div style="display:grid;gap:18px;align-content:start">
+        <div class="np-opts3" id="np-opts">
+          <button type="button" class="np-opt" id="np-o-shuffle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h3.5c2 0 3.2 1 4.3 2.6l2.4 4.8c1.1 1.6 2.3 2.6 4.3 2.6H20M3 17h3.5c1.4 0 2.4-.5 3.2-1.4M14.3 8.4c.8-.9 1.8-1.4 3.2-1.4H20M17.5 4.5 20 7l-2.5 2.5M17.5 14.5 20 17l-2.5 2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Shuffle</button>
+          <button type="button" class="np-opt" id="np-o-repeat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11V9.5A2.5 2.5 0 0 1 7.5 7H19M16.5 4.5 19 7l-2.5 2.5M19 13v1.5a2.5 2.5 0 0 1-2.5 2.5H5M7.5 19.5 5 17l2.5-2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Repeat</button>
+          <button type="button" class="np-opt" id="np-o-queue"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h11M4 12h11M4 17h7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M15 15.5v5l4-2.5z" fill="currentColor"/></svg>Go to queue</button>
+        </div>
+        <div class="np-list" id="np-list"></div>
+      </div>
+      <button type="button" class="np-cancel" id="np-cancel">Cancel</button>
     </div>
   </div>
 </div>
@@ -1935,7 +2035,7 @@ document.querySelectorAll("[data-lock]").forEach(s => { const l = document.query
 (() => {
   const box = $("s06"), items = [...box.querySelectorAll("[data-act]")], desc = $("s06-desc"), art = $("s06-art");
   const DESC = {
-    play: "Listen to Panel Sewi: Sigmatiserie, the maxi single.",
+    play: "Listen to Panel Sewi: Sigmatiserie, the maxi single, from track 01.",
     tracks: "See every track on the maxi single.",
     art: "Look at the cover art in full.",
     back: "Return to the V-Devil website."
@@ -1953,7 +2053,7 @@ document.querySelectorAll("[data-lock]").forEach(s => { const l = document.query
     if (a === "back") return close();
     if (a === "art") { art.hidden = false; return; }
     if (a === "tracks") return openKof();
-    desc.classList.add("soon"); desc.textContent = "COMING SOON";
+    if (a === "play") return window.maxiPlayer && window.maxiPlayer.open(0);
   }
   function open() {
     box.hidden = false; $("site").inert = true;
@@ -1963,6 +2063,7 @@ document.querySelectorAll("[data-lock]").forEach(s => { const l = document.query
     select(0);
   }
   function close() {
+    if (window.maxiPlayer) window.maxiPlayer.close(true);
     kof.hidden = true; art.hidden = true; box.hidden = true; $("site").inert = false;
     document.body.classList.remove("story-mode");
     document.documentElement.style.overflow = "";
@@ -1985,12 +2086,134 @@ document.querySelectorAll("[data-lock]").forEach(s => { const l = document.query
   art.onclick = () => { art.hidden = true; select(sel); };
   addEventListener("keydown", e => {
     if (box.hidden) return;
+    if (!$("np").hidden) return; // the player handles its own keys
     if (!kof.hidden) { if (e.key === "Escape" || e.key === "Backspace") { e.preventDefault(); closeKof(); } return; }
     if (!art.hidden) { if (["Escape", "Backspace", "Enter", " "].includes(e.key)) { e.preventDefault(); art.hidden = true; select(sel); } return; }
     if (e.key === "ArrowDown" || e.key === "ArrowRight") { e.preventDefault(); select(sel + 1); }
     else if (e.key === "ArrowUp" || e.key === "ArrowLeft") { e.preventDefault(); select(sel - 1); }
     else if (e.key === "Escape" || e.key === "Backspace") { e.preventDefault(); close(); }
   });
+})();
+
+// ===== Maxi single: now-playing player =====
+// Put the song files in v-devil/maxi/ with these names; until a file is there, the player says so.
+(() => {
+  const TRACKS = [
+    { title: "RICH PANTIN",     src: "maxi/rich-pantin.mp3" },
+    { title: "QUESTION MYSELF", src: "maxi/question-myself.mp3" },
+    { title: "ROTTERDON",       src: "maxi/rotterdon.mp3" },
+    { title: "FLAMENCO",        src: "maxi/flamenco.mp3" },
+  ];
+  const ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.6v12.8a1 1 0 0 0 1.5.9l10.2-6.4a1 1 0 0 0 0-1.7L9.5 4.7A1 1 0 0 0 8 5.6z" fill="currentColor"/></svg>', ICON_PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.2" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1.2" fill="currentColor"/></svg>', ICON_ADDQ = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h10M4 14h10M4 19h6M18 4v6M15 7h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>', ICON_SHARE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M8 7.5 12 3.5l4 4M6 11H5a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7a1 1 0 0 0-1-1h-1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const np = $("np"), au = new Audio(), seek = $("np-seek"), msg = $("np-msg"), sheet = $("np-sheet");
+  au.preload = "metadata"; au.setAttribute("playsinline", "");
+  let cur = 0, shuffle = false, repeat = false, seeking = false, missing = false;
+  const liked = (() => { try { return JSON.parse(localStorage.getItem("vdevil.likes") || "{}"); } catch (_) { return {}; } })();
+  const fmt = (t) => { t = Math.max(0, Math.floor(t || 0)); return Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0"); };
+
+  function show() {
+    const t = TRACKS[cur];
+    $("np-title").textContent = t.title; $("np-s-title").textContent = t.title;
+    const like = $("np-like"), on = !!liked[t.title];
+    like.classList.toggle("on", on); like.setAttribute("aria-pressed", on); like.setAttribute("aria-label", on ? "Unlike" : "Like");
+    $("np-shuffle").classList.toggle("on", shuffle); $("np-shuffle").setAttribute("aria-pressed", shuffle);
+    $("np-o-shuffle").classList.toggle("on", shuffle); $("np-o-repeat").classList.toggle("on", repeat);
+    playIcon();
+  }
+  function playIcon() {
+    const b = $("np-toggle"), playing = !au.paused && !missing;
+    b.innerHTML = playing ? ICON_PAUSE : ICON_PLAY; b.setAttribute("aria-label", playing ? "Pause" : "Play");
+  }
+  function load(i, autoplay) {
+    cur = (i + TRACKS.length) % TRACKS.length; missing = false; msg.textContent = "";
+    au.src = TRACKS[cur].src; seek.value = 0; $("np-cur").textContent = "0:00"; $("np-left").textContent = "-0:00";
+    show();
+    if (autoplay) { const p = au.play(); if (p && p.catch) p.catch(() => {}); }
+  }
+  au.addEventListener("error", () => { missing = true; msg.textContent = "THIS SONG ISN'T UPLOADED YET"; playIcon(); });
+  au.addEventListener("loadedmetadata", () => { $("np-left").textContent = "-" + fmt(au.duration); });
+  au.addEventListener("timeupdate", () => {
+    if (seeking || !au.duration) return;
+    seek.value = Math.round(au.currentTime / au.duration * 1000);
+    $("np-cur").textContent = fmt(au.currentTime); $("np-left").textContent = "-" + fmt(au.duration - au.currentTime);
+  });
+  au.addEventListener("play", playIcon); au.addEventListener("pause", playIcon);
+  au.addEventListener("ended", () => {
+    if (repeat) { au.currentTime = 0; au.play().catch(() => {}); return; }
+    nextTrack();
+  });
+  seek.addEventListener("input", () => { seeking = true; if (au.duration) $("np-cur").textContent = fmt(seek.value / 1000 * au.duration); });
+  seek.addEventListener("change", () => { if (au.duration) au.currentTime = seek.value / 1000 * au.duration; seeking = false; });
+  function nextTrack() {
+    if (shuffle && TRACKS.length > 1) { let n; do { n = Math.floor(Math.random() * TRACKS.length); } while (n === cur); load(n, true); }
+    else load(cur + 1, true);
+  }
+  $("np-toggle").onclick = () => {
+    if (missing) { msg.textContent = "THIS SONG ISN'T UPLOADED YET"; return; }
+    if (au.paused) au.play().catch(() => {}); else au.pause();
+  };
+  $("np-next").onclick = nextTrack;
+  $("np-prev").onclick = () => { if (au.currentTime > 3) au.currentTime = 0; else load(cur - 1, true); };
+  $("np-like").onclick = () => {
+    const t = TRACKS[cur].title; liked[t] = !liked[t];
+    try { localStorage.setItem("vdevil.likes", JSON.stringify(liked)); } catch (_) {}
+    show();
+  };
+  const toggleShuffle = () => { shuffle = !shuffle; show(); };
+  $("np-shuffle").onclick = toggleShuffle; $("np-o-shuffle").onclick = toggleShuffle;
+  $("np-o-repeat").onclick = () => { repeat = !repeat; show(); };
+
+  // the ⋯ sheet: queue (tap a song to play it), add to queue, share
+  function sheetList(mode) {
+    const list = $("np-list"); list.textContent = "";
+    if (mode === "queue") {
+      TRACKS.forEach((t, i) => {
+        const b = document.createElement("button"); b.type = "button"; b.className = "np-row" + (i === cur ? " cur" : "");
+        b.innerHTML = '<span>' + (i === cur ? "▶ " : "") + t.title + '<small>Kenos · Track 0' + (i + 1) + '</small></span>';
+        b.onclick = () => { closeSheet(); load(i, true); };
+        list.append(b);
+      });
+      return;
+    }
+    const add = document.createElement("button"); add.type = "button"; add.className = "np-row";
+    add.innerHTML = ICON_ADDQ + "<span>Add to queue</span>";
+    add.onclick = () => { msg.textContent = TRACKS[cur].title + " ADDED TO THE QUEUE"; closeSheet(); };
+    const share = document.createElement("button"); share.type = "button"; share.className = "np-row";
+    share.innerHTML = ICON_SHARE + "<span>Share</span>";
+    share.onclick = () => {
+      const text = "Listen to " + TRACKS[cur].title + " by Kenos, from Panel Sewi: Sigmatiserie on V-Devil Production";
+      const done = () => { msg.textContent = "LINK COPIED"; closeSheet(); };
+      if (navigator.share) navigator.share({ title: TRACKS[cur].title, text, url: location.href }).then(closeSheet).catch(() => {});
+      else if (navigator.clipboard) navigator.clipboard.writeText(text + " " + location.href).then(done).catch(() => { msg.textContent = location.href; closeSheet(); });
+      else { msg.textContent = location.href; closeSheet(); }
+    };
+    list.append(add, share);
+  }
+  function openSheet(mode) { sheetList(mode); sheet.hidden = false; $("np-cancel").focus({ preventScroll: true }); }
+  function closeSheet() { sheet.hidden = true; $("np-more").focus({ preventScroll: true }); $("s06").scrollTop = 0; }
+  $("np-more").onclick = () => openSheet("menu");
+  $("np-queue").onclick = () => openSheet("queue");
+  $("np-o-queue").onclick = () => sheetList("queue");
+  $("np-share").onclick = () => { openSheet("menu"); };
+  $("np-cancel").onclick = closeSheet;
+
+  function open(i) {
+    np.hidden = false; sheet.hidden = true;
+    if (i !== cur || !au.src) load(i, true); else { show(); if (au.paused && !missing) au.play().catch(() => {}); }
+    $("np-toggle").focus({ preventScroll: true }); $("s06").scrollTop = 0;
+  }
+  function close(stop) {
+    if (stop) { au.pause(); }
+    np.hidden = true; sheet.hidden = true;
+  }
+  $("np-close").onclick = () => close(false);   // the song keeps playing while you look around
+  document.querySelectorAll(".kof-play").forEach(b => b.onclick = () => open(+b.dataset.track));
+  addEventListener("keydown", e => {
+    if (np.hidden) return;
+    if (e.key === "Escape") { e.preventDefault(); if (!sheet.hidden) closeSheet(); else close(false); }
+    else if (e.key === " " && document.activeElement !== seek && sheet.hidden) { e.preventDefault(); $("np-toggle").click(); }
+  });
+  window.maxiPlayer = { open, close };
 })();
 
 // ===== Kenos Last Strike: a full-name check, then the wallpaper =====

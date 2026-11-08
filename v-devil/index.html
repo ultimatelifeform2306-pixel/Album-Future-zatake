@@ -342,6 +342,46 @@ dl.stats dd { margin: 0; }
 .stk { display: inline-block; width: max(1.1em, 19px); height: max(1.5em, 26px); margin: -0.3em 0.3em -0.3em 0; vertical-align: middle; flex: none;
   background: url(rabbid-sticker.png) center / contain no-repeat; transform: rotate(-6deg); }
 .stk.l { transform: scaleX(-1) rotate(-6deg); }
+/* ---------- LYRICS SELECT: 16-bit song select ---------- */
+.ls { position: absolute; inset: 0; z-index: 5; overflow: hidden; display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; justify-items: center; gap: 14px;
+  padding: max(56px, calc(env(safe-area-inset-top, 0px) + 50px)) max(16px, env(safe-area-inset-right, 0px)) max(18px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  font-family: var(--f-pixel); color: #fff; image-rendering: pixelated; }
+.ls-sky { position: absolute; inset: 0; background:
+  repeating-linear-gradient(180deg, #1f3bd6 0 18px, #2448e0 18px 36px, #2a58ea 36px 54px, #3168f2 54px 72px, #3a7cf8 72px 90px, #4a92fb 90px 108px); }
+.ls-ground { position: absolute; left: 0; right: 0; bottom: 0; height: 22%;
+  background: conic-gradient(#7a3cf0 25%, #4b17b8 0 50%, #7a3cf0 0 75%, #4b17b8 0) 0 0 / 48px 48px;
+  box-shadow: inset 0 8px 0 #ffcf3a, inset 0 14px 0 #c46a00; animation: lsScroll 2.4s linear infinite; }
+@keyframes lsScroll { to { background-position: 48px 0; } }
+.ls > *:not(.ls-sky):not(.ls-ground):not(.ls-read) { position: relative; }
+.ls-back { position: absolute !important; top: max(12px, env(safe-area-inset-top, 0px)); left: max(12px, env(safe-area-inset-left, 0px)); display: inline-flex; align-items: center;
+  font: 11px var(--f-pixel); color: #fff; background: #0b1660; border: 3px solid #fff; box-shadow: 4px 4px 0 #000; padding: 8px 12px; cursor: pointer; }
+.ls-title { margin: 0; font: 400 clamp(16px, 4.6vw, 30px) var(--f-pixel); letter-spacing: .06em; color: #ffe14a; text-align: center;
+  background: #d10a0a; padding: 12px 22px; border: 4px solid #000; box-shadow: inset 0 -6px 0 #8a0000, 6px 6px 0 #000; text-shadow: 3px 3px 0 #000; transform: skewX(-8deg); }
+.ls-title span { color: #fff; }
+.ls-slots { display: grid; grid-template-columns: repeat(4, minmax(0, 170px)); gap: 14px; align-self: center; justify-content: center; width: 100%; }
+.ls-slot { display: grid; gap: 10px; justify-items: center; padding: 12px 10px 14px; cursor: pointer; color: #fff; font: 10px/1.5 var(--f-pixel); text-align: center;
+  background: #0b1660; border: 4px solid #000; box-shadow: inset 0 0 0 3px #5d7cff, 6px 6px 0 rgba(0,0,0,.55); }
+.ls-slot .no { color: #ffe14a; letter-spacing: .12em; }
+.ls-slot img { width: 100%; aspect-ratio: 1; object-fit: cover; object-position: 62% 40%; image-rendering: pixelated; border: 3px solid #000; }
+.ls-slot b { font-weight: 400; font-size: 11px; min-height: 3em; display: grid; place-items: center; overflow-wrap: anywhere; }
+.ls-slot.on { box-shadow: inset 0 0 0 3px #ffe14a, 0 0 0 4px #ffe14a, 6px 6px 0 rgba(0,0,0,.55); animation: lsBlink .5s steps(1) infinite; transform: translateY(-6px); }
+@keyframes lsBlink { 50% { box-shadow: inset 0 0 0 3px #fff, 0 0 0 4px #fff, 6px 6px 0 rgba(0,0,0,.55); } }
+.ls-slot:focus-visible { outline: 3px dashed #fff; outline-offset: 4px; }
+.ls-hint { margin: 0; font-size: 11px; letter-spacing: .2em; color: #fff; text-shadow: 3px 3px 0 #000; animation: blink 1s steps(1) infinite; }
+.ls-read { position: absolute; top: 0; left: 0; right: 0; bottom: 0; grid-area: 1 / 1 / -1 / -1; z-index: 2; display: flex; align-items: center; justify-content: center; background: rgba(0,0,20,.72); box-sizing: border-box;
+  padding: max(14px, env(safe-area-inset-top, 0px)) max(14px, env(safe-area-inset-right, 0px)) max(14px, env(safe-area-inset-bottom, 0px)) max(14px, env(safe-area-inset-left, 0px)); }
+.ls-win { display: grid; grid-template-rows: auto minmax(0, 1fr); width: min(100%, 640px); height: 760px; max-height: 100%; box-sizing: border-box; background: #0b1660; border: 4px solid #fff;
+  box-shadow: 0 0 0 4px #000, 8px 8px 0 4px rgba(0,0,0,.6); }
+.ls-win-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; background: #d10a0a; border-bottom: 4px solid #000; }
+.ls-win-bar b { font-weight: 400; font-size: 12px; color: #ffe14a; text-shadow: 2px 2px 0 #000; }
+.ls-win-bar button { font: 14px var(--f-pixel); color: #fff; background: #000; border: 2px solid #fff; width: 34px; height: 34px; cursor: pointer; }
+.ls-text { margin: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; white-space: pre-wrap; overflow-wrap: anywhere;
+  font: 11px/2.1 var(--f-pixel); color: #fff; padding: 16px 14px 28px; text-shadow: 2px 2px 0 #000; }
+@media (max-width: 640px) {
+  .ls-slots { grid-template-columns: repeat(2, minmax(0, 150px)); gap: 12px; }
+  .ls-slot img { width: 70%; }
+}
+@media (prefers-reduced-motion: reduce) { .ls-ground, .ls-slot.on, .ls-hint { animation: none; } }
 /* ---------- now playing: the maxi single player ---------- */
 .kof-play { font: 12px var(--f-pixel); letter-spacing: .2em; color: #1a0505; background: #ffe14a; border: 0; cursor: pointer; padding: 12px 18px; transform: skewX(-12deg); box-shadow: 4px 4px 0 #000; }
 .kof-sec:not(.kof-intro) .kof-play { opacity: 0; }
@@ -705,7 +745,7 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
     <div class="s06-list" role="menu" aria-label="Maxi single menu">
       <button type="button" role="menuitem" data-act="play"><span>PLAY</span></button>
       <button type="button" role="menuitem" data-act="tracks"><span>TRACKLIST</span></button>
-      <button type="button" role="menuitem" data-act="art"><span>ARTWORK</span></button>
+      <button type="button" role="menuitem" data-act="lyrics"><span>LYRICS</span></button>
       <button type="button" role="menuitem" data-act="back"><span>BACK</span></button>
     </div>
     <div class="s06-preview">
@@ -713,10 +753,6 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
       <p id="s06-desc" role="status"></p>
     </div>
   </div>
-  <footer class="s06-hints">
-    <button type="button" id="s06-a"><b class="k a">A</b> SELECT</button>
-    <button type="button" id="s06-b"><b class="k b">B</b> BACK</button>
-  </footer>
   <div class="s06-art" id="s06-art" hidden><img src="maxi-cover.jpg" alt="Panel Sewi Sigmatiserie artwork"></div>
   <!-- tracklist: King of Fighters style titles that slam in as you scroll -->
   <div class="kof-wrap" id="kof" hidden>
@@ -734,6 +770,21 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
       <section class="kof-sec"><span class="kof-sm">TRACK 03</span><h3 class="kof-t">ROTTERDON</h3><button type="button" class="kof-play" data-track="2"><i class="stk" aria-hidden="true"></i> PLAY</button></section>
       <section class="kof-sec"><span class="kof-sm">TRACK 04</span><h3 class="kof-t">FLAMENCO</h3><button type="button" class="kof-play" data-track="3"><i class="stk" aria-hidden="true"></i> PLAY</button></section>
       <section class="kof-sec kof-soon"><span class="kof-sm">PART 2</span><h3 class="kof-t">KENUKI 2</h3><span class="kof-wait">COMING SOON</span></section>
+    </div>
+  </div>
+  <!-- LYRICS SELECT: pick a song, read its lyrics in 16-bit -->
+  <div class="ls" id="ls" role="dialog" aria-label="Lyrics select" hidden>
+    <div class="ls-sky" aria-hidden="true"></div>
+    <div class="ls-ground" aria-hidden="true"></div>
+    <button type="button" class="ls-back" id="ls-back"><i class="stk l" aria-hidden="true"></i> BACK</button>
+    <h2 class="ls-title"><span>LYRICS</span> SELECT</h2>
+    <div class="ls-slots" id="ls-slots" role="listbox" aria-label="Songs"></div>
+    <p class="ls-hint" id="ls-hint">PICK A SONG</p>
+    <div class="ls-read" id="ls-read" hidden>
+      <div class="ls-win">
+        <header class="ls-win-bar"><b id="ls-read-title">RICH PANTIN</b><button type="button" id="ls-read-close" aria-label="Close the lyrics">✕</button></header>
+        <p class="ls-text" id="ls-text"></p>
+      </div>
     </div>
   </div>
   <!-- now playing: the maxi single player -->
@@ -2466,7 +2517,7 @@ document.querySelectorAll("[data-lock]").forEach(s => { const l = document.query
   const DESC = {
     play: "Listen to Panel Sewi: Sigmatiserie, the maxi single, from track 01.",
     tracks: "See every track on the maxi single.",
-    art: "Look at the cover art in full.",
+    lyrics: "Read the lyrics of every song on the maxi single.",
     back: "Return to the V-Devil website."
   };
   let sel = 0;
@@ -2480,7 +2531,7 @@ document.querySelectorAll("[data-lock]").forEach(s => { const l = document.query
     select(i);
     const a = items[sel].dataset.act;
     if (a === "back") return close();
-    if (a === "art") { art.hidden = false; return; }
+    if (a === "lyrics") return openLyr();
     if (a === "tracks") return openKof();
     if (a === "play") return window.maxiPlayer && window.maxiPlayer.open(0);
   }
@@ -2493,7 +2544,7 @@ document.querySelectorAll("[data-lock]").forEach(s => { const l = document.query
   }
   function close() {
     if (window.maxiPlayer) window.maxiPlayer.close(true);
-    kof.hidden = true; art.hidden = true; box.hidden = true; $("site").inert = false;
+    kof.hidden = true; art.hidden = true; ls.hidden = true; box.hidden = true; $("site").inert = false;
     document.body.classList.remove("story-mode");
     document.documentElement.style.overflow = "";
     $("maxi-enter").focus();
@@ -2507,15 +2558,49 @@ document.querySelectorAll("[data-lock]").forEach(s => { const l = document.query
     kof.hidden = false; kofScroll.scrollTop = 0; $("kof-back").focus();
   }
   function closeKof() { kof.hidden = true; select(sel); }
+  // LYRICS SELECT
+  const LS_SONGS = [["rich-pantin", "RICH PANTIN"], ["question-myself", "QUESTION MYSELF"], ["rotterdon", "ROTTERDON"], ["flamenco", "FLAMENCO"]];
+  const ls = $("ls"), slots = $("ls-slots"), read = $("ls-read");
+  let lsSel = 0;
+  LS_SONGS.forEach(([id, title], i) => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "ls-slot"; b.setAttribute("role", "option");
+    b.innerHTML = '<span class="no">SONG 0' + (i + 1) + '</span><img src="maxi-cover.jpg" alt=""><b>' + title + '</b>';
+    b.onclick = () => { lsPick(i); lsOpen(i); };
+    b.onpointerenter = e => { if (e.pointerType === "mouse") lsPick(i); };
+    slots.append(b);
+  });
+  const lsSlots = [...slots.children];
+  function lsPick(i) {
+    lsSel = (i + LS_SONGS.length) % LS_SONGS.length;
+    lsSlots.forEach((b, k) => { b.classList.toggle("on", k === lsSel); b.setAttribute("aria-selected", k === lsSel); });
+    lsSlots[lsSel].focus({ preventScroll: true }); box.scrollTop = 0;
+  }
+  function lsOpen(i) {
+    const [id, title] = LS_SONGS[i], el = document.getElementById("lyrics-" + id);
+    $("ls-read-title").textContent = title;
+    $("ls-text").textContent = el ? el.textContent.replace(/^\n+|\n+$/g, "") : "NO LYRICS YET";
+    read.hidden = false; $("ls-text").scrollTop = 0; $("ls-read-close").focus({ preventScroll: true }); box.scrollTop = 0;
+  }
+  function lsCloseRead() { read.hidden = true; lsPick(lsSel); }
+  function openLyr() { ls.hidden = false; read.hidden = true; lsPick(0); }
+  function closeLyr() { ls.hidden = true; read.hidden = true; select(sel); }
+  $("ls-back").onclick = closeLyr;
+  $("ls-read-close").onclick = lsCloseRead;
   $("kof-back").onclick = closeKof;
   $("maxi-enter").onclick = open;
   items.forEach((b, i) => { b.onclick = () => act(i); b.onpointerenter = e => { if (e.pointerType === "mouse") select(i); }; });
-  $("s06-a").onclick = () => act(sel);
-  $("s06-b").onclick = () => { if (!kof.hidden) return closeKof(); if (!art.hidden) { art.hidden = true; select(sel); } else close(); };
   art.onclick = () => { art.hidden = true; select(sel); };
   addEventListener("keydown", e => {
     if (box.hidden) return;
     if (!$("np").hidden) return; // the player handles its own keys
+    if (!ls.hidden) {
+      if (!read.hidden) { if (e.key === "Escape" || e.key === "Backspace") { e.preventDefault(); lsCloseRead(); } return; }
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") { e.preventDefault(); lsPick(lsSel + 1); }
+      else if (e.key === "ArrowLeft" || e.key === "ArrowUp") { e.preventDefault(); lsPick(lsSel - 1); }
+      else if (e.key === "Enter" || e.key === " ") { e.preventDefault(); lsOpen(lsSel); }
+      else if (e.key === "Escape" || e.key === "Backspace") { e.preventDefault(); closeLyr(); }
+      return;
+    }
     if (!kof.hidden) { if (e.key === "Escape" || e.key === "Backspace") { e.preventDefault(); closeKof(); } return; }
     if (!art.hidden) { if (["Escape", "Backspace", "Enter", " "].includes(e.key)) { e.preventDefault(); art.hidden = true; select(sel); } return; }
     if (e.key === "ArrowDown" || e.key === "ArrowRight") { e.preventDefault(); select(sel + 1); }

@@ -217,7 +217,9 @@ dl.stats dd { margin: 0; }
 /* ---------- Sonic 2006-style select menu, in purple ---------- */
 .s06 { position: fixed; inset: 0; z-index: 70; overflow: hidden; display: grid; grid-template-rows: auto 1fr auto; gap: 18px; color: #fff; font-family: "Russo One", "Arial Black", sans-serif;
   padding: max(22px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(18px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
-  background: radial-gradient(120% 90% at 28% 45%, #8a3cff 0%, #4a14c2 40%, #1a0650 75%, #0b0228 100%); animation: s06In .45s ease-out both; }
+  background: linear-gradient(90deg, rgba(11,2,40,.72) 0%, rgba(11,2,40,.45) 55%, rgba(11,2,40,.2) 100%), #1a0650 url(maxi-menu-bg.jpg) 50% 22% / cover no-repeat;
+  animation: s06In .45s ease-out both; }
+@media (max-width: 760px) { .s06 { background: linear-gradient(rgba(11,2,40,.35), rgba(11,2,40,.6)), #1a0650 url(maxi-menu-bg.jpg) 50% 20% / cover no-repeat; } }
 @keyframes s06In { from { opacity: 0; transform: scale(1.04); } to { opacity: 1; transform: none; } }
 .s06-bg { position: absolute; inset: 0; pointer-events: none;
   background: repeating-linear-gradient(115deg, rgba(255,255,255,.05) 0 2px, transparent 2px 70px); }

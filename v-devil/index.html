@@ -349,7 +349,7 @@ dl.stats dd { margin: 0; }
   background: linear-gradient(180deg, #5a2aa8 0%, #2c1066 38%, #12062e 78%, #0a0318 100%); animation: npUp .32s ease-out both; }
 @keyframes npUp { from { transform: translateY(100%); } to { transform: none; } }
 .np-glow { position: absolute; inset: -20% -20% auto; height: 70%; background: url(maxi-cover.jpg) center / cover; filter: blur(60px) saturate(1.4); opacity: .45; pointer-events: none; }
-.np > *:not(.np-glow):not(.np-sheet) { position: relative; }
+.np > *:not(.np-glow):not(.np-sheet):not(.np-lyrics) { position: relative; }
 .np-top { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; text-align: center; }
 .np-top small { display: block; font-size: 11px; letter-spacing: .14em; color: #e4d2ff; text-transform: uppercase; }
 .np-top b { display: block; font-size: 14px; font-weight: 700; }
@@ -393,7 +393,19 @@ dl.stats dd { margin: 0; }
 .np-row.cur { color: #c38bff; }
 .np-row small { display: block; font-size: 13px; color: #b9a6dc; }
 .np-cancel { justify-self: center; border: 0; background: none; color: #fff; font: 600 17px system-ui, sans-serif; padding: 14px 30px; cursor: pointer; }
-@media (prefers-reduced-motion: reduce) { .np, .np-sheet { animation: none; } }
+.np-lyr-btn { display: inline-flex; align-items: center; gap: 8px; border: 0; cursor: pointer; border-radius: 999px; padding: 10px 18px;
+  background: rgba(255,255,255,.14); color: #fff; font: 700 13px system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
+.np-lyr-btn svg { width: 20px; height: 20px; }
+.np-lyr-btn:focus-visible { outline: 3px dashed var(--gold); outline-offset: 2px; }
+.np-bottom { align-items: center; }
+/* lyrics: full screen, big bold lines on the cover's purple, like Spotify's lyrics view */
+.np-lyrics { position: absolute; inset: 0; z-index: 3; display: grid; grid-template-rows: auto minmax(0, 1fr); overflow: hidden; background: #6a1bd6; animation: npUp .3s ease-out both;
+  padding: max(10px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); }
+.np-lyrics .np-top b { font-size: 15px; }
+.np-lyr-text { margin: 0 auto; width: min(100%, 560px); min-height: 0; height: 100%; box-sizing: border-box; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; white-space: pre-wrap; overflow-wrap: anywhere;
+  font: 800 clamp(22px, 6vw, 30px)/1.35 system-ui, -apple-system, "Segoe UI", sans-serif; color: #fff; padding: 18px 4px max(40px, env(safe-area-inset-bottom, 0px)); }
+.np-lyr-text::first-line { color: #e7d4ff; }
+@media (prefers-reduced-motion: reduce) { .np, .np-sheet, .np-lyrics { animation: none; } }
 .kof-back:focus-visible { outline: 3px dashed #fff; outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { .kof-sec .kof-t, .kof-sec .kof-sm { opacity: 1 !important; animation: none !important; } .kof-sec.in::after { display: none; } }
 
@@ -748,8 +760,17 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
     </div>
     <footer class="np-bottom">
       <button type="button" class="np-ico" id="np-queue" aria-label="Queue"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h11M4 12h11M4 17h7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M15 15.5v5l4-2.5z" fill="currentColor"/></svg></button>
+      <button type="button" class="np-lyr-btn" id="np-lyr" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Lyrics</button>
       <button type="button" class="np-ico" id="np-share" aria-label="Share"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M8 7.5 12 3.5l4 4M6 11H5a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7a1 1 0 0 0-1-1h-1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     </footer>
+    <div class="np-lyrics" id="np-lyrics" role="dialog" aria-label="Lyrics" hidden>
+      <header class="np-top">
+        <button type="button" class="np-ico" id="np-lyr-close" aria-label="Close the lyrics"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div><small>Lyrics</small><b id="np-lyr-title">RICH PANTIN</b></div>
+        <span></span>
+      </header>
+      <p class="np-lyr-text" id="np-lyr-text"></p>
+    </div>
     <div class="np-sheet" id="np-sheet" hidden>
       <img src="maxi-cover.jpg" alt="">
       <div><h4 id="np-s-title">RICH PANTIN</h4><p class="sub">Kenos · Panel Sewi: Sigmatiserie</p></div>
@@ -765,6 +786,165 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
     </div>
   </div>
 </div>
+
+<!-- Song lyrics: plain text, one block per song (id = lyrics- + the song's file name) -->
+<script type="text/plain" id="lyrics-rich-pantin">
+(September 2026)
+
+Rich Pantin
+Couplet 1 :
+Rich pantin on the City
+My NIGGA On the City of pantin
+
+Yeah her big ass looking so Great
+Bro call me handsome  im not Gay
+
+Twenty six I go mode banger
+You know my world You know my pain
+Panel Sewi Yeah  I go banger
+Kanel gang Kanel gang
+
+
+Im Doing some banger no im not done
+Ain’t no sympathy who had for me
+You have a shitty life to hurt me
+You pathetic to make me guilty
+
+MODE SPEED DÉMON LIKE MICHAEL JACKSON
+Michael Jackson is still in the field
+Michael Jackson is still in the field
+Is not dead My Nigga don’t belived
+Don’t belive don’t belive belive
+This Late 26 gonna be peak
+
+
+Those girl Will Bring me in jail
+Those girl will Bring me in pain
+Give Up no no  useless pain
+I don’t care if im wearing  fake
+For impress what?? Some goblin cake
+No no you can’t take my cake
+
+Mon gars t’es guez stp coupe
+j’aurai  des talles et  des coupes
+tu leche des cul et  tu veux que je j’écoute
+enleve les sape ta pas le look
+
+Out of champs elysee i  am dripping
+Nike,balienaga im getting glazing
+Im faling to life
+im failung in school
+i didn’t lose my gf
+but i won’t speak quickly
+
+no pain no game
+That’s why i always complain
+new way new pain
+that’s why it’s so hard to change
+
+i get the caramel milkshake lotus speculo
+this little Baby are bold they have the culot
+if someone  leave   me this year  will be the big lot
+i hope it’s not someone i really illy know
+New danger new way It’s the time to shining
+who gon suck  my dick first if i get shiny
+who gon destroy me first if i turn
+something
+if i change who gonna stand on my side
+the future is unknow it’s a bew universe
+
+
+
+
+
+Barely 18 years old nigga i come sony
+2026 is coming rookie
+At 16 nigga got the power of lamine
+17 nigga the power of  vini
+
+Be different don’t be like everybody
+All my veine all on my body
+At 2030 I am working  with Sony
+
+To disepear nigga no need a Motion
+26-27 you need Caution
+Better Be happy than have Pression
+Ovethinking will make you in Dépression
+The succed will somehow give me some pression
+but i don’t care i am kenos I get  worse
+i get high i get nausous
+The summer is here
+july is here
+my nigga i get The sun burning my body
+I will give you the world my baby now you don’t see
+I love even if i show myself mean
+
+
+
+Let’s go
+accesoire louis vitton like  mensa
+my heart is stone and cold like Medusa
+Putain chuis trop fort mais oh c’est quoi tout ca
+My brain is dizzy Lokola na kufa
+
+Kenos he know you know I am so  Foussa
+get high and exited  like i see Futa
+I love the noon nigga cause this is food time
+at 16 yo i was  Better than the French rap
+at 11 you know the rap was easy
+I am so strong you can call me free Kini
+yeah Babygirl i already see your bikini
+with my girlfriend i get the night in bnb
+my hair yellow looking  like super saiyan
+i am not a predator what’s you Saying
+i am not a bad guy  what’s you saying
+you want fight that’s what you saying
+my nigga We coming in 27
+(Seven seven seven)
+A Donut on my Dick
+She Eat and Suck my Dick
+She Suck like an Ice Cream
+Cause She Is my Little bitch
+
+rich pantin on the city
+but i am not yet rich
+my mind is being rich
+on my world i am rich
+you see me as nobody
+but i see you as nobody
+at then end you nobody
+and me im somebody
+
+Rich pantin on the City
+My NIGGA On the City of pantin
+
+Yeah her big ass looking so Great
+Bro call me handsome  im not Gay
+
+Twenty six I go mode banger
+You know my world You know my pain
+Panel Sewi Yeah  I go banger
+Kanel gang Kanel gang
+(x2)
+
+Im Doing some banger no im not done
+Ain’t no sympathy who had for me
+You have a shitty life to hurt me
+You pathetic to make me guilty
+
+MODE SPEED DÉMON LIKE MICHAEL JACKSON
+Michael Jackson is still in the field
+Michael Jackson is still in the field
+Is not dead My Nigga don’t belived
+Don’t belive don’t belive belive
+This Late 26 gonna be peak
+
+
+(Outro)
+panel sewi…..
+New danger yeah…..
+(im done that’s it)
+</script>
 
 <!-- Kenos Last Strike: only the people he loves get in -->
 <div class="heart" id="heart" hidden>
@@ -2111,8 +2291,15 @@ document.querySelectorAll("[data-lock]").forEach(s => { const l = document.query
   const liked = (() => { try { return JSON.parse(localStorage.getItem("vdevil.likes") || "{}"); } catch (_) { return {}; } })();
   const fmt = (t) => { t = Math.max(0, Math.floor(t || 0)); return Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0"); };
 
+  function lyricsOf(t) { // the song's lyrics block, if it has one
+    const el = document.getElementById("lyrics-" + t.src.split("/").pop().replace(/\.[a-z0-9]+$/i, ""));
+    return el ? el.textContent.replace(/^\n+|\n+$/g, "") : "";
+  }
   function show() {
     const t = TRACKS[cur];
+    const lyr = lyricsOf(t);
+    $("np-lyr").hidden = !lyr; $("np-lyr-title").textContent = t.title; $("np-lyr-text").textContent = lyr;
+    if (!lyr) $("np-lyrics").hidden = true;
     $("np-title").textContent = t.title; $("np-s-title").textContent = t.title;
     const like = $("np-like"), on = !!liked[t.title];
     like.classList.toggle("on", on); like.setAttribute("aria-pressed", on); like.setAttribute("aria-label", on ? "Unlike" : "Like");
@@ -2196,6 +2383,8 @@ document.querySelectorAll("[data-lock]").forEach(s => { const l = document.query
   $("np-o-queue").onclick = () => sheetList("queue");
   $("np-share").onclick = () => { openSheet("menu"); };
   $("np-cancel").onclick = closeSheet;
+  $("np-lyr").onclick = () => { $("np-lyrics").hidden = false; $("np-lyr-text").scrollTop = 0; $("np-lyr-close").focus({ preventScroll: true }); $("s06").scrollTop = 0; };
+  $("np-lyr-close").onclick = () => { $("np-lyrics").hidden = true; $("np-lyr").focus({ preventScroll: true }); $("s06").scrollTop = 0; };
 
   function open(i) {
     np.hidden = false; sheet.hidden = true;
@@ -2204,13 +2393,13 @@ document.querySelectorAll("[data-lock]").forEach(s => { const l = document.query
   }
   function close(stop) {
     if (stop) { au.pause(); }
-    np.hidden = true; sheet.hidden = true;
+    np.hidden = true; sheet.hidden = true; $("np-lyrics").hidden = true;
   }
   $("np-close").onclick = () => close(false);   // the song keeps playing while you look around
   document.querySelectorAll(".kof-play").forEach(b => b.onclick = () => open(+b.dataset.track));
   addEventListener("keydown", e => {
     if (np.hidden) return;
-    if (e.key === "Escape") { e.preventDefault(); if (!sheet.hidden) closeSheet(); else close(false); }
+    if (e.key === "Escape") { e.preventDefault(); if (!$("np-lyrics").hidden) $("np-lyr-close").click(); else if (!sheet.hidden) closeSheet(); else close(false); }
     else if (e.key === " " && document.activeElement !== seek && sheet.hidden) { e.preventDefault(); $("np-toggle").click(); }
   });
   window.maxiPlayer = { open, close };

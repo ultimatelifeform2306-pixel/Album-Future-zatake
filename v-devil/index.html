@@ -241,7 +241,7 @@ dl.stats dd { margin: 0; }
 .s06-list button.on { opacity: 1; transform: skewX(-12deg) translateX(24px) scale(1.04);
   background: linear-gradient(180deg, rgba(255,255,255,.55) 0 46%, rgba(255,255,255,.12) 54%), linear-gradient(90deg, #d07bff, #7a2cff);
   box-shadow: inset 0 0 0 2px #fff, 0 0 26px rgba(220,150,255,.95), 0 4px 0 rgba(0,0,0,.35); }
-.s06-list button.on::before { content: "▶"; position: absolute; left: -26px; top: 50%; transform: translateY(-50%) skewX(12deg); color: #fff; text-shadow: 0 0 10px #e9c7ff; animation: nudge .6s ease-in-out infinite alternate; }
+.s06-list button.on::before { content: ""; width: 1.05em; height: 1.44em; background: url(rabbid-sticker.png) center / contain no-repeat; position: absolute; left: -26px; top: 50%; transform: translateY(-50%) skewX(12deg); color: #fff; text-shadow: 0 0 10px #e9c7ff; animation: nudge .6s ease-in-out infinite alternate; }
 @keyframes nudge { to { left: -18px; } }
 .s06-list button:focus-visible { outline: 3px dashed #fff; outline-offset: 4px; }
 .s06-preview { display: grid; gap: 14px; padding: 14px; border-radius: 22px; background: rgba(255,255,255,.08); box-shadow: inset 0 0 0 2px rgba(255,255,255,.3), 0 18px 40px rgba(0,0,0,.4); backdrop-filter: blur(6px); }
@@ -338,6 +338,10 @@ dl.stats dd { margin: 0; }
 @keyframes kofFlash { from { opacity: 1; transform: scaleX(0); } 50% { opacity: 1; transform: scaleX(1); } to { opacity: 0; transform: scaleX(1) scaleY(.2); } }
 .kof-soon .kof-t { background: linear-gradient(180deg, #ffffff 0%, #e9c7ff 40%, #b46bff 70%, #6a1bd6 100%); -webkit-background-clip: text; background-clip: text; }
 .kof-back { position: absolute; z-index: 2; top: max(14px, env(safe-area-inset-top, 0px)); left: max(14px, env(safe-area-inset-left, 0px)); font: 11px var(--f-pixel); color: #fff; background: rgba(0,0,0,.55); border: 2px solid #fff; padding: 9px 12px; cursor: pointer; }
+/* the rabbid sticker that stands in for every arrow on the site */
+.stk { display: inline-block; width: max(1.1em, 19px); height: max(1.5em, 26px); margin: -0.3em 0.3em -0.3em 0; vertical-align: middle; flex: none;
+  background: url(rabbid-sticker.png) center / contain no-repeat; transform: rotate(-6deg); }
+.stk.l { transform: scaleX(-1) rotate(-6deg); }
 /* ---------- now playing: the maxi single player ---------- */
 .kof-play { font: 12px var(--f-pixel); letter-spacing: .2em; color: #1a0505; background: #ffe14a; border: 0; cursor: pointer; padding: 12px 18px; transform: skewX(-12deg); box-shadow: 4px 4px 0 #000; }
 .kof-sec:not(.kof-intro) .kof-play { opacity: 0; }
@@ -680,7 +684,7 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
           </div>
         </div>
         <p class="msg" id="msg" role="alert"></p>
-        <button class="btn" type="submit" id="go">▶ LOG IN</button>
+        <button class="btn" type="submit" id="go"><i class="stk" aria-hidden="true"></i> LOG IN</button>
         <p class="note" id="mode-note">No account yet? Tap SIGN UP first. Sound is on after you log in.</p>
       </form>
     </div>
@@ -688,7 +692,7 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
 </div>
 <div id="blackout" hidden></div>
 <div class="player" id="player" hidden>
-  <button class="back" id="back" type="button">◀ BACK TO SITE</button>
+  <button class="back" id="back" type="button"><i class="stk l" aria-hidden="true"></i> BACK TO SITE</button>
   <iframe id="game-frame" title="Panel Sewi: Sigmatiserie" allow="autoplay; fullscreen"></iframe>
 </div>
 <canvas id="intro" hidden></canvas>
@@ -717,18 +721,18 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
   <!-- tracklist: King of Fighters style titles that slam in as you scroll -->
   <div class="kof-wrap" id="kof" hidden>
     <div class="kof-bg" aria-hidden="true"></div>
-    <button type="button" class="kof-back" id="kof-back">◀ BACK</button>
+    <button type="button" class="kof-back" id="kof-back"><i class="stk l" aria-hidden="true"></i> BACK</button>
     <div class="kof" id="kof-scroll">
       <section class="kof-sec kof-intro">
         <span class="kof-sm">MAXI SINGLE</span>
         <h2 class="kof-t">PANEL SEWI<br>SIGMATISERIE</h2>
         <span class="kof-part">KENUKI 1</span>
-        <span class="kof-scroll">SCROLL ▼</span>
+        <span class="kof-scroll">SCROLL <i class="stk" aria-hidden="true"></i></span>
       </section>
-      <section class="kof-sec"><span class="kof-sm">TRACK 01</span><h3 class="kof-t">RICH PANTIN</h3><button type="button" class="kof-play" data-track="0">▶ PLAY</button></section>
-      <section class="kof-sec"><span class="kof-sm">TRACK 02</span><h3 class="kof-t">QUESTION MYSELF</h3><button type="button" class="kof-play" data-track="1">▶ PLAY</button></section>
-      <section class="kof-sec"><span class="kof-sm">TRACK 03</span><h3 class="kof-t">ROTTERDON</h3><button type="button" class="kof-play" data-track="2">▶ PLAY</button></section>
-      <section class="kof-sec"><span class="kof-sm">TRACK 04</span><h3 class="kof-t">FLAMENCO</h3><button type="button" class="kof-play" data-track="3">▶ PLAY</button></section>
+      <section class="kof-sec"><span class="kof-sm">TRACK 01</span><h3 class="kof-t">RICH PANTIN</h3><button type="button" class="kof-play" data-track="0"><i class="stk" aria-hidden="true"></i> PLAY</button></section>
+      <section class="kof-sec"><span class="kof-sm">TRACK 02</span><h3 class="kof-t">QUESTION MYSELF</h3><button type="button" class="kof-play" data-track="1"><i class="stk" aria-hidden="true"></i> PLAY</button></section>
+      <section class="kof-sec"><span class="kof-sm">TRACK 03</span><h3 class="kof-t">ROTTERDON</h3><button type="button" class="kof-play" data-track="2"><i class="stk" aria-hidden="true"></i> PLAY</button></section>
+      <section class="kof-sec"><span class="kof-sm">TRACK 04</span><h3 class="kof-t">FLAMENCO</h3><button type="button" class="kof-play" data-track="3"><i class="stk" aria-hidden="true"></i> PLAY</button></section>
       <section class="kof-sec kof-soon"><span class="kof-sm">PART 2</span><h3 class="kof-t">KENUKI 2</h3><span class="kof-wait">COMING SOON</span></section>
     </div>
   </div>
@@ -1200,7 +1204,7 @@ they crush my heart destroy my body  just like a lego
         <label for="heart-name">FULL NAME</label>
         <div class="row"><input id="heart-name" type="text" autocomplete="name" autocapitalize="words" placeholder="First name and last name"></div>
       </div>
-      <button class="btn" type="submit" style="justify-self:stretch;text-align:center;border:0;cursor:pointer">▶ ENTER</button>
+      <button class="btn" type="submit" style="justify-self:stretch;text-align:center;border:0;cursor:pointer"><i class="stk" aria-hidden="true"></i> ENTER</button>
     </form>
   </div>
   <p class="heart-say" id="heart-say" hidden></p>
@@ -1229,7 +1233,7 @@ they crush my heart destroy my body  just like a lego
       <div class="scene" id="scene-kix"><img class="kix-banner" src="kix-logo.png" alt=""></div>
     </div>
     <img class="banner" src="banner-frame.webp" alt="">
-    <a class="ann-enter" id="ann-enter" href="https://ultimatelifeform2306-pixel.github.io/Album-Future-zatake/quartier-crugaz/" target="_blank" rel="noopener" hidden>▶ ENTER</a>
+    <a class="ann-enter" id="ann-enter" href="https://ultimatelifeform2306-pixel.github.io/Album-Future-zatake/quartier-crugaz/" target="_blank" rel="noopener" hidden><i class="stk" aria-hidden="true"></i> ENTER</a>
     <div class="heads">
       <p class="head on" id="head-madara"><img src="madara-head.webp" alt="Madara wants to come back, this 19 October"></p>
       <p class="head" id="head-album"><b class="h1 blood">MADARA ALBUM</b><span class="h3 dimwit">IS OUT</span></p>
@@ -1267,7 +1271,7 @@ they crush my heart destroy my body  just like a lego
         <div class="body" style="padding:0">
           <h2>NEW RELEASE</h2>
           <p>PANEL SEWI<br>SIGMATISERIE · シグマティセリー</p>
-          <span class="blink">▶ PRESS START</span>
+          <span class="blink"><i class="stk" aria-hidden="true"></i> PRESS START</span>
           <div class="btns">
             <span class="btn locked" role="button" aria-disabled="true"><svg class="lock" viewBox="0 0 12 14" width="12" height="14" shape-rendering="crispEdges" aria-hidden="true"><rect x="3" y="0" width="1" height="1" fill="#12063a"/><rect x="4" y="0" width="1" height="1" fill="#12063a"/><rect x="5" y="0" width="1" height="1" fill="#12063a"/><rect x="6" y="0" width="1" height="1" fill="#12063a"/><rect x="7" y="0" width="1" height="1" fill="#12063a"/><rect x="8" y="0" width="1" height="1" fill="#12063a"/><rect x="2" y="1" width="1" height="1" fill="#12063a"/><rect x="3" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="4" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="5" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="6" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="7" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="8" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="9" y="1" width="1" height="1" fill="#12063a"/><rect x="2" y="2" width="1" height="1" fill="#12063a"/><rect x="3" y="2" width="1" height="1" fill="#c7b8ff"/><rect x="8" y="2" width="1" height="1" fill="#c7b8ff"/><rect x="9" y="2" width="1" height="1" fill="#12063a"/><rect x="1" y="3" width="1" height="1" fill="#12063a"/><rect x="2" y="3" width="1" height="1" fill="#c7b8ff"/><rect x="9" y="3" width="1" height="1" fill="#c7b8ff"/><rect x="10" y="3" width="1" height="1" fill="#12063a"/><rect x="1" y="4" width="1" height="1" fill="#12063a"/><rect x="2" y="4" width="1" height="1" fill="#c7b8ff"/><rect x="9" y="4" width="1" height="1" fill="#c7b8ff"/><rect x="10" y="4" width="1" height="1" fill="#12063a"/><rect x="1" y="5" width="1" height="1" fill="#12063a"/><rect x="2" y="5" width="1" height="1" fill="#c7b8ff"/><rect x="9" y="5" width="1" height="1" fill="#c7b8ff"/><rect x="10" y="5" width="1" height="1" fill="#12063a"/><rect x="0" y="6" width="1" height="1" fill="#12063a"/><rect x="1" y="6" width="1" height="1" fill="#12063a"/><rect x="2" y="6" width="1" height="1" fill="#12063a"/><rect x="3" y="6" width="1" height="1" fill="#12063a"/><rect x="4" y="6" width="1" height="1" fill="#12063a"/><rect x="5" y="6" width="1" height="1" fill="#12063a"/><rect x="6" y="6" width="1" height="1" fill="#12063a"/><rect x="7" y="6" width="1" height="1" fill="#12063a"/><rect x="8" y="6" width="1" height="1" fill="#12063a"/><rect x="9" y="6" width="1" height="1" fill="#12063a"/><rect x="10" y="6" width="1" height="1" fill="#12063a"/><rect x="11" y="6" width="1" height="1" fill="#12063a"/><rect x="0" y="7" width="1" height="1" fill="#12063a"/><rect x="1" y="7" width="1" height="1" fill="#ffc531"/><rect x="2" y="7" width="1" height="1" fill="#ffc531"/><rect x="3" y="7" width="1" height="1" fill="#ffc531"/><rect x="4" y="7" width="1" height="1" fill="#ffc531"/><rect x="5" y="7" width="1" height="1" fill="#ffc531"/><rect x="6" y="7" width="1" height="1" fill="#ffc531"/><rect x="7" y="7" width="1" height="1" fill="#ffc531"/><rect x="8" y="7" width="1" height="1" fill="#ffc531"/><rect x="9" y="7" width="1" height="1" fill="#ffc531"/><rect x="10" y="7" width="1" height="1" fill="#ffc531"/><rect x="11" y="7" width="1" height="1" fill="#12063a"/><rect x="0" y="8" width="1" height="1" fill="#12063a"/><rect x="1" y="8" width="1" height="1" fill="#ffc531"/><rect x="2" y="8" width="1" height="1" fill="#ffc531"/><rect x="3" y="8" width="1" height="1" fill="#ffc531"/><rect x="4" y="8" width="1" height="1" fill="#ffc531"/><rect x="5" y="8" width="1" height="1" fill="#12063a"/><rect x="6" y="8" width="1" height="1" fill="#12063a"/><rect x="7" y="8" width="1" height="1" fill="#ffc531"/><rect x="8" y="8" width="1" height="1" fill="#ffc531"/><rect x="9" y="8" width="1" height="1" fill="#ffc531"/><rect x="10" y="8" width="1" height="1" fill="#ffc531"/><rect x="11" y="8" width="1" height="1" fill="#12063a"/><rect x="0" y="9" width="1" height="1" fill="#12063a"/><rect x="1" y="9" width="1" height="1" fill="#ffc531"/><rect x="2" y="9" width="1" height="1" fill="#ffc531"/><rect x="3" y="9" width="1" height="1" fill="#ffc531"/><rect x="4" y="9" width="1" height="1" fill="#ffc531"/><rect x="5" y="9" width="1" height="1" fill="#12063a"/><rect x="6" y="9" width="1" height="1" fill="#12063a"/><rect x="7" y="9" width="1" height="1" fill="#ffc531"/><rect x="8" y="9" width="1" height="1" fill="#ffc531"/><rect x="9" y="9" width="1" height="1" fill="#ffc531"/><rect x="10" y="9" width="1" height="1" fill="#ffc531"/><rect x="11" y="9" width="1" height="1" fill="#12063a"/><rect x="0" y="10" width="1" height="1" fill="#12063a"/><rect x="1" y="10" width="1" height="1" fill="#ffc531"/><rect x="2" y="10" width="1" height="1" fill="#ffc531"/><rect x="3" y="10" width="1" height="1" fill="#ffc531"/><rect x="4" y="10" width="1" height="1" fill="#ffc531"/><rect x="5" y="10" width="1" height="1" fill="#ffc531"/><rect x="6" y="10" width="1" height="1" fill="#12063a"/><rect x="7" y="10" width="1" height="1" fill="#ffc531"/><rect x="8" y="10" width="1" height="1" fill="#ffc531"/><rect x="9" y="10" width="1" height="1" fill="#ffc531"/><rect x="10" y="10" width="1" height="1" fill="#ffc531"/><rect x="11" y="10" width="1" height="1" fill="#12063a"/><rect x="0" y="11" width="1" height="1" fill="#12063a"/><rect x="1" y="11" width="1" height="1" fill="#ffc531"/><rect x="2" y="11" width="1" height="1" fill="#ffc531"/><rect x="3" y="11" width="1" height="1" fill="#ffc531"/><rect x="4" y="11" width="1" height="1" fill="#ffc531"/><rect x="5" y="11" width="1" height="1" fill="#ffc531"/><rect x="6" y="11" width="1" height="1" fill="#12063a"/><rect x="7" y="11" width="1" height="1" fill="#ffc531"/><rect x="8" y="11" width="1" height="1" fill="#ffc531"/><rect x="9" y="11" width="1" height="1" fill="#ffc531"/><rect x="10" y="11" width="1" height="1" fill="#ffc531"/><rect x="11" y="11" width="1" height="1" fill="#12063a"/><rect x="0" y="12" width="1" height="1" fill="#12063a"/><rect x="1" y="12" width="1" height="1" fill="#ffc531"/><rect x="2" y="12" width="1" height="1" fill="#ffc531"/><rect x="3" y="12" width="1" height="1" fill="#ffc531"/><rect x="4" y="12" width="1" height="1" fill="#ffc531"/><rect x="5" y="12" width="1" height="1" fill="#ffc531"/><rect x="6" y="12" width="1" height="1" fill="#ffc531"/><rect x="7" y="12" width="1" height="1" fill="#ffc531"/><rect x="8" y="12" width="1" height="1" fill="#ffc531"/><rect x="9" y="12" width="1" height="1" fill="#ffc531"/><rect x="10" y="12" width="1" height="1" fill="#ffc531"/><rect x="11" y="12" width="1" height="1" fill="#12063a"/><rect x="0" y="13" width="1" height="1" fill="#12063a"/><rect x="1" y="13" width="1" height="1" fill="#12063a"/><rect x="2" y="13" width="1" height="1" fill="#12063a"/><rect x="3" y="13" width="1" height="1" fill="#12063a"/><rect x="4" y="13" width="1" height="1" fill="#12063a"/><rect x="5" y="13" width="1" height="1" fill="#12063a"/><rect x="6" y="13" width="1" height="1" fill="#12063a"/><rect x="7" y="13" width="1" height="1" fill="#12063a"/><rect x="8" y="13" width="1" height="1" fill="#12063a"/><rect x="9" y="13" width="1" height="1" fill="#12063a"/><rect x="10" y="13" width="1" height="1" fill="#12063a"/><rect x="11" y="13" width="1" height="1" fill="#12063a"/></svg>NOT PLAYABLE YET</span>
             <a class="btn alt" href="#game" data-tab="game">MORE INFO</a>
@@ -1291,7 +1295,7 @@ they crush my heart destroy my body  just like a lego
           <div class="ps-buy">
             <span class="ps-price">Coming soon</span>
             <span class="ps-cta" role="button" aria-disabled="true"><svg class="lock" viewBox="0 0 12 14" width="12" height="14" shape-rendering="crispEdges" aria-hidden="true"><rect x="3" y="0" width="1" height="1" fill="#12063a"/><rect x="4" y="0" width="1" height="1" fill="#12063a"/><rect x="5" y="0" width="1" height="1" fill="#12063a"/><rect x="6" y="0" width="1" height="1" fill="#12063a"/><rect x="7" y="0" width="1" height="1" fill="#12063a"/><rect x="8" y="0" width="1" height="1" fill="#12063a"/><rect x="2" y="1" width="1" height="1" fill="#12063a"/><rect x="3" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="4" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="5" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="6" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="7" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="8" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="9" y="1" width="1" height="1" fill="#12063a"/><rect x="2" y="2" width="1" height="1" fill="#12063a"/><rect x="3" y="2" width="1" height="1" fill="#c7b8ff"/><rect x="8" y="2" width="1" height="1" fill="#c7b8ff"/><rect x="9" y="2" width="1" height="1" fill="#12063a"/><rect x="1" y="3" width="1" height="1" fill="#12063a"/><rect x="2" y="3" width="1" height="1" fill="#c7b8ff"/><rect x="9" y="3" width="1" height="1" fill="#c7b8ff"/><rect x="10" y="3" width="1" height="1" fill="#12063a"/><rect x="1" y="4" width="1" height="1" fill="#12063a"/><rect x="2" y="4" width="1" height="1" fill="#c7b8ff"/><rect x="9" y="4" width="1" height="1" fill="#c7b8ff"/><rect x="10" y="4" width="1" height="1" fill="#12063a"/><rect x="1" y="5" width="1" height="1" fill="#12063a"/><rect x="2" y="5" width="1" height="1" fill="#c7b8ff"/><rect x="9" y="5" width="1" height="1" fill="#c7b8ff"/><rect x="10" y="5" width="1" height="1" fill="#12063a"/><rect x="0" y="6" width="1" height="1" fill="#12063a"/><rect x="1" y="6" width="1" height="1" fill="#12063a"/><rect x="2" y="6" width="1" height="1" fill="#12063a"/><rect x="3" y="6" width="1" height="1" fill="#12063a"/><rect x="4" y="6" width="1" height="1" fill="#12063a"/><rect x="5" y="6" width="1" height="1" fill="#12063a"/><rect x="6" y="6" width="1" height="1" fill="#12063a"/><rect x="7" y="6" width="1" height="1" fill="#12063a"/><rect x="8" y="6" width="1" height="1" fill="#12063a"/><rect x="9" y="6" width="1" height="1" fill="#12063a"/><rect x="10" y="6" width="1" height="1" fill="#12063a"/><rect x="11" y="6" width="1" height="1" fill="#12063a"/><rect x="0" y="7" width="1" height="1" fill="#12063a"/><rect x="1" y="7" width="1" height="1" fill="#ffc531"/><rect x="2" y="7" width="1" height="1" fill="#ffc531"/><rect x="3" y="7" width="1" height="1" fill="#ffc531"/><rect x="4" y="7" width="1" height="1" fill="#ffc531"/><rect x="5" y="7" width="1" height="1" fill="#ffc531"/><rect x="6" y="7" width="1" height="1" fill="#ffc531"/><rect x="7" y="7" width="1" height="1" fill="#ffc531"/><rect x="8" y="7" width="1" height="1" fill="#ffc531"/><rect x="9" y="7" width="1" height="1" fill="#ffc531"/><rect x="10" y="7" width="1" height="1" fill="#ffc531"/><rect x="11" y="7" width="1" height="1" fill="#12063a"/><rect x="0" y="8" width="1" height="1" fill="#12063a"/><rect x="1" y="8" width="1" height="1" fill="#ffc531"/><rect x="2" y="8" width="1" height="1" fill="#ffc531"/><rect x="3" y="8" width="1" height="1" fill="#ffc531"/><rect x="4" y="8" width="1" height="1" fill="#ffc531"/><rect x="5" y="8" width="1" height="1" fill="#12063a"/><rect x="6" y="8" width="1" height="1" fill="#12063a"/><rect x="7" y="8" width="1" height="1" fill="#ffc531"/><rect x="8" y="8" width="1" height="1" fill="#ffc531"/><rect x="9" y="8" width="1" height="1" fill="#ffc531"/><rect x="10" y="8" width="1" height="1" fill="#ffc531"/><rect x="11" y="8" width="1" height="1" fill="#12063a"/><rect x="0" y="9" width="1" height="1" fill="#12063a"/><rect x="1" y="9" width="1" height="1" fill="#ffc531"/><rect x="2" y="9" width="1" height="1" fill="#ffc531"/><rect x="3" y="9" width="1" height="1" fill="#ffc531"/><rect x="4" y="9" width="1" height="1" fill="#ffc531"/><rect x="5" y="9" width="1" height="1" fill="#12063a"/><rect x="6" y="9" width="1" height="1" fill="#12063a"/><rect x="7" y="9" width="1" height="1" fill="#ffc531"/><rect x="8" y="9" width="1" height="1" fill="#ffc531"/><rect x="9" y="9" width="1" height="1" fill="#ffc531"/><rect x="10" y="9" width="1" height="1" fill="#ffc531"/><rect x="11" y="9" width="1" height="1" fill="#12063a"/><rect x="0" y="10" width="1" height="1" fill="#12063a"/><rect x="1" y="10" width="1" height="1" fill="#ffc531"/><rect x="2" y="10" width="1" height="1" fill="#ffc531"/><rect x="3" y="10" width="1" height="1" fill="#ffc531"/><rect x="4" y="10" width="1" height="1" fill="#ffc531"/><rect x="5" y="10" width="1" height="1" fill="#ffc531"/><rect x="6" y="10" width="1" height="1" fill="#12063a"/><rect x="7" y="10" width="1" height="1" fill="#ffc531"/><rect x="8" y="10" width="1" height="1" fill="#ffc531"/><rect x="9" y="10" width="1" height="1" fill="#ffc531"/><rect x="10" y="10" width="1" height="1" fill="#ffc531"/><rect x="11" y="10" width="1" height="1" fill="#12063a"/><rect x="0" y="11" width="1" height="1" fill="#12063a"/><rect x="1" y="11" width="1" height="1" fill="#ffc531"/><rect x="2" y="11" width="1" height="1" fill="#ffc531"/><rect x="3" y="11" width="1" height="1" fill="#ffc531"/><rect x="4" y="11" width="1" height="1" fill="#ffc531"/><rect x="5" y="11" width="1" height="1" fill="#ffc531"/><rect x="6" y="11" width="1" height="1" fill="#12063a"/><rect x="7" y="11" width="1" height="1" fill="#ffc531"/><rect x="8" y="11" width="1" height="1" fill="#ffc531"/><rect x="9" y="11" width="1" height="1" fill="#ffc531"/><rect x="10" y="11" width="1" height="1" fill="#ffc531"/><rect x="11" y="11" width="1" height="1" fill="#12063a"/><rect x="0" y="12" width="1" height="1" fill="#12063a"/><rect x="1" y="12" width="1" height="1" fill="#ffc531"/><rect x="2" y="12" width="1" height="1" fill="#ffc531"/><rect x="3" y="12" width="1" height="1" fill="#ffc531"/><rect x="4" y="12" width="1" height="1" fill="#ffc531"/><rect x="5" y="12" width="1" height="1" fill="#ffc531"/><rect x="6" y="12" width="1" height="1" fill="#ffc531"/><rect x="7" y="12" width="1" height="1" fill="#ffc531"/><rect x="8" y="12" width="1" height="1" fill="#ffc531"/><rect x="9" y="12" width="1" height="1" fill="#ffc531"/><rect x="10" y="12" width="1" height="1" fill="#ffc531"/><rect x="11" y="12" width="1" height="1" fill="#12063a"/><rect x="0" y="13" width="1" height="1" fill="#12063a"/><rect x="1" y="13" width="1" height="1" fill="#12063a"/><rect x="2" y="13" width="1" height="1" fill="#12063a"/><rect x="3" y="13" width="1" height="1" fill="#12063a"/><rect x="4" y="13" width="1" height="1" fill="#12063a"/><rect x="5" y="13" width="1" height="1" fill="#12063a"/><rect x="6" y="13" width="1" height="1" fill="#12063a"/><rect x="7" y="13" width="1" height="1" fill="#12063a"/><rect x="8" y="13" width="1" height="1" fill="#12063a"/><rect x="9" y="13" width="1" height="1" fill="#12063a"/><rect x="10" y="13" width="1" height="1" fill="#12063a"/><rect x="11" y="13" width="1" height="1" fill="#12063a"/></svg>NOT PLAYABLE YET</span>
-            <button class="btn ps-demo" type="button" id="demo-story" style="border:0;cursor:pointer">▶ SEE THE DEMO STORY</button>
+            <button class="btn ps-demo" type="button" id="demo-story" style="border:0;cursor:pointer"><i class="stk" aria-hidden="true"></i> SEE THE DEMO STORY</button>
           </div>
         </div>
       </div>
@@ -1336,9 +1340,9 @@ they crush my heart destroy my body  just like a lego
         <div class="body" style="padding:0">
           <h2>KENOS<br>LAST STRIKE</h2>
           <p>Where it all began. The full story of Kenos is coming soon on this page.</p>
-          <span class="blink">▶ CHAPTER 1 · COMING SOON</span>
+          <span class="blink"><i class="stk" aria-hidden="true"></i> CHAPTER 1 · COMING SOON</span>
           <div class="btns">
-            <button class="btn" type="button" id="story-enter" style="border:0;cursor:pointer">▶ ENTER</button>
+            <button class="btn" type="button" id="story-enter" style="border:0;cursor:pointer"><i class="stk" aria-hidden="true"></i> ENTER</button>
             <a class="btn alt" href="#home" data-tab="home">RETURN HOME</a>
           </div>
         </div>
@@ -1366,7 +1370,7 @@ they crush my heart destroy my body  just like a lego
             <img src="maxi-cover.jpg" alt="Panel Sewi Sigmatiserie maxi single cover: Kenos in a black hoodie looks back over his shoulder on a purple background with pink Japanese letters">
             <span class="story-title">PANEL SEWI<br>SIGMATISERIE</span>
           </div>
-          <button class="btn" type="button" id="maxi-enter" style="border:0;cursor:pointer">▶ ENTER</button>
+          <button class="btn" type="button" id="maxi-enter" style="border:0;cursor:pointer"><i class="stk" aria-hidden="true"></i> ENTER</button>
         </div>
       </div>
       <a class="btn alt" href="#home" data-tab="home">RETURN HOME</a>
@@ -1518,7 +1522,7 @@ they crush my heart destroy my body  just like a lego
           <canvas id="photo-prev" width="48" height="48" role="img" aria-label="Your badge in 16-bit"></canvas>
           <div style="display:grid;gap:12px;min-width:0;flex:1">
             <div class="pfp-pick" id="pfp-pick" role="group" aria-label="Your profile pictures"></div>
-            <a class="small" href="#wallpapers" data-tab="wallpapers" style="color:var(--gold)">▶ GET MORE IN WALLPAPERS</a>
+            <a class="small" href="#wallpapers" data-tab="wallpapers" style="color:var(--gold)"><i class="stk" aria-hidden="true"></i> GET MORE IN WALLPAPERS</a>
           </div>
         </div>
         <p class="msg-ok" id="photo-msg" role="status"></p>
@@ -1663,7 +1667,7 @@ function setMode(m) {
   $("email").placeholder = m === "signup" ? "player@mail.com" : "player@mail.com or your username";
   $("email").type = m === "signup" ? "email" : "text";
   $("password").autocomplete = m === "signup" ? "new-password" : "current-password";
-  $("go").textContent = m === "signup" ? "▶ CREATE ACCOUNT" : "▶ LOG IN";
+  $("go").innerHTML = (m === "signup" ? "<i class='stk' aria-hidden='true'></i> CREATE ACCOUNT" : "<i class='stk' aria-hidden='true'></i> LOG IN");
   $("mode-note").textContent = m === "signup"
     ? "Already have an account? Tap LOG IN."
     : "No account yet? Tap SIGN UP first. Sound is on after you log in.";
@@ -2601,7 +2605,7 @@ document.querySelectorAll("[data-lock]").forEach(s => { const l = document.query
     if (mode === "queue") {
       TRACKS.forEach((t, i) => {
         const b = document.createElement("button"); b.type = "button"; b.className = "np-row" + (i === cur ? " cur" : "");
-        b.innerHTML = '<span>' + (i === cur ? "▶ " : "") + t.title + '<small>Kenos · Track 0' + (i + 1) + '</small></span>';
+        b.innerHTML = '<span>' + (i === cur ? "<i class='stk' aria-hidden='true'></i> " : "") + t.title + '<small>Kenos · Track 0' + (i + 1) + '</small></span>';
         b.onclick = () => { closeSheet(); load(i, true); };
         list.append(b);
       });

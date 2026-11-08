@@ -2539,7 +2539,7 @@ document.querySelectorAll("[data-lock]").forEach(s => { const l = document.query
     document.body.classList.add("story-mode"); // no website sound in the menu
     try { $("album-vid").pause(); } catch (_) {}
     document.documentElement.style.overflow = "hidden";
-    select(0);
+    armed = -1; select(0);
   }
   function close() {
     if (window.maxiPlayer) window.maxiPlayer.close(true);
@@ -2587,7 +2587,9 @@ document.querySelectorAll("[data-lock]").forEach(s => { const l = document.query
   $("ls-read-close").onclick = lsCloseRead;
   $("kof-back").onclick = closeKof;
   $("maxi-enter").onclick = open;
-  items.forEach((b, i) => { b.onclick = () => act(i); b.onpointerenter = e => { if (e.pointerType === "mouse") select(i); }; });
+  // a first tap only selects; tapping the selected option again opens it
+  let armed = -1;
+  items.forEach((b, i) => { b.onclick = () => { if (armed === i) { armed = -1; act(i); } else { armed = i; select(i); desc.textContent = DESC[items[i].dataset.act] + " Tap again to open."; } }; });
   art.onclick = () => { art.hidden = true; select(sel); };
   addEventListener("keydown", e => {
     if (box.hidden) return;

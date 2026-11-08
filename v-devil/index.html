@@ -346,11 +346,10 @@ dl.stats dd { margin: 0; }
 .ls { position: absolute; inset: 0; z-index: 5; overflow: hidden; display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; justify-items: center; gap: 14px;
   padding: max(56px, calc(env(safe-area-inset-top, 0px) + 50px)) max(16px, env(safe-area-inset-right, 0px)) max(18px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
   font-family: var(--f-pixel); color: #fff; image-rendering: pixelated; }
-.ls-sky { position: absolute; inset: 0; background:
-  repeating-linear-gradient(180deg, #1f3bd6 0 18px, #2448e0 18px 36px, #2a58ea 36px 54px, #3168f2 54px 72px, #3a7cf8 72px 90px, #4a92fb 90px 108px); }
-.ls-ground { position: absolute; left: 0; right: 0; bottom: 0; height: 22%;
-  background: conic-gradient(#7a3cf0 25%, #4b17b8 0 50%, #7a3cf0 0 75%, #4b17b8 0) 0 0 / 48px 48px;
-  box-shadow: inset 0 8px 0 #ffcf3a, inset 0 14px 0 #c46a00; animation: lsScroll 2.4s linear infinite; }
+.ls-sky { position: absolute; inset: 0; background: #6a2fc8 url(lyrics-bg.jpg) 50% 22% / cover no-repeat; image-rendering: pixelated; }
+.ls-sky::after { content: ""; position: absolute; inset: 0; background: linear-gradient(rgba(20,6,50,.15), rgba(20,6,50,.35)); }
+.ls-ground { display: none; }
+@media (min-aspect-ratio: 3/4) { .ls-sky { background-position: 50% 24%; } }
 @keyframes lsScroll { to { background-position: 48px 0; } }
 .ls > *:not(.ls-sky):not(.ls-ground):not(.ls-read) { position: relative; }
 .ls-back { position: absolute !important; top: max(12px, env(safe-area-inset-top, 0px)); left: max(12px, env(safe-area-inset-left, 0px)); display: inline-flex; align-items: center;
@@ -2565,8 +2564,7 @@ document.querySelectorAll("[data-lock]").forEach(s => { const l = document.query
   LS_SONGS.forEach(([id, title], i) => {
     const b = document.createElement("button"); b.type = "button"; b.className = "ls-slot"; b.setAttribute("role", "option");
     b.innerHTML = '<span class="no">SONG 0' + (i + 1) + '</span><img src="maxi-cover.jpg" alt=""><b>' + title + '</b>';
-    b.onclick = () => { lsPick(i); lsOpen(i); };
-    b.onpointerenter = e => { if (e.pointerType === "mouse") lsPick(i); };
+    b.onclick = () => { if (lsSel === i && b.classList.contains("on")) lsOpen(i); else lsPick(i); };
     slots.append(b);
   });
   const lsSlots = [...slots.children];
@@ -2574,6 +2572,7 @@ document.querySelectorAll("[data-lock]").forEach(s => { const l = document.query
     lsSel = (i + LS_SONGS.length) % LS_SONGS.length;
     lsSlots.forEach((b, k) => { b.classList.toggle("on", k === lsSel); b.setAttribute("aria-selected", k === lsSel); });
     lsSlots[lsSel].focus({ preventScroll: true }); box.scrollTop = 0;
+    $("ls-hint").textContent = LS_SONGS[lsSel][1] + " · TAP AGAIN TO READ";
   }
   function lsOpen(i) {
     const [id, title] = LS_SONGS[i], el = document.getElementById("lyrics-" + id);

@@ -1,0 +1,1367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Panel Sewi Demo Story</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Press+Start+2P&display=swap">
+<style>
+/* Layout: one wide 16:9 black screen. Itachi's lines run as movie subtitles at the bottom,
+   then a stepped fade and the ACT 1 card in the same black. */
+:root {
+  --void: #000000;
+  --sub: #f4f1ff;        /* subtitle white */
+  --sub-edge: #000000;
+  --muted: #7d7a99;
+  --gold: #ffd25a;       /* ACT title */
+  --ember: #8a1408;
+  --flame: #e8301c;
+  --font-pixel: "Press Start 2P", "Courier New", ui-monospace, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--void);
+  color: var(--sub);
+  font-family: var(--font-pixel);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 12px;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+#stage {
+  position: relative;
+  width: min(100%, calc((100dvh - 24px) * 16 / 9));
+  max-width: 100%;
+  aspect-ratio: 16 / 9;
+  container-type: inline-size;
+  background: var(--void);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+/* movie subtitle */
+#sub {
+  position: absolute;
+  left: 6%; right: 6%; bottom: 9%;
+  margin: 0;
+  text-align: center;
+  font-size: 2.3cqw;
+  line-height: 1.8;
+  min-height: 1.8em;
+  color: var(--sub);
+  text-shadow:
+    0.25cqw 0 0 var(--sub-edge), -0.25cqw 0 0 var(--sub-edge),
+    0 0.25cqw 0 var(--sub-edge), 0 -0.25cqw 0 var(--sub-edge),
+    0.3cqw 0.3cqw 0 var(--sub-edge);
+  overflow-wrap: anywhere;
+}
+#sub .name { color: var(--gold); }
+
+.hint {
+  position: absolute; left: 0; right: 0;
+  text-align: center;
+  font-size: 1.4cqw;
+  color: var(--muted);
+}
+#start { top: 50%; transform: translateY(-50%); font-size: 2cqw; color: var(--sub); animation: blink 1s steps(2) infinite; }
+#prompt { bottom: 3%; display: flex; flex-direction: column; align-items: center; gap: 1cqw; }
+#prompt span { animation: blink 1s steps(2) infinite; }
+#timer { width: 18cqw; height: 0.8cqw; background: #1a1a1a; }
+#timer-fill { height: 100%; width: 100%; background: var(--muted); }
+@keyframes blink { 50% { opacity: 0; } }
+.stk { display: inline-block; width: 1.1em; height: 1.5em; margin: -0.3em 0.3em -0.3em 0; vertical-align: middle; background: url(rabbid-sticker.png) center / contain no-repeat; transform: rotate(-6deg); }
+
+/* ACT card */
+#fade { position: absolute; inset: 0; background: var(--void); opacity: 0; pointer-events: none; }
+#fade.on { animation: fade-out 900ms steps(5) forwards; }
+@keyframes fade-out { to { opacity: 1; } }
+#act {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3.5cqw;
+  background: var(--void);
+}
+#act-title {
+  margin: 0;
+  font-size: 9cqw;
+  font-weight: 400;
+  color: var(--gold);
+  letter-spacing: 0.12em;
+  text-shadow: 0.7cqw 0.7cqw 0 var(--ember);
+  display: flex;
+}
+#act-title .ch { display: inline-block; min-width: 0.6em; opacity: 0; }
+#act-title .ch.in { animation: drop 360ms steps(4) forwards; }
+@keyframes drop { from { opacity: 1; transform: translateY(-3cqw); } to { opacity: 1; transform: none; } }
+#act-rule { height: 0.6cqw; width: 0; background: var(--flame); box-shadow: 0 0.6cqw 0 var(--ember); transition: width 700ms steps(14); }
+#act-rule.in { width: 40cqw; }
+
+/* ---- ACT 1 scenes ---- */
+#scene { position: absolute; inset: 0; background: var(--void); overflow: hidden; }
+#sc-img, #sc-vid, #sc-px { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+#sc-px { image-rendering: pixelated; image-rendering: crisp-edges; }
+#sc-img.shake { animation: rumble 120ms steps(2) infinite, jolt 700ms steps(7) 1; }
+@keyframes rumble {
+  0% { transform: scale(1.06) translate(0.35%, -0.25%); }
+  50% { transform: scale(1.06) translate(-0.35%, 0.3%); }
+  100% { transform: scale(1.06) translate(0.2%, 0.35%); }
+}
+@keyframes jolt { 0% { filter: brightness(2.2); } 100% { filter: none; } }
+#sc-img.pan { object-position: 50% 0%; animation: pan 14s linear forwards; }
+@keyframes pan { to { object-position: 50% 78%; } }
+#date {
+  position: absolute; left: 0; right: 0; top: 42%;
+  text-align: center;
+  font-size: 2.6cqw;
+  color: var(--gold);
+  text-shadow: 0.3cqw 0.3cqw 0 var(--ember);
+  letter-spacing: 0.06em;
+}
+#date.caret::after { content: "_"; animation: blink 0.6s steps(2) infinite; }
+#sub.waiting { animation: tap-me 1.4s steps(3) infinite; }
+@keyframes tap-me { 50% { opacity: 0.45; } }
+#cut { position: absolute; inset: 0; background: var(--void); opacity: 0; pointer-events: none; }
+#sc-img.view { transition: transform 1.3s ease-in-out, filter 1.3s ease-in-out; }
+#sc-img.view.slow { transition: transform 6.5s ease-in-out, filter 6.5s ease-in-out; }
+
+/* ---- ACT II card ---- */
+#act2 {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3.2cqw;
+  background: var(--void);
+}
+#a2-title { margin: 0; font-weight: 400; display: flex; flex-direction: column; align-items: center; gap: 2.2cqw; opacity: 0; }
+#a2-title .big { font-size: 9cqw; color: var(--flame); letter-spacing: 0.12em; text-shadow: 0.7cqw 0.7cqw 0 var(--ember); }
+#a2-title .rule { width: 40cqw; height: 0.6cqw; background: var(--flame); box-shadow: 0 0.6cqw 0 var(--ember); }
+#a2-title .name { font-size: 3.2cqw; color: var(--flame); letter-spacing: 0.1em; text-shadow: 0.35cqw 0.35cqw 0 var(--ember); }
+#a2-title.slam { opacity: 1; animation: slam 280ms steps(5) both, creep 7s linear 280ms forwards; }
+@keyframes slam { from { transform: scale(2.8); } to { transform: scale(1); } }
+@keyframes creep { from { transform: scale(1); } to { transform: scale(1.06); } }
+#act2.flash { animation: red-flash 360ms steps(3) 1; }
+@keyframes red-flash { 0% { background: #5a0a04; } 100% { background: var(--void); } }
+#stage.quake { animation: quake 420ms steps(6) 1; }
+@keyframes quake {
+  0% { transform: translate(1.2%, -0.8%); } 25% { transform: translate(-1%, 0.9%); }
+  50% { transform: translate(0.8%, 0.6%); } 75% { transform: translate(-0.5%, -0.4%); } 100% { transform: none; }
+}
+#a2-date { font-size: 2.6cqw; color: var(--flame); letter-spacing: 0.06em; text-shadow: 0.3cqw 0.3cqw 0 var(--ember); min-height: 1.2em; }
+#a2-date.caret::after { content: "_"; animation: blink 0.6s steps(2) infinite; }
+
+/* ---- ACT II, part 1: April to August ---- */
+#sc-img2 { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; }
+#tint { position: absolute; inset: 0; background: #ff1a0a; mix-blend-mode: multiply; opacity: 0; pointer-events: none; }
+#flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+#date.red { color: var(--flame); text-shadow: 0.3cqw 0.3cqw 0 var(--ember); }
+
+/* ---- ACT II, part 2: September, KENOS RISE ---- */
+#rise {
+  position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%);
+  text-align: center; margin: 0;
+  font-family: "Black Ops One", "Impact", "Arial Black", sans-serif; font-weight: 400;
+  font-size: 8.5cqw; letter-spacing: 0.06em;
+  color: var(--gold); text-shadow: 0.5cqw 0.5cqw 0 var(--ember), 0 0 2cqw rgba(232,48,28,.45);
+}
+#rise.caret::after { content: "_"; font-family: var(--font-pixel); font-size: 4cqw; animation: blink 0.6s steps(2) infinite; }
+#train { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; pointer-events: none; }
+#bubbles { position: absolute; right: 4%; top: 8%; width: 42%; display: flex; flex-direction: column; align-items: flex-end; gap: 1.4cqw; pointer-events: none; }
+.bubble {
+  max-width: 100%; padding: 1.1cqw 1.5cqw; border-radius: 1.6cqw 1.6cqw 0.3cqw 1.6cqw;
+  background: #2f7cf6; color: #fff; font-family: var(--font-pixel); font-size: 1.45cqw; line-height: 1.6;
+  box-shadow: 0.35cqw 0.35cqw 0 rgba(0,0,0,.55); animation: pop 220ms steps(4) both;
+}
+.bubble small { display: block; font-size: 0.9cqw; opacity: .75; margin-top: 0.4cqw; }
+@keyframes pop { from { transform: scale(0.3); opacity: 0; } to { transform: none; opacity: 1; } }
+/* the mask picture: tall, shown whole over a blurred copy, the camera moves inside it */
+#mwin { position: absolute; top: 0; left: 50%; height: 100%; aspect-ratio: 2 / 3; transform: translateX(-50%); overflow: hidden; opacity: 0; box-shadow: 0 0 0 0.35cqw #000, 0 0 3cqw rgba(0,0,0,.6); }
+#mwin img { position: absolute; max-width: none; display: block; }
+#sc-img.backdrop { filter: blur(2.2cqw) brightness(0.55) saturate(1.2); transform: scale(1.15); }
+/* ---- ACT II, part 3: 27 September - 2 October ---- */
+#sc-img.shock { animation: shock-zoom 220ms steps(4) both, shock-shake 520ms steps(8) 220ms; }
+@keyframes shock-zoom { from { transform: scale(1.45); filter: brightness(1.9) contrast(1.3); } to { transform: scale(1.04); filter: none; } }
+@keyframes shock-shake {
+  0% { transform: scale(1.04) translate(1.6%, -1%); } 25% { transform: scale(1.04) translate(-1.4%, 1.2%); }
+  50% { transform: scale(1.04) translate(1%, 0.8%); } 75% { transform: scale(1.04) translate(-0.6%, -0.6%); } 100% { transform: scale(1.04); }
+}
+#m1.bounce { animation: bounce-in 620ms ease-out both; }
+@keyframes bounce-in {
+  0% { transform: scale(0.55); opacity: 0; filter: brightness(2); } 45% { transform: scale(1.14); opacity: 1; }
+  65% { transform: scale(0.94) translateX(-2%); } 82% { transform: scale(1.03) translateX(1.5%); } 100% { transform: scale(1); filter: none; }
+}
+#scene.tvoff { animation: tv-off 650ms ease-in forwards; }
+@keyframes tv-off {
+  0% { transform: none; filter: none; }
+  40% { transform: scaleY(0.012) scaleX(1); filter: brightness(3); }
+  75% { transform: scaleY(0.012) scaleX(0.02); filter: brightness(4); }
+  100% { transform: scaleY(0) scaleX(0); filter: brightness(4); }
+}
+#sc-img.blurin { animation: blurin 450ms ease-out both; }
+@keyframes blurin { from { filter: blur(1.6cqw) brightness(1.6); transform: scale(1.25) translateX(6%); } to { filter: none; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  #a2-title.slam, #act2.flash, #stage.quake { animation: none; }
+  #sc-img.shake, #sc-img.pan, #sub.waiting { animation: none; }
+  #start, #prompt span, #act-title .ch.in { animation: none; }
+  #act-title .ch.in { opacity: 1; }
+  #fade.on { animation-duration: 1ms; }
+}
+</style>
+</head>
+<body>
+<div id="stage" role="application" aria-label="Demo story. Click or press Space to continue.">
+  <div id="scene" hidden>
+    <img id="sc-img" alt="" hidden>
+    <video id="sc-vid" playsinline preload="auto" hidden></video>
+    <canvas id="sc-px" width="256" height="144" hidden></canvas>
+    <img id="sc-img2" alt="" hidden>
+    <canvas id="train" width="688" height="384" hidden></canvas>
+    <div id="bubbles" aria-live="polite"></div>
+    <h2 id="rise" aria-live="polite"></h2>
+    <div id="mwin" hidden><img id="m1" alt=""></div>
+    <div id="tint"></div>
+    <div id="flash"></div>
+    <div id="date" aria-live="polite"></div>
+  </div>
+  <div id="cut"></div>
+  <div id="act2" hidden>
+    <h2 id="a2-title" aria-label="Act II — The Last Period">
+      <span class="big" aria-hidden="true">ACT II</span>
+      <span class="rule" aria-hidden="true"></span>
+      <span class="name" aria-hidden="true">THE LAST PERIOD</span>
+    </h2>
+    <div id="a2-date" aria-live="polite"></div>
+  </div>
+  <p id="sub" aria-live="polite"></p>
+  <div id="start" class="hint" hidden><i class="stk" aria-hidden="true"></i> TAP TO START</div>
+  <div id="prompt" class="hint" hidden>
+    <span>CLICK TO CONTINUE</span>
+    <div id="timer"><div id="timer-fill"></div></div>
+  </div>
+  <div id="fade"></div>
+  <div id="act" hidden>
+    <h2 id="act-title" aria-label="Act 1"></h2>
+    <div id="act-rule"></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  // ---- who is watching: the profile name from the V-Devil site ----
+  function profileName() {
+    try {
+      const q = new URLSearchParams(location.search).get("name");
+      if (q && q.trim()) return q.trim().slice(0, 15);
+    } catch (_) {}
+    try {
+      const s = localStorage.getItem("vdevil.session");
+      const all = JSON.parse(localStorage.getItem("vdevil.accounts") || "{}");
+      if (s && all[s] && all[s].username) return all[s].username;
+      if (s && !s.includes("@")) return s; // older sessions kept the username itself
+    } catch (_) {}
+    return "Player";
+  }
+  const NAME = profileName();
+
+  // Voice line timings (seconds), measured from the pauses in the Itachi recording.
+  const LINES = [
+    { t0: 0.47, t1: 2.19, text: "You passed the test great......" },
+    { t0: 2.41, t1: 4.79, text: "You now into the new story Of this game" },
+    { t0: 5.19, t1: 6.29, text: "prepare to see the...." },
+    { t0: 6.72, t1: 8.06, text: "Fate of a young boy...." },
+    // "Mister" is spoken; the profile name types right after it
+    { t0: 8.50, t1: 9.12 + Math.max(0.5, NAME.length * 0.08), text: "Mister " + NAME, name: NAME },
+  ];
+  const STORY_END = LINES[4].t1 + 0.9;
+  const AUTO_WAIT = 10;
+
+  const $ = (id) => document.getElementById(id);
+  const stage = $("stage"), sub = $("sub"), startEl = $("start");
+  const prompt = $("prompt"), timerFill = $("timer-fill");
+  const fade = $("fade"), act = $("act");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const VOICE_DIR = "";
+  const VER = "?v=20261108d";   // new number on each update so phones don't keep an old copy
+  let introSrc = VOICE_DIR + "itachi_intro.mp3" + VER;
+
+  // ---- the voice player ----
+  // Every voice line plays through the Web Audio engine. iPhones only let a page start sound from a
+  // tap; an <audio> player started later by a timer (most scenes here start on their own) stays
+  // silent there. The audio engine is unlocked once, on the first tap, and can then play every
+  // later line by itself. It offers the few parts of the <audio> player the story uses.
+  let ac = null;
+  function makeVoice(firstSrc) {
+    const files = {};      // url -> Promise of the file's bytes, fetched once
+    const decoded = {};    // url -> Promise of the decoded sound
+    const on = { error: [], ended: [] };
+    const fail = (name) => { const e = new Error(name); e.name = name; return e; };
+    const v = {
+      dataset: {}, _src: "", _buf: null, _node: null, _startAt: 0, _offset: 0, _playing: false, _ended: false, _token: 0,
+      addEventListener(type, fn) { (on[type] = on[type] || []).push(fn); },
+      setAttribute() {}, load() {},
+      get src() { return this._src; },
+      set src(u) {
+        this._token++; this._stop(); this._src = u; this._offset = 0; this._ended = false; this._buf = null;
+        if (!files[u]) files[u] = fetch(u).then(r => { if (!r.ok) throw fail("NotFound"); return r.arrayBuffer(); });
+        files[u].catch(() => { if (this._src === u) on.error.forEach(f => f()); });
+        if (ac) this._decode(u).catch(() => {});   // after the first tap: get it ready right away
+      },
+      _decode(u) {
+        if (!decoded[u]) decoded[u] = files[u].then(ab => new Promise((ok, no) => ac.decodeAudioData(ab.slice(0), ok, no)));
+        return decoded[u];
+      },
+      play() {
+        const u = this._src, tok = ++this._token, a = chip();
+        if (!a) return Promise.reject(fail("NotSupportedError"));
+        return this._decode(u).then(b => {
+          if (tok !== this._token || this._src !== u) throw fail("AbortError");  // skipped meanwhile
+          this._buf = b; this._start(b);
+        });
+      },
+      _start(b) {
+        this._stop();
+        const n = ac.createBufferSource(); n.buffer = b; n.connect(voiceOut());
+        const off = Math.min(this._offset, b.duration);
+        n.start(0, off);
+        this._node = n; this._startAt = ac.currentTime - off; this._playing = true; this._ended = false;
+        n.onended = () => { if (this._node !== n) return; this._node = null; this._playing = false; this._ended = true; this._offset = b.duration; on.ended.forEach(f => f()); };
+      },
+      _stop() {
+        if (this._node) { const n = this._node; this._offset = this.currentTime; this._node = null; n.onended = null; try { n.stop(); } catch (_) {} }
+        this._playing = false;
+      },
+      pause() { this._token++; this._stop(); },
+      get paused() { return !this._playing; },
+      get ended() { return this._ended; },
+      get duration() { return this._buf ? this._buf.duration : NaN; },
+      get currentTime() { return this._playing && ac ? Math.max(0, ac.currentTime - this._startAt) : this._offset; },
+      set currentTime(t) { this._offset = t; if (this._playing && this._buf) this._start(this._buf); },
+    };
+    v.src = firstSrc;
+    return v;
+  }
+  const voice = makeVoice(introSrc);
+  voice.dataset.clip = "intro";
+  // Itachi's intro plays from a plain <audio> player, started by the tap itself: on iPhone that
+  // plays like any media, even in silent mode.
+  const introEl = new Audio(introSrc);
+  introEl.preload = "auto"; introEl.setAttribute("playsinline", "");
+  introEl.addEventListener("error", () => { voiceOK = false; });
+  let voiceOK = true;
+  voice.addEventListener("error", () => { voiceOK = false; });
+
+  // Names with their own recording: Itachi's line with the name already spoken after "Mister".
+  const slug = NAME.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  let bakedName = false;
+  if (slug) {
+    fetch(VOICE_DIR + "voices/" + slug + ".mp3", { method: "HEAD" }).then(r => {
+      if (r.ok && state === "idle") { introSrc = VOICE_DIR + "voices/" + slug + ".mp3" + VER; introEl.src = introSrc; introEl.load(); bakedName = true; }
+    }).catch(() => {});
+  }
+
+  // ---- 16-bit sound chip (and the audio engine the voices use) ----
+  let unlocked = false;
+  function chip() {
+    if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { ac = null; } }
+    if (ac && ac.state === "suspended") ac.resume();
+    return ac;
+  }
+  // Sound effects (typing clicks, beeps) go straight to the speakers: no delay.
+  function speakers() { return ac ? ac.destination : null; }
+  // The narration goes through a normal <audio> player fed by the engine and started on the first
+  // tap: an iPhone plays it like any media, and since it keeps running, voices that start later on
+  // their own need no new tap.
+  let outNode = null;
+  function voiceOut() { return outNode || speakers(); }
+  // On iPhone the audio engine is muted in silent mode, except while a normal media player is
+  // playing: so the first tap starts a silent sound file on a loop, which keeps everything audible.
+  const keepAlive = new Audio(VOICE_DIR + "silence.mp3" + VER);
+  keepAlive.loop = true; keepAlive.preload = "auto"; keepAlive.setAttribute("playsinline", "");
+  function unlockAudio() { // inside the first tap: wake the audio engine for the whole story
+    const a = chip(); if (!a || unlocked) return;
+    unlocked = true;
+    try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (_) {}   // iPhone: play with the silent switch on
+    try { const kp = keepAlive.play(); if (kp && kp.catch) kp.catch(() => {}); } catch (_) {}
+    try { const b = a.createBuffer(1, 1, 22050), n = a.createBufferSource(); n.buffer = b; n.connect(a.destination); n.start(0); } catch (_) {}
+    try {
+      if (a.createMediaStreamDestination) {
+        const dest = a.createMediaStreamDestination(), out = new Audio();
+        out.setAttribute("playsinline", ""); out.autoplay = true; out.srcObject = dest.stream;
+        outNode = dest;
+        const op = out.play(); if (op && op.catch) op.catch(() => { outNode = null; });
+      }
+    } catch (_) { outNode = null; }
+    if (voice.src) voice._decode(voice.src).catch(() => {});
+  }
+
+
+  function beep(freq, dur, type = "square", vol = 0.04, when = 0) {
+    const a = chip(); if (!a) return;
+    const t = a.currentTime + when;
+    const o = a.createOscillator(), g = a.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t);
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g).connect(speakers());
+    o.start(t); o.stop(t + dur + 0.02);
+  }
+
+  // Only Itachi speaks: a name is heard when it has its own Itachi recording (voices/<name>.mp3).
+  // Any other name appears in the subtitle only.
+
+
+  // ===== ACT 1: narration (Fish Audio Itachi), one scene per line =====
+  const ACT1_DIR = VOICE_DIR + "act1/";
+  const SCENES = [
+    // one screen per line; a line can hold several spoken parts, each typed while it is said
+    { bg: "black",  parts: [[0.00, 1.32, "Five months ago."], [1.97, 2.97, "It was summer."]], date: "17 JULY 2026 - 20 JULY 2026" },
+    { bg: "portal", fadeIn: 10, parts: [[3.33, 8.12, "A portal had torn open the sky and thrown them into the heart of the Sahara"]], fx: "shake", rumble: true },
+    { bg: "video",  parts: [[8.70, 11.88, "There, three evil villains were waiting for them"]] },
+    { bg: "battle", parts: [[12.35, 13.80, "The battle was long."], [13.95, 14.54, "Brutal."], [14.69, 16.78, "The sand burned under their feet"]], fx: "pan" },
+    { bg: "black",  parts: [[16.91, 17.85, "But they won"]], slowFade: true },
+    { bg: "black",  parts: [[18.21, 24.52, "When the dust finally settled at the foot of the pyramids, there was only one feeling left: relief."]] },
+  ];
+  // each screen has its own clip cut from the narration (clip, where it starts in the full recording),
+  // so a line always stops at its last word and never runs into the next sentence
+  [["line1.mp3", 0], ["line2.mp3", 3.10], ["line3.mp3", 8.30], ["line4.mp3", 12.05], ["line5.mp3", 16.75], ["line6.mp3", 18.20]]
+    .forEach(([clip, at], i) => { SCENES[i].clip = clip; SCENES[i].clipAt = at; });
+  SCENES.forEach(sc => { sc.seg = [sc.parts[0][0], sc.parts[sc.parts.length - 1][1]]; sc.text = sc.parts.map(q => q[2]).join(" "); });
+  const SCENE_WAIT = 30;   // seconds before the story moves on by itself
+  // ACT 1 lines play through the same audio player as Itachi's intro: one player only, so a phone
+  // never cuts one voice to start another
+  const narr = voice;
+  let narrOK = true;
+  // A skipped line stops its voice while the next one loads: the browser reports that as an
+  // "AbortError". That is normal and must not switch the voice off for the rest of the story.
+  function voiceFailed(e) { if (e && e.name === "AbortError") return; narrOK = false; }
+  ["line1", "line2", "line3", "line4", "line5", "line6"].forEach(n => { // warm the cache so each line starts at once
+    try { fetch(ACT1_DIR + n + ".mp3" + VER).catch(() => {}); } catch (_) {}
+  });
+  const scene = $("scene"), scImg = $("sc-img"), scVid = $("sc-vid"), scPx = $("sc-px"), dateEl = $("date"), cut = $("cut");
+  const IMGS = { portal: ACT1_DIR + "portal.jpg" + VER, battle: ACT1_DIR + "battle.jpg" + VER };
+  Object.values(IMGS).forEach(src => { const im = new Image(); im.src = src; });
+  scVid.src = ACT1_DIR + "villains.mp4" + VER;
+  scVid.muted = true; scVid.defaultMuted = true; // the clip stays silent: the narration is the only voice
+
+  let si = -1, sceneClock = 0, sceneWaitStart = 0, lineDone = false, dateDone = true, vidDone = true, dateTimer = 0;
+
+  function keyClick() { // typewriter key: a short filtered noise tick
+    const a = chip(); if (!a) return;
+    const len = Math.floor(a.sampleRate * 0.03), buf = a.createBuffer(1, len, a.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+    const src = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+    f.type = "bandpass"; f.frequency.value = 2400 + Math.random() * 600; g.gain.value = 0.35;
+    src.buffer = buf; src.connect(f).connect(g).connect(speakers()); src.start();
+  }
+
+  function rumble(sec) { // portal tremor: low filtered noise with a slow wobble
+    const a = chip(); if (!a) return;
+    const len = Math.floor(a.sampleRate * sec), buf = a.createBuffer(1, len, a.sampleRate), d = buf.getChannelData(0);
+    let last = 0;
+    for (let i = 0; i < len; i++) { last = last * 0.96 + (Math.random() * 2 - 1) * 0.04; d[i] = last * 6; }
+    const src = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(), t = a.currentTime;
+    f.type = "lowpass"; f.frequency.value = 160;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.9, t + 0.08);
+    g.gain.setValueAtTime(0.9, t + 0.6);
+    g.gain.exponentialRampToValueAtTime(0.25, t + 1.2);
+    g.gain.setValueAtTime(0.25, t + sec - 0.8);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + sec);
+    src.buffer = buf; src.connect(f).connect(g).connect(speakers()); src.start(t); src.stop(t + sec);
+    beep(55, 0.6, "sawtooth", 0.08); beep(41, 0.9, "square", 0.05, 0.05);
+    try { navigator.vibrate && navigator.vibrate([280, 80, 200, 80, 400]); } catch (_) {}
+  }
+
+  function unlockAct1Media() { // phones: media that will play later must first play inside a tap
+    // nothing to do any more: the lines share Itachi's player and the clip plays muted
+  }
+
+  function blackCut(ms, mid) { // stepped fade to black, swap, fade back
+    cut.style.transition = "opacity " + ms + "ms steps(" + Math.max(2, Math.round(ms / 100)) + ")";
+    cut.style.opacity = "1";
+    setTimeout(() => { mid(); requestAnimationFrame(() => { cut.style.opacity = "0"; }); }, reduce ? 0 : ms);
+  }
+
+  function startAct1() {
+    state = "act1";
+    act.hidden = true;
+    $("act-rule").classList.remove("in");
+    fade.classList.remove("on");
+    scene.hidden = false;
+    si = -1;
+    nextScene();
+  }
+
+  function nextScene() {
+    clearTimeout(fadeTimer);
+    narr.pause();
+    sub.classList.remove("waiting");
+    if (si + 1 >= SCENES.length) return endDemo();
+    const prev = SCENES[si], sc = SCENES[si + 1];
+    const swap = () => { si++; setupScene(sc); };
+    state = "act1-cut";
+    if (si < 0) swap();
+    else blackCut(sc.slowFade ? 1200 : (prev.bg === sc.bg && sc.bg === "black" ? 200 : 450), swap);
+  }
+
+  function setupScene(sc) {
+    clearInterval(dateTimer);
+    sub.innerHTML = ""; shown = "";
+    dateEl.textContent = ""; dateEl.classList.remove("caret");
+    scImg.hidden = true; scImg.className = "";
+    scVid.hidden = true; scVid.pause();
+    scPx.hidden = true;
+    scImg.style.transition = ""; scImg.style.opacity = "";
+    if (sc.bg === "portal" || sc.bg === "battle") {
+      scImg.src = IMGS[sc.bg]; scImg.hidden = false;
+      if (sc.fadeIn && !reduce) { // long fade in from black; the line starts when the picture pops
+        scImg.style.opacity = "0";
+        void scImg.offsetWidth;
+        scImg.style.transition = "opacity " + sc.fadeIn + "s linear";
+        scImg.style.opacity = "1";
+        sub.innerHTML = ""; shown = "";
+        state = "act1-fade";
+        fadeTimer = setTimeout(() => popScene(sc), sc.fadeIn * 1000);
+        return;
+      }
+      void scImg.offsetWidth; if (sc.fx) scImg.className = sc.fx;
+    }
+    vidDone = sc.bg !== "video";
+    if (sc.bg === "video") {
+      scVid.hidden = false; scVid.currentTime = 0; scVid.muted = true;
+      const p = scVid.play();
+      if (p && p.catch) p.catch(() => { pixelFreeze(); });
+    }
+    startLine(sc);
+  }
+
+  let fadeTimer = 0;
+  function popScene(sc) { // end of the fade in: flash, shake, tremor, then the line
+    clearTimeout(fadeTimer);
+    if (state !== "act1-fade") return;
+    scImg.style.transition = ""; scImg.style.opacity = "1";
+    void scImg.offsetWidth; if (sc.fx) scImg.className = sc.fx;
+    if (sc.rumble) rumble(3.2);
+    startLine(sc);
+  }
+
+  function startLine(sc) {
+    dateDone = !sc.date;
+    lineDone = false;
+    sceneClock = performance.now();
+    narrOK = true; // every line tries its voice again, even after a skipped one
+    narr.src = ACT1_DIR + sc.clip + VER; narr.dataset.clip = sc.clip;
+    const p = narr.play(); if (p && p.catch) p.catch(voiceFailed);
+    state = "act1";
+  }
+
+  // the clip ends: freeze its last frame as a 16-bit picture (low resolution, few colours, ordered dither)
+  const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+  function pixelFreeze() {
+    if (vidDone) return;
+    vidDone = true;
+    const c = scPx.getContext("2d", { willReadFrequently: true });
+    const steps = reduce ? [256] : [1024, 512, 384, 256];
+    let k = 0;
+    function draw() {
+      const w = steps[k], h = Math.round(w * 9 / 16);
+      scPx.width = w; scPx.height = h;
+      c.imageSmoothingEnabled = true;
+      try { c.drawImage(scVid, 0, 0, w, h); } catch (_) {}
+      if (w === 256) {
+        try {
+          const im = c.getImageData(0, 0, w, h), d = im.data, lv = 5; // 5 levels per channel
+          for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+            const i = (y * w + x) * 4, t = (BAYER[(y & 3) * 4 + (x & 3)] / 16 - 0.5) * (255 / lv);
+            for (let ch = 0; ch < 3; ch++) d[i + ch] = Math.max(0, Math.min(255, Math.round((d[i + ch] + t) / 255 * (lv - 1)) * (255 / (lv - 1))));
+          }
+          c.putImageData(im, 0, 0);
+        } catch (_) {}
+      }
+      scPx.hidden = false; scVid.hidden = true;
+      if (++k < steps.length) setTimeout(draw, 110);
+      else beep(523, 0.08, "square", 0.04);
+    }
+    draw();
+  }
+  scVid.addEventListener("ended", pixelFreeze);
+  scVid.addEventListener("error", () => { vidDone = true; });
+
+  function typeDate(text) {
+    let i = 0;
+    dateEl.classList.add("caret");
+    dateTimer = setInterval(() => {
+      i++;
+      dateEl.textContent = text.slice(0, i);
+      if (text[i - 1] && text[i - 1] !== " ") keyClick();
+      if (i >= text.length) { clearInterval(dateTimer); dateDone = true; setTimeout(() => dateEl.classList.remove("caret"), 900); }
+    }, 85);
+  }
+
+  function sceneTime(sc) {
+    // follow the voice itself; the clock only takes over if the voice never starts
+    const el = (performance.now() - sceneClock) / 1000;
+    if (narrOK && narr.ended) return sc.seg[1] + 1;
+    if (narrOK && el < narr.currentTime + 3) return sc.clipAt + narr.currentTime;
+    return sc.seg[0] + el;
+  }
+
+  function tickScene(now) {
+    const sc = SCENES[si];
+    if (!lineDone) {
+      const t = sceneTime(sc);
+      const typed = [];
+      for (const [a, b, txt] of sc.parts) {
+        if (t < a) break;
+        const k = Math.max(0, Math.min(1, (t - a) / (b - a)));
+        typed.push(txt.slice(0, Math.floor(txt.length * k)));
+      }
+      const html = esc(typed.join(" "));
+      if (html !== shown) { shown = html; sub.innerHTML = html; }
+      if (t >= sc.seg[1] && (!narrOK || narr.ended || narr.paused || t >= sc.seg[1] + 1.5)) {
+        lineDone = true;
+        sub.innerHTML = esc(sc.text); shown = sub.innerHTML;
+        if (sc.date) typeDate(sc.date);
+      }
+    } else if (dateDone && vidDone) {
+      if (!sub.classList.contains("waiting")) { sub.classList.add("waiting"); sceneWaitStart = now; }
+      else if (now - sceneWaitStart >= SCENE_WAIT * 1000) nextScene();
+    }
+  }
+
+  // ===== After "relief.": the friends. One continuous scene, no taps, freezes on the last line =====
+  const PICS = {
+    friends: ACT1_DIR + "friends.jpg" + VER, sonic: ACT1_DIR + "sonic.jpg" + VER, shadow: ACT1_DIR + "shadow.jpg" + VER,
+    silver: ACT1_DIR + "silver.jpg" + VER, goku: ACT1_DIR + "goku.jpg" + VER,
+  };
+  Object.values(PICS).forEach(src => { const im = new Image(); im.src = src; });
+  // where to look in friends.jpg (% of the picture) and how close; bw = how black and white
+  const VIEWS = {
+    full:  { x: 50, y: 50, z: 1 },
+    chun:  { x: 76, y: 42, z: 1.7 },
+    kenos: { x: 35, y: 42, z: 1.7 },
+    her:   { x: 24, y: 40, z: 2.7, bw: 1, slow: true },
+  };
+  // at: seconds from the start of the fade in. add: the text goes on the same line as the one before it
+  // at = when it is said in friends.mp3 (seconds from the start of the fade in), dur = how long it is said;
+  const FRIENDS = [
+    { at: 3.00,  dur: 1.32, pic: "friends", view: "full", text: "They were all there." },
+    { at: 4.92,  dur: 0.90, text: "His friends…" },
+    { at: 6.08,  dur: 0.65, pic: "sonic",  text: "Sonic…" },
+    { at: 6.94,  dur: 0.76, pic: "shadow", text: "Shadow…", add: true },
+    { at: 7.91,  dur: 0.66, pic: "silver", text: "Silver…", add: true },
+    { at: 8.84,  dur: 1.01, pic: "goku",   text: "Black Goku…", add: true },
+    { at: 10.17, dur: 0.76, pic: "friends", view: "chun", text: "Chun-Li…" },
+    { at: 11.15, dur: 0.62, view: "kenos", text: "Kenos…", add: true },
+    { at: 11.94, dur: 0.86, view: "full", text: "Everyone" },
+    { at: 14.00, dur: 0.41, text: "And…" },
+    { at: 14.60, view: "her" },
+    { at: 19.50, dur: 0.58, text: "…her." },
+    { at: 21.00, dur: 1.01, text: "His girlfriend." },
+    { at: 23.40, dur: 1.99, text: "The one who wouldn't let go of him." },
+    { at: 26.20, dur: 1.73, text: "Her arms wrapped around him," },
+    { at: 28.27, dur: 2.15, text: "holding on like she would never leave.", add: true },
+    { at: 31.00, dur: 0.78, text: "Back then," },
+    { at: 32.07, dur: 1.01, text: "he believed her.", add: true, last: true },
+  ];
+  const TYPE_CPS = 17;
+
+  // ===== ACT II: the screen cuts to black, then the title slams in on the bell's strike =====
+  const ACT2_DIR = VOICE_DIR + "act2/";
+  const A2 = { pauseAfterLine: 1.2, blackAt: 0, hitAt: 0.64, dateAfterHit: 1.4, date: "24 AUGUST 2026 - 25 SEPTEMBER 2026" };
+  let a2DoneAt = 0, frozenAt = 0, a2Start = 0, a2Black = false, a2Hit = false, a2DateStarted = false, stingOK = true;
+  function stingFailed(e) { if (e && e.name === "AbortError") return; stingOK = false; }
+
+  function startAct2() {
+    state = "act2";
+    stingOK = true;
+    voice.src = ACT2_DIR + "sting.mp3" + VER; voice.dataset.clip = "sting";
+    const p = voice.play(); if (p && p.catch) p.catch(stingFailed);
+    a2Start = performance.now(); a2Black = a2Hit = a2DateStarted = false;
+  }
+
+  function stingTime(now) { // follow the sound so the cut and the hit land on it
+    const el = (now - a2Start) / 1000;
+    if (stingOK && voice.dataset.clip === "sting" && !voice.ended && el < voice.currentTime + 3) return voice.currentTime;
+    return el;
+  }
+
+  function tickAct2(now) {
+    const t = stingTime(now);
+    if (!a2Black && t >= A2.blackAt) { // suddenly: black
+      a2Black = true;
+      scene.hidden = true; sub.innerHTML = ""; shown = "";
+      $("act2").hidden = false;
+    }
+    if (!a2Hit && t >= A2.hitAt) { // the hit: title slams in, the screen shakes
+      a2Hit = true;
+      $("a2-title").classList.add("slam");
+      $("act2").classList.add("flash");
+      stage.classList.remove("quake"); void stage.offsetWidth; stage.classList.add("quake");
+      try { navigator.vibrate && navigator.vibrate([120, 40, 220]); } catch (_) {}
+    }
+    if (a2Hit && !a2DateStarted && t >= A2.hitAt + A2.dateAfterHit) {
+      a2DateStarted = true;
+      const el = $("a2-date"), text = A2.date;
+      let i = 0;
+      el.classList.add("caret");
+      const timer = setInterval(() => {
+        i++;
+        el.textContent = text.slice(0, i);
+        if (text[i - 1] && text[i - 1] !== " ") keyClick();
+        if (i >= text.length) { clearInterval(timer); setTimeout(() => el.classList.remove("caret"), 900); state = "end"; a2DoneAt = performance.now(); }
+      }, 85);
+    }
+  }   // letters per second for the subtitles in this scene
+  let fStart = 0, fCue = -1, fBase = "", fLine = "", fLineAt = 0, fLineDur = 0, fEndedAt = 0;
+
+  function showPic(name) {
+    scImg.className = "";
+    scImg.style.transition = ""; scImg.style.opacity = "1";
+    scImg.style.transform = ""; scImg.style.filter = "";
+    scImg.src = PICS[name]; scImg.hidden = false;
+  }
+  // ===== ACT II, part 1: "Between April and August" =====
+  // 5 s on the ACT II card, a 2 s fade to black, then one continuous scene timed on story2.mp3
+  // (narration, the video's whoosh, the closing clap). at = when it is heard, dur = how long.
+  const S2 = { hold: 5, fade: 2 };
+  const S2_LINES = [
+    { at: 0.40,  dur: 1.58, text: "Between April and August," },
+    { at: 2.58,  dur: 2.27, text: "Kenos left the Kanel Gang of Madara" },
+    { at: 5.05,  dur: 1.17, text: "and the French Legacy.", add: true },
+    { at: 6.61,  dur: 1.59, text: "Some of the members followed him." },
+    { at: 10.60, dur: 0.69, text: "In August," },
+    { at: 12.10, dur: 1.66, text: "Kenos has a new haircut." },
+    { at: 14.01, dur: 1.84, text: "A new vision of success in life." },
+    { at: 16.00, dur: 0.82, text: "A new start.", add: true },
+    { at: 17.91, dur: 1.06, text: "With his girlfriend," },
+    { at: 19.14, dur: 1.03, text: "things seemed good.", add: true },
+    { at: 20.86, dur: 1.50, text: "A little weird sometimes." },
+    { at: 22.68, dur: 1.68, text: "Kenos always went too far.", add: true },
+    { at: 24.74, dur: 3.18, text: "But when he loves someone, he can be immature and unconscious." },
+    { at: 28.26, dur: 2.28, text: "Don't know what's gonna happen in a few months." },
+  ];
+  const S2_FX = [
+    { at: 2.30,  fx: "video" },     // Kenos leaves (the clip plays once, then holds its last frame)
+    { at: 6.40,  fx: "members" },   // 0.1 s white flash into the members picture
+    { at: 9.20,  fx: "august" },    // black, AUGUST 2026 types in red
+    { at: 11.80, fx: "haircut" },
+    { at: 15.90, fx: "zoom" },      // push into his face...
+    { at: 17.75, fx: "face" },      // ...until it becomes the close-up
+    { at: 20.60, fx: "red" },       // red creeps in, the picture starts to tremble
+    { at: 30.85, fx: "clap" },      // clap: black
+  ];
+  const scImg2 = $("sc-img2"), tint = $("tint"), flashEl = $("flash");
+  const S2_PICS = { members: ACT2_DIR + "members.jpg" + VER, haircut: ACT2_DIR + "haircut.jpg" + VER, face: ACT2_DIR + "face.jpg" + VER };
+  Object.values(S2_PICS).forEach(src => { const im = new Image(); im.src = src; });
+  let s2EndAt = 0, s2Start = 0, s2Fx = -1, s2Cue = -1, s2Base = "", s2Line = "", s2LineAt = 0, s2LineDur = 1, s2EndedAt = 0, s2RedAt = 0, s2ShakeAt = 0;
+
+  function s2Black() {
+    scImg.hidden = true; scImg.className = ""; scImg.style.transform = ""; scImg.style.transition = ""; scImg.style.opacity = ""; scImg.style.filter = "";
+    scImg2.hidden = true; scImg2.style.opacity = "0"; scImg2.style.transform = ""; scImg2.style.transition = "";
+    scVid.hidden = true; scVid.pause(); scPx.hidden = true;
+    dateEl.textContent = ""; dateEl.className = "";
+  }
+
+  function startStory2() { // after the fade to black
+    state = "story2";
+    $("act2").hidden = true; $("act2").style.transition = ""; $("act2").style.opacity = "";
+    scene.hidden = false; s2Black();
+    tint.style.transition = ""; tint.style.opacity = "0";
+    cut.style.transition = ""; cut.style.opacity = "0";
+    vidDone = true;
+    scVid.src = ACT2_DIR + "left.mp4" + VER; scVid.load();
+    narrOK = true;
+    voice.src = ACT2_DIR + "story2.mp3" + VER; voice.dataset.clip = "story2";
+    const p = voice.play(); if (p && p.catch) p.catch(voiceFailed);
+    s2Start = performance.now(); s2Fx = -1; s2Cue = -1; s2Base = ""; s2Line = ""; s2EndedAt = 0; s2RedAt = 0;
+    sub.innerHTML = ""; shown = "";
+  }
+
+  function story2Time(now) {
+    const el = (now - s2Start) / 1000;
+    if (narrOK && voice.dataset.clip === "story2") {
+      if (voice.ended) { if (!s2EndedAt) s2EndedAt = now; return voice.duration + (now - s2EndedAt) / 1000; }
+      if (el < voice.currentTime + 3) return voice.currentTime;
+    }
+    return el;
+  }
+
+  function s2Effect(fx) {
+    if (fx === "video") {
+      s2Black(); scVid.hidden = false; scVid.currentTime = 0;
+      const p = scVid.play(); if (p && p.catch) p.catch(() => {});
+    } else if (fx === "members") {
+      flashEl.style.transition = ""; flashEl.style.opacity = "1";
+      s2Black(); scImg.src = S2_PICS.members; scImg.hidden = false;
+      setTimeout(() => { flashEl.style.transition = "opacity 100ms linear"; flashEl.style.opacity = "0"; }, 100);
+    } else if (fx === "august") {
+      s2Black(); sub.innerHTML = ""; shown = ""; s2Line = ""; s2Base = "";
+      dateEl.className = "red caret";
+      const text = "AUGUST 2026"; let i = 0;
+      const timer = setInterval(() => {
+        i++; dateEl.textContent = text.slice(0, i);
+        if (text[i - 1] && text[i - 1] !== " ") keyClick();
+        if (i >= text.length) { clearInterval(timer); setTimeout(() => dateEl.classList.remove("caret"), 900); }
+      }, 85);
+    } else if (fx === "haircut") {
+      s2Black(); scImg.src = S2_PICS.haircut; scImg.hidden = false;
+      scImg.style.opacity = "0"; void scImg.offsetWidth;
+      scImg.style.transition = "opacity 0.6s linear"; scImg.style.opacity = "1";
+    } else if (fx === "zoom") { // his face sits at 50% across, 18% down in haircut.jpg
+      scImg.style.transition = "transform 1.85s ease-in";
+      scImg.style.transform = "scale(4.5) translate(0%, 32%)";
+    } else if (fx === "face") {
+      scImg2.src = S2_PICS.face; scImg2.hidden = false;
+      scImg2.style.transition = ""; scImg2.style.opacity = "0"; scImg2.style.transform = "scale(1.15)";
+      void scImg2.offsetWidth;
+      scImg2.style.transition = "opacity 0.35s linear, transform 2.4s ease-out";
+      scImg2.style.opacity = "1"; scImg2.style.transform = "scale(1.04)";
+      setTimeout(() => { if (state === "story2") scImg.hidden = true; }, 400);
+    } else if (fx === "red") {
+      s2RedAt = performance.now();
+      tint.style.transition = "opacity 9s linear"; tint.style.opacity = "0.6";
+      scImg2.style.transition = "opacity 0.35s linear";
+    } else if (fx === "clap") {
+      s2Black(); tint.style.transition = ""; tint.style.opacity = "0";
+      sub.innerHTML = ""; shown = ""; s2Line = "";
+      state = "end2"; s2EndAt = performance.now(); // a beat of black, then September
+    }
+  }
+
+  function tickStory2(now) {
+    const t = story2Time(now);
+    while (s2Fx + 1 < S2_FX.length && t >= S2_FX[s2Fx + 1].at) { s2Effect(S2_FX[++s2Fx].fx); if (state !== "story2") return; }
+    while (s2Cue + 1 < S2_LINES.length && t >= S2_LINES[s2Cue + 1].at) {
+      const c = S2_LINES[++s2Cue];
+      s2Base = c.add ? s2Base + (s2Line ? s2Line + " " : "") : "";
+      s2Line = c.text; s2LineAt = c.at; s2LineDur = c.dur;
+    }
+    if (s2Line) {
+      const n = Math.min(s2Line.length, Math.floor(s2Line.length * Math.max(0, (t - s2LineAt) / s2LineDur)));
+      const html = esc(s2Base + s2Line.slice(0, n));
+      if (html !== shown) { shown = html; sub.innerHTML = html; }
+    }
+    if (s2RedAt && !reduce && now - s2ShakeAt > 45) { // the tremble grows with the red
+      s2ShakeAt = now;
+      const amp = Math.min(1.4, (now - s2RedAt) / 9000 * 1.4);
+      const dx = (Math.random() * 2 - 1) * amp, dy = (Math.random() * 2 - 1) * amp * 0.7;
+      scImg2.style.transform = "scale(1.06) translate(" + dx.toFixed(2) + "%, " + dy.toFixed(2) + "%)";
+    }
+  }
+  // ===== ACT II, part 2: "September" — KENOS RISE =====
+  // No narration yet: each beat types its line, holds it, then the next beat starts on its own.
+  // dur = typing time (defaults to the line's length at 16 letters a second), hold = time after it.
+  const ACT2B_DIR = VOICE_DIR + "act2b/";
+  const S3_PICS = {};
+  ["map", "spend", "station", "chicken", "zara", "phone", "laugh", "mask"].forEach(n => {
+    S3_PICS[n] = ACT2B_DIR + n + ".jpg" + VER; const im = new Image(); im.src = S3_PICS[n];
+  });
+  // at = when it starts (seconds from "September."), timed on story3.mp3 up to the phone scene;
+  // dur = how long the line is spoken. The last lines have no recording yet and type on their own.
+  const S3 = [
+    { at: 0.00,  fx: "black" },
+    { at: 0.31,  dur: 0.72, text: "September." },
+    { at: 1.60,  fx: "title" },
+    { at: 4.60,  fx: "map" },
+    { at: 5.20,  dur: 1.95, text: "He traveled from country to country" },
+    { at: 7.55,  fx: "brussels" },
+    { at: 7.60,  dur: 0.72, text: "Brussels…" },
+    { at: 8.70,  fx: "rotterdam" },
+    { at: 8.76,  dur: 0.74, text: "Rotterdam.", add: true },
+    { at: 10.60, fx: "spend" },
+    { at: 10.80, dur: 1.81, text: "Spending his money like a fool." },
+    { at: 13.60, fx: "station" },
+    { at: 13.80, dur: 2.72, text: "Kenos sometimes loves to make some people happy" },
+    { at: 16.64, dur: 2.51, text: "and buy stuff to not see them missing something…" },
+    { at: 19.37, dur: 1.91, text: "Regardless, he is mean with people…" },
+    { at: 21.51, dur: 1.33, text: "he has a generous heart.", add: true },
+    { at: 23.80, fx: "chicken" },
+    { at: 24.10, dur: 1.53, text: "Food for his best friend." },
+    { at: 26.40, fx: "zara" },
+    { at: 26.60, dur: 1.19, text: "Especially for her…" },
+    { at: 28.06, dur: 2.61, text: "even his mom said he loves her so much.", add: true },
+    { at: 31.60, fx: "texting" },
+    { at: 31.90, dur: 2.94, text: "But on messages, Kenos appeared sassy and cold with her…" },
+    { at: 35.60, fx: "phone" },
+    { at: 36.20, dur: 2.43, text: "He acts like this to the people he cares about the most." },
+    { at: 40.20, fx: "laugh" },
+    { at: 40.52, dur: 0.55, text: "With her," },
+    { at: 41.40, dur: 1.94, text: "Kenos acted with two personalities,", add: true },
+    { at: 43.79, dur: 3.01, text: "when deep down she wanted his happiness without showing it." },
+    { at: 47.80, fx: "mask1" },     // the mask picture, close on the mask only
+    { at: 48.16, dur: 0.67, text: "But for her…" },
+    { at: 49.14, dur: 1.65, text: "it was not what she was looking for.", add: true },
+    { at: 52.65, dur: 1.17, text: "Behind her smile," },
+    { at: 53.90, fx: "mask2" },     // the camera slides over to her face
+    { at: 54.45, dur: 1.29, text: "she was hiding something.", add: true },
+    { at: 57.20, fx: "end" },
+  ];
+  S3.forEach(b => { if (b.text && !b.dur) b.dur = b.text.length / 16; });
+  // the text messages that pop up on her phone (his texts)
+  const S3_TEXTS = ["I'm gonna break up", "Sike, it's a joke. I love you anyways", "You wanna eat some alloco?"];
+
+  // --- the 16-bit train on the destination map (map.jpg is 1376x768; the canvas is half that) ---
+  const trainCv = $("train"), tc = trainCv.getContext("2d");
+  const STOPS = { paris: [478, 575], lille: [642, 420], brussels: [795, 365], rotterdam: [850, 262] };
+  let trainFrom = STOPS.paris, trainTo = STOPS.lille, trainLegAt = 0, trainLegDur = 2.4, trainOn = false;
+  function trainLeg(to, sec) {
+    trainFrom = trainPos(performance.now()); trainTo = STOPS[to]; trainLegAt = performance.now(); trainLegDur = sec;
+  }
+  function trainPos(now) {
+    const k = Math.min(1, (now - trainLegAt) / 1000 / trainLegDur), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    return [trainFrom[0] + (trainTo[0] - trainFrom[0]) * e, trainFrom[1] + (trainTo[1] - trainFrom[1]) * e];
+  }
+  // the Eurostar: a 16-bit token made from the photo (68x47, pointer at the bottom middle)
+  const EUROSTAR = new Image(); EUROSTAR.src = ACT2B_DIR + "eurostar.png" + VER;
+  function drawTrain(now) {
+    tc.clearRect(0, 0, 688, 384);
+    tc.imageSmoothingEnabled = false;
+    // Rotterdam: a stop the map doesn't show, added in the map's own style
+    const [rx, ry] = STOPS.rotterdam.map(v => v / 2);
+    tc.fillStyle = "#1a0f0f"; tc.fillRect(rx - 5, ry - 5, 10, 10);
+    tc.fillStyle = Math.floor(now / 400) % 2 ? "#ffd25a" : "#e8301c"; tc.fillRect(rx - 3, ry - 3, 6, 6);
+    tc.font = "8px 'Press Start 2P', monospace"; tc.fillStyle = "#000"; tc.fillText("ROTTERDAM", rx - 76 + 1, ry + 16 + 1);
+    tc.fillStyle = "#fff"; tc.fillText("ROTTERDAM", rx - 76, ry + 16);
+    const [x, y] = trainPos(now).map(v => v / 2);
+    const moving = (now - trainLegAt) / 1000 < trainLegDur, bob = moving ? Math.floor(now / 90) % 2 : 0;
+    if (moving) { // speed lines behind it
+      tc.fillStyle = "rgba(255,255,255,0.85)";
+      for (let k = 0; k < 3; k++) tc.fillRect(Math.round(x - 40 - k * 6 - (now / 30 % 6)), Math.round(y - 38 + k * 9), 10 + k * 3, 2);
+    }
+    if (EUROSTAR.complete && EUROSTAR.naturalWidth) tc.drawImage(EUROSTAR, Math.round(x - 34), Math.round(y - 47 - bob));
+  }
+
+  // camera framings inside mask.jpg (768x1376): x, y, width, height in the picture's own pixels
+  const MASK_ONLY = { x: 266, y: 372, w: 256, h: 384 }, HER_FACE = { x: 440, y: 350, w: 328, h: 470 };
+  function frameMask(f, sec, nw = 768, nh = 1376) {
+    const w = $("mwin"), m1 = $("m1"), W = w.clientWidth || 1, H = w.clientHeight || 1, k = H / f.h;
+    m1.style.transition = sec ? ["left", "top", "width", "height"].map(p => p + " " + sec + "s ease-in-out").join(", ") : "";
+    m1.style.width = (nw * k) + "px"; m1.style.height = (nh * k) + "px";
+    m1.style.left = (-f.x * k + (W - f.w * k) / 2) + "px"; m1.style.top = (-f.y * k) + "px";
+  }
+  let s3Start = 0, s3Beat = -1, s3Base = "", s3Line = "", s3LineAt = 0, s3LineDur = 1, s3Timers = [];
+  function s3Clear() {
+    s2Black();
+    trainOn = false; trainCv.hidden = true;
+    $("bubbles").textContent = "";
+    const r = $("rise"); r.textContent = ""; r.className = "";
+    scImg.style.objectPosition = ""; scImg.classList.remove("blurin", "backdrop");
+    $("mwin").hidden = true; $("mwin").style.opacity = "0"; $("m1").className = "";
+    scImg.classList.remove("shock"); scene.classList.remove("tvoff");
+    s3Timers.forEach(clearTimeout); s3Timers = [];
+  }
+  function story3Time(now) { // follow the voice; a clock carries on after it ends (or without it)
+    const el = (now - s3Start) / 1000;
+    if (narrOK && voice.dataset.clip === "story3") {
+      if (voice.ended) { if (!s3EndedAt) s3EndedAt = now; return voice.duration + (now - s3EndedAt) / 1000; }
+      if (el < voice.currentTime + 3) return voice.currentTime;
+    }
+    return el;
+  }
+  let s3EndedAt = 0, s3EndAt = 0;
+  function startStory3() {
+    state = "story3"; startEl.hidden = true;
+    scene.hidden = false; s3Clear();
+    tint.style.transition = ""; tint.style.opacity = "0";
+    scVid.src = ACT2B_DIR + "texting.mp4" + VER; scVid.load();
+    narrOK = true; s3EndedAt = 0;
+    voice.src = ACT2B_DIR + "story3.mp3" + VER; voice.dataset.clip = "story3";
+    const vp = voice.play(); if (vp && vp.catch) vp.catch(voiceFailed);
+    s3Start = performance.now(); s3Beat = -1; s3Base = ""; s3Line = "";
+    sub.innerHTML = ""; shown = "";
+  }
+  function showPic3(name, pos) {
+    s3Clear(); scImg.src = S3_PICS[name]; scImg.hidden = false;
+    if (pos) scImg.style.objectPosition = pos;
+  }
+  function s3Effect(b) {
+    const fx = b.fx;
+    if (fx === "black") s3Clear();
+    else if (fx === "title") {
+      s3Clear(); sub.innerHTML = ""; shown = ""; s3Line = "";
+      const r = $("rise"), text = "KENOS RISE"; let i = 0;
+      r.className = "caret";
+      const timer = setInterval(() => {
+        i++; r.textContent = text.slice(0, i);
+        if (text[i - 1] && text[i - 1] !== " ") keyClick();
+        if (i >= text.length) { clearInterval(timer); setTimeout(() => r.classList.remove("caret"), 900); }
+      }, 110);
+    } else if (fx === "map") { // white fades into the map, the train leaves Paris for Lille
+      showPic3("map");
+      flashEl.style.transition = ""; flashEl.style.opacity = "1"; void flashEl.offsetWidth;
+      flashEl.style.transition = "opacity 1s linear"; flashEl.style.opacity = "0";
+      trainCv.hidden = false; trainOn = true;
+      trainFrom = STOPS.paris; trainTo = STOPS.paris; trainLeg("lille", 2.4);
+    } else if (fx === "brussels") { trainLeg("brussels", 1.0); beep(660, 0.08, "square", 0.03); }
+    else if (fx === "rotterdam") { trainLeg("rotterdam", 1.0); beep(880, 0.08, "square", 0.03); }
+    else if (fx === "spend")   showPic3("spend");
+    else if (fx === "station") showPic3("station");
+    else if (fx === "chicken") { // the streak-in transition from the Kenos/Madara clip
+      showPic3("chicken"); void scImg.offsetWidth; scImg.classList.add("blurin");
+      beep(300, 0.18, "sawtooth", 0.03);
+    }
+    else if (fx === "zara")    showPic3("zara");
+    else if (fx === "texting") {
+      s3Clear(); scVid.hidden = false; scVid.muted = true; scVid.currentTime = 0;
+      const p = scVid.play(); if (p && p.catch) p.catch(() => {});
+    } else if (fx === "phone") { // his texts pop up one by one
+      showPic3("phone", "50% 40%");
+      S3_TEXTS.forEach((t, k) => s3Timers.push(setTimeout(() => {
+        if (state !== "story3") return;
+        const el = document.createElement("div"); el.className = "bubble";
+        el.innerHTML = esc(t) + "<small>KENOS · " + (k ? "now" : "1 min") + "</small>";
+        $("bubbles").append(el); beep(1320, 0.06, "square", 0.03); beep(1760, 0.06, "square", 0.03, 0.06);
+      }, 300 + k * 1300)));
+    } else if (fx === "laugh") showPic3("laugh", "50% 50%");
+    else if (fx === "mask1") { // one picture, seen through a tall camera window: first only the mask
+      s3Clear();
+      scImg.src = S3_PICS.mask; scImg.hidden = false; scImg.classList.add("backdrop");
+      const w = $("mwin"), m1 = $("m1");
+      m1.src = S3_PICS.mask; w.hidden = false;
+      w.style.transition = ""; w.style.opacity = "0";
+      frameMask(MASK_ONLY, 0); void w.offsetWidth;
+      w.style.transition = "opacity 0.5s linear"; w.style.opacity = "1";
+    } else if (fx === "mask2") { // the camera glides across the same picture to her face
+      frameMask(HER_FACE, 1.5);
+      beep(220, 0.25, "triangle", 0.04);
+    } else if (fx === "end") { s3Clear(); sub.innerHTML = ""; shown = ""; s3Line = ""; state = "end3"; s3EndAt = performance.now(); }
+  }
+  function tickStory3(now) {
+    const t = story3Time(now);
+    while (s3Beat + 1 < S3.length && t >= S3[s3Beat + 1].at) {
+      const b = S3[++s3Beat];
+      if (b.fx) s3Effect(b);
+      if (state !== "story3") return;
+      if (b.text) { s3Base = b.add ? s3Base + (s3Line ? s3Line + " " : "") : ""; s3Line = b.text; s3LineAt = b.at; s3LineDur = b.dur; }
+      else if (b.fx === "title") { s3Line = ""; s3Base = ""; }
+    }
+    if (s3Line) {
+      const n = Math.min(s3Line.length, Math.floor(s3Line.length * Math.max(0, (t - s3LineAt) / s3LineDur)));
+      const html = esc(s3Base + s3Line.slice(0, n));
+      if (html !== shown) { shown = html; sub.innerHTML = html; }
+    } else if (shown) { shown = ""; sub.innerHTML = ""; }
+    if (trainOn) drawTrain(now);
+  }
+  // ===== ACT II, part 3: 27 September - 2 October =====
+  // Timed on story4.mp3 (narration + impact, thud and TV-off sounds). at = when, dur = how long it is said.
+  const ACT2C_DIR = VOICE_DIR + "act2c/";
+  const S4_PICS = {};
+  ["rotterdam", "city", "call", "garedunord", "message", "shock", "stare"].forEach(n => {
+    S4_PICS[n] = ACT2C_DIR + n + ".jpg" + VER; const im = new Image(); im.src = S4_PICS[n];
+  });
+  const S4 = [
+    { at: 0.00,  fx: "black" },
+    { at: 0.30,  fx: "dates" },
+    { at: 4.20,  fx: "rotterdam" },
+    { at: 4.61,  dur: 0.62, text: "Kenos" },
+    { at: 5.64,  dur: 1.84, text: "shared his journey in Rotterdam,", add: true },
+    { at: 7.79,  dur: 1.33, text: "helping homeless people,", add: true },
+    { at: 9.35,  fx: "city" },
+    { at: 9.54,  dur: 0.96, text: "visiting the city" },
+    { at: 10.60, fx: "call" },
+    { at: 10.71, dur: 1.08, text: "and giving news.", add: true },
+    { at: 12.80, fx: "garedunord" },
+    { at: 13.14, dur: 1.69, text: "Then he came back to France." },
+    { at: 15.80, fx: "message" },
+    { at: 16.15, dur: 0.87, text: "One message." },
+    { at: 17.60, fx: "shock" },
+    { at: 18.00, dur: 0.72, text: "Then another." },
+    { at: 19.60, fx: "stare" },
+    { at: 20.04, dur: 0.56, text: "Brutal." },
+    { at: 20.95, dur: 0.49, text: "Real…", add: true },
+    { at: 21.85, dur: 2.12, text: "It was the beginning of cursed October." },
+    { at: 24.60, fx: "tvoff" },
+    { at: 25.40, fx: "end" },
+  ];
+  let s4Start = 0, s4Beat = -1, s4Base = "", s4Line = "", s4LineAt = 0, s4LineDur = 1, s4EndedAt = 0;
+  function story4Time(now) {
+    const el = (now - s4Start) / 1000;
+    if (narrOK && voice.dataset.clip === "story4") {
+      if (voice.ended) { if (!s4EndedAt) s4EndedAt = now; return voice.duration + (now - s4EndedAt) / 1000; }
+      if (el < voice.currentTime + 3) return voice.currentTime;
+    }
+    return el;
+  }
+  function startStory4() {
+    state = "story4"; startEl.hidden = true;
+    scene.hidden = false; s3Clear();
+    narrOK = true; s4EndedAt = 0;
+    voice.src = ACT2C_DIR + "story4.mp3" + VER; voice.dataset.clip = "story4";
+    const vp = voice.play(); if (vp && vp.catch) vp.catch(voiceFailed);
+    s4Start = performance.now(); s4Beat = -1; s4Base = ""; s4Line = "";
+    sub.innerHTML = ""; shown = "";
+  }
+  function showPic4(name, pos) {
+    s3Clear(); scImg.src = S4_PICS[name]; scImg.hidden = false;
+    if (pos) scImg.style.objectPosition = pos;
+  }
+  function showTall4(name, nw, nh) { // a tall picture shown whole, over a blurred copy of itself
+    s3Clear(); scImg.src = S4_PICS[name]; scImg.hidden = false; scImg.classList.add("backdrop");
+    const w = $("mwin"); $("m1").src = S4_PICS[name]; w.hidden = false; w.style.transition = ""; w.style.opacity = "1";
+    frameMask({ x: 0, y: 0, w: nw, h: nh }, 0, nw, nh);
+  }
+  function s4Effect(fx) {
+    if (fx === "black") s3Clear();
+    else if (fx === "dates") { // 27 SEPTEMBER - 2 OCTOBER 2026 types out in red
+      s3Clear(); dateEl.className = "red caret";
+      const text = "27 SEPTEMBER - 2 OCTOBER 2026"; let i = 0;
+      const timer = setInterval(() => {
+        i++; dateEl.textContent = text.slice(0, i);
+        if (text[i - 1] && text[i - 1] !== " ") keyClick();
+        if (i >= text.length) { clearInterval(timer); setTimeout(() => dateEl.classList.remove("caret"), 900); }
+      }, 85);
+    } else if (fx === "rotterdam") { // fades in
+      showPic4("rotterdam", "50% 20%");
+      scImg.style.opacity = "0"; void scImg.offsetWidth;
+      scImg.style.transition = "opacity 1s linear"; scImg.style.opacity = "1";
+    }
+    else if (fx === "city")       showPic4("city", "50% 30%");
+    else if (fx === "call")       showPic4("call", "50% 45%");
+    else if (fx === "garedunord") showPic4("garedunord", "50% 35%");
+    else if (fx === "message")    showTall4("message", 1179, 1875);
+    else if (fx === "shock") { // brutal: punch-in zoom, flash, shake
+      showPic4("shock", "50% 30%");
+      void scImg.offsetWidth; scImg.classList.add("shock");
+      flashEl.style.transition = ""; flashEl.style.opacity = "0.85"; void flashEl.offsetWidth;
+      flashEl.style.transition = "opacity 160ms linear"; flashEl.style.opacity = "0";
+      try { navigator.vibrate && navigator.vibrate([90, 40, 160]); } catch (_) {}
+    } else if (fx === "stare") { // fades in with a brutal bounce
+      showTall4("stare", 768, 1376);
+      const m1 = $("m1"); void m1.offsetWidth; m1.className = "bounce";
+    } else if (fx === "tvoff") { // the old TV switching off
+      scene.classList.remove("tvoff"); void scene.offsetWidth; scene.classList.add("tvoff");
+      sub.innerHTML = ""; shown = ""; s4Line = "";
+    } else if (fx === "end") {
+      s3Clear(); sub.innerHTML = ""; shown = ""; s4Line = ""; state = "end4";
+    }
+  }
+  function tickStory4(now) {
+    const t = story4Time(now);
+    while (s4Beat + 1 < S4.length && t >= S4[s4Beat + 1].at) {
+      const b = S4[++s4Beat];
+      if (b.fx) s4Effect(b.fx);
+      if (state !== "story4") return;
+      if (b.text) { s4Base = b.add ? s4Base + (s4Line ? s4Line + " " : "") : ""; s4Line = b.text; s4LineAt = b.at; s4LineDur = b.dur; }
+    }
+    if (s4Line) {
+      const n = Math.min(s4Line.length, Math.floor(s4Line.length * Math.max(0, (t - s4LineAt) / s4LineDur)));
+      const html = esc(s4Base + s4Line.slice(0, n));
+      if (html !== shown) { shown = html; sub.innerHTML = html; }
+    } else if (shown) { shown = ""; sub.innerHTML = ""; }
+  }
+
+
+
+  function setView(name) {
+    const v = VIEWS[name];
+    const clamp = (p) => Math.max(50 / v.z, Math.min(100 - 50 / v.z, p)); // never show past the picture's edge
+    scImg.className = "view" + (v.slow ? " slow" : "");
+    void scImg.offsetWidth;
+    scImg.style.transform = "scale(" + v.z + ") translate(" + (50 - clamp(v.x)) + "%, " + (50 - clamp(v.y)) + "%)";
+    scImg.style.filter = v.bw ? "grayscale(" + v.bw + ") contrast(1.15)" : "grayscale(0)";
+  }
+
+  function endDemo() { // after the last ACT 1 line: fade in to the friends picture and run on its own
+    state = "friends";
+    scVid.pause();
+    sub.classList.remove("waiting");
+    sub.innerHTML = ""; shown = "";
+    dateEl.textContent = "";
+    showPic("friends");
+    scImg.style.opacity = "0";
+    void scImg.offsetWidth;
+    scImg.style.transition = "opacity 3s linear";
+    scImg.style.opacity = "1";
+    fStart = performance.now(); fCue = -1; fBase = ""; fLine = ""; fLineAt = 0; fLineDur = 0; fEndedAt = 0;
+    narrOK = true; // the scene's voice runs from the first frame of the fade in
+    voice.src = ACT1_DIR + "friends.mp3" + VER; voice.dataset.clip = "friends";
+    const fp = voice.play(); if (fp && fp.catch) fp.catch(voiceFailed);
+  }
+
+  function friendsTime(now) { // follow the voice; after it ends (or without it) a clock carries on
+    const el = (now - fStart) / 1000;
+    if (narrOK && voice.dataset.clip === "friends") {
+      if (voice.ended) { if (!fEndedAt) fEndedAt = now; return voice.duration + (now - fEndedAt) / 1000; }
+      if (el < voice.currentTime + 3) return voice.currentTime;
+    }
+    return el;
+  }
+
+  function tickFriends(now) {
+    const t = friendsTime(now);
+    while (fCue + 1 < FRIENDS.length && t >= FRIENDS[fCue + 1].at) {
+      const c = FRIENDS[++fCue];
+      if (c.pic && !(c.pic === "friends" && fCue === 0)) showPic(c.pic);
+      if (c.view) setView(c.view);
+      if (c.text) {
+        fBase = c.add ? (fBase + (fLine ? fLine + " " : "")) : "";
+        if (!c.add) fBase = "";
+        fLine = c.text; fLineAt = c.at; fLineDur = c.dur || c.text.length / TYPE_CPS;
+      }
+    }
+    if (fLine) {
+      const n = Math.min(fLine.length, Math.floor(fLine.length * Math.max(0, (t - fLineAt) / fLineDur)));
+      const html = esc(fBase + fLine.slice(0, n));
+      if (html !== shown) { shown = html; sub.innerHTML = html; }
+      if (fCue === FRIENDS.length - 1 && n >= fLine.length) { state = "frozen"; frozenAt = now; } // a beat, then ACT II
+    }
+  }
+
+  // states: idle (waiting for a tap) -> story -> wait -> fading -> act -> act1 scenes -> end
+  let state = "idle", startClock = 0, waitStart = 0, shown = "";
+
+  function storyTime() {
+    // the text follows the voice itself (no separate clock running ahead while the sound loads)
+    const el = (performance.now() - startClock) / 1000;
+    if (voiceOK && introEl.ended) return Math.max(introEl.duration, el);
+    if (voiceOK && el < introEl.currentTime + 3) return introEl.currentTime;
+    return el;
+  }
+
+  function render(t) {
+    let line = null;
+    for (const l of LINES) if (t >= l.t0) line = l;   // a subtitle stays until the next one starts
+    let html = "";
+    if (line) {
+      const k = Math.max(0, Math.min(1, (t - line.t0) / (line.t1 - line.t0)));
+      const n = Math.floor(line.text.length * k);
+      const typed = line.text.slice(0, n);
+      if (line.name) {
+        const cut = line.text.length - line.name.length;
+        html = esc(typed.slice(0, cut)) + (n > cut ? '<span class="name">' + esc(typed.slice(cut)) + "</span>" : "");
+      } else html = esc(typed);
+    }
+    if (html !== shown) { shown = html; sub.innerHTML = html; }
+  }
+  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  function begin() {
+    startEl.hidden = true;
+    state = "story";
+    shown = ""; sub.innerHTML = "";
+    startClock = performance.now();
+  }
+
+  function tryStart(fromTap) {
+    if (fromTap) { try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (_) {} }
+    voice.pause();
+    introEl.currentTime = 0;
+    const p = introEl.play();
+    if (p && p.then) {
+      p.then(begin).catch(() => {
+        if (fromTap) { voiceOK = false; begin(); }   // no sound at all: still show the story
+        else { state = "idle"; startEl.hidden = false; }
+      });
+    } else begin();
+  }
+
+  function enterWait() { state = "wait"; waitStart = performance.now(); prompt.hidden = false; }
+
+  function goToAct() {
+    state = "fading";
+    introEl.pause();
+    prompt.hidden = true;
+    fade.classList.remove("on"); void fade.offsetWidth; fade.classList.add("on");
+    setTimeout(showAct, reduce ? 50 : 1000);
+  }
+
+  function showAct() {
+    state = "act";
+    sub.innerHTML = ""; shown = "";
+    act.hidden = false;
+    const title = $("act-title");
+    title.textContent = "";
+    const chars = [..."ACT 1"];
+    chars.forEach((ch, i) => {
+      const s = document.createElement("span");
+      s.className = "ch"; s.textContent = ch === " " ? " " : ch;
+      s.setAttribute("aria-hidden", "true");
+      title.appendChild(s);
+      setTimeout(() => {
+        s.classList.add("in");
+        if (ch !== " ") beep([392, 523, 659, 0, 784][i], 0.16, "square", 0.05);
+      }, 350 + i * 180);
+    });
+    const done = 350 + chars.length * 180;
+    setTimeout(() => { $("act-rule").classList.add("in"); beep(1047, 0.5, "triangle", 0.08); beep(784, 0.5, "triangle", 0.06, 0.02); }, done);
+    actReadyAt = performance.now() + done + 400;
+    setTimeout(() => { if (state === "act") startAct1(); }, done + 2600);
+  }
+  let actReadyAt = 0;
+
+  function replay() {
+    act.hidden = true;
+    $("act-rule").classList.remove("in");
+    fade.classList.remove("on");
+    voiceOK = true;
+    tryStart(true);
+  }
+
+  function press() {
+    chip(); unlockAudio();
+    if (state === "idle" && /[?&]jump=s3\b/.test(location.search)) { startStory3(); return; } // test shortcut: straight to September
+    if (state === "idle" && /[?&]jump=s4\b/.test(location.search)) { startStory4(); return; } // test shortcut: straight to 27 September
+    if (state === "idle") tryStart(true);
+    else if (state === "wait") goToAct();
+    else if (state === "act" && performance.now() >= actReadyAt) startAct1();
+    else if (state === "act1") nextScene();
+    else if (state === "act1-fade") popScene(SCENES[si]);
+
+  }
+  stage.addEventListener("pointerdown", (e) => { e.preventDefault(); press(); });
+  addEventListener("keydown", (e) => {
+    if (e.key === " " || e.key === "Enter") { e.preventDefault(); press(); }
+  });
+
+  function frame(now) {
+    if (state === "story") {
+      const t = storyTime();
+      render(t);
+      if (t >= STORY_END) { render(99); enterWait(); }
+    } else if (state === "wait") {
+      const left = Math.max(0, 1 - (now - waitStart) / 1000 / AUTO_WAIT);
+      timerFill.style.width = (Math.ceil(left * 20) * 5) + "%";
+      if (left <= 0) goToAct();
+    } else if (state === "act1") tickScene(now);
+    else if (state === "friends") tickFriends(now);
+    // the screen goes black the moment the friends track (voices + build-up) ends;
+    // without sound, a short beat after the last line instead
+    else if (state === "frozen" && (
+      (narrOK && voice.dataset.clip === "friends" && voice.ended) ||
+      ((!narrOK || voice.dataset.clip !== "friends") && now - frozenAt >= A2.pauseAfterLine * 1000) ||
+      now - frozenAt >= 4000)) startAct2();
+    else if (state === "act2") tickAct2(now);
+    else if (state === "end" && a2DoneAt && now - a2DoneAt >= S2.hold * 1000) { // hold the card, then fade to black
+      state = "s2fade";
+      const card = $("act2");
+      card.style.transition = "opacity " + S2.fade + "s linear"; card.style.opacity = "0";
+      setTimeout(startStory2, reduce ? 0 : S2.fade * 1000);
+    }
+    else if (state === "story2") tickStory2(now);
+    else if (state === "end2" && s2EndAt && now - s2EndAt >= 1500) startStory3();
+    else if (state === "story3") tickStory3(now);
+    else if (state === "end3" && s3EndAt && now - s3EndAt >= 1000) startStory4();
+    else if (state === "story4") tickStory4(now);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  // One tap starts it: phones need it for both the recording and the spoken name.
+  startEl.hidden = false;
+})();
+</script>
+</body>
+</html>

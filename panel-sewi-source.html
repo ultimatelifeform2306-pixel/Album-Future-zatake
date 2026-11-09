@@ -1219,7 +1219,7 @@ body.sl-2 .sl-stage { visibility: visible; animation: sl-pop .34s steps(4) both;
   }
   const NAME_VOICE = ["assets/voice-kirikou.mp3", "assets/voice-ryu.mp3", KNUX_V1];
   // and the line he says once he is chosen; Ryu has his own, further down
-  const PICK_VOICE = ["assets/voice-pick-kirikou.mp3", null, "assets/voice-pick-knux.mp3"];
+  const PICK_VOICE = ["assets/voice-pick-kirikou.mp3", null, null];
   function nameSfx(i) { if (NAME_VOICE[i]) playSnd(NAME_VOICE[i], .85, rosterVoices); }
   function onLand(i) {
     clearKnuxTalk();

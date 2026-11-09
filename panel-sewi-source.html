@@ -1178,13 +1178,17 @@ body.sl-2 .sl-stage { visibility: visible; animation: sl-pop .34s steps(4) both;
   // the announcer line, bitcrushed to a 16-bit console voice
   const VOICE_CHOOSE = "assets/voice-choose.mp3";
   const clipCache = {};
-  function playSnd(uri, vol) {
+  function playSnd(uri, vol, bag) {
     if (muted || !ensureAudio()) return;
+    const h = { stop() { this.off = true; try { this.src && this.src.stop(); } catch (e) {} } };
+    if (bag) bag.push(h);
     const fire = buf => {
+      if (h.off) return;
       const src = ac.createBufferSource(), g = ac.createGain();
       src.buffer = buf; g.gain.value = vol;
       src.connect(g).connect(ac.destination);
       src.start();
+      h.src = src;
     };
     if (clipCache[uri]) { fire(clipCache[uri]); return; }
     clipBytes(uri)
@@ -1198,18 +1202,25 @@ body.sl-2 .sl-stage { visibility: visible; animation: sl-pop .34s steps(4) both;
   const KNUX_V2 = "assets/voice-knux-2.mp3";
   const KNUX_GAP = 2000;        // pause between repeats of his line
   let knuxTimers = [];
-  function clearKnuxTalk() { knuxTimers.forEach(clearTimeout); knuxTimers = []; }
+  // what the roster is saying, so a pick can cut it off mid-word
+  let rosterVoices = [];
+  function clearKnuxTalk() {
+    knuxTimers.forEach(clearTimeout); knuxTimers = [];
+    rosterVoices.forEach(h => h.stop()); rosterVoices = [];
+  }
   function knuxTalk() {
     // his line follows his name a second later, then repeats while he is the pick
     clearKnuxTalk();
     const line = 2130;
     knuxTimers.push(setTimeout(function again() {
-      playSnd(KNUX_V2, .85);
+      playSnd(KNUX_V2, .85, rosterVoices);
       knuxTimers.push(setTimeout(again, line + KNUX_GAP));
     }, 1000));
   }
   const NAME_VOICE = ["assets/voice-kirikou.mp3", "assets/voice-ryu.mp3", KNUX_V1];
-  function nameSfx(i) { if (NAME_VOICE[i]) playSnd(NAME_VOICE[i], .85); }
+  // and the line he says once he is chosen; Ryu has his own, further down
+  const PICK_VOICE = ["assets/voice-pick-kirikou.mp3", null, "assets/voice-pick-knux.mp3"];
+  function nameSfx(i) { if (NAME_VOICE[i]) playSnd(NAME_VOICE[i], .85, rosterVoices); }
   function onLand(i) {
     clearKnuxTalk();
     nameSfx(i);
@@ -1367,14 +1378,18 @@ body.sl-2 .sl-stage { visibility: visible; animation: sl-pop .34s steps(4) both;
   document.getElementById('stage-load').addEventListener('click', () => {
     if (!loadDone) return;
     clearLoad();
+    pickReady = true;    // back on the roster, and able to choose again
     if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
   });
 
   function celebrate() {
     closeBoard();
     if (cursor < 0) return;
+    pickReady = false;   // the choice is made: the roster stops taking input
+    clearKnuxTalk();     // and stops talking, mid-word if that is where he is
     slots[cursor].classList.add('go');
     if (cursor === 1) { ryuFrame.classList.remove('art'); ryuSfx(); }
+    else if (PICK_VOICE[cursor]) playSnd(PICK_VOICE[cursor], .95);
     pickSfx();
     goLandscape();   // asked for on the tap itself, which is the only time it is allowed
     toStage();

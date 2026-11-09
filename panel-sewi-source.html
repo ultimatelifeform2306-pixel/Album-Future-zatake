@@ -1204,13 +1204,14 @@ body.sl-2 .sl-stage { visibility: visible; animation: sl-pop .34s steps(4) both;
   let knuxTimers = [];
   // what the roster is saying, so a pick can cut it off mid-word
   let rosterVoices = [];
+  function clearKnuxTimers() { knuxTimers.forEach(clearTimeout); knuxTimers = []; }
   function clearKnuxTalk() {
-    knuxTimers.forEach(clearTimeout); knuxTimers = [];
+    clearKnuxTimers();
     rosterVoices.forEach(h => h.stop()); rosterVoices = [];
   }
   function knuxTalk() {
     // his line follows his name a second later, then repeats while he is the pick
-    clearKnuxTalk();
+    clearKnuxTimers();
     const line = 2130;
     knuxTimers.push(setTimeout(function again() {
       playSnd(KNUX_V2, .85, rosterVoices);
@@ -1219,7 +1220,7 @@ body.sl-2 .sl-stage { visibility: visible; animation: sl-pop .34s steps(4) both;
   }
   const NAME_VOICE = ["assets/voice-kirikou.mp3", "assets/voice-ryu.mp3", KNUX_V1];
   // and the line he says once he is chosen; Ryu has his own, further down
-  const PICK_VOICE = ["assets/voice-pick-kirikou.mp3", null, null];
+  const PICK_VOICE = ["assets/voice-pick-kirikou.mp3", null, "assets/voice-pick-knux.mp3"];
   function nameSfx(i) { if (NAME_VOICE[i]) playSnd(NAME_VOICE[i], .85, rosterVoices); }
   function onLand(i) {
     clearKnuxTalk();

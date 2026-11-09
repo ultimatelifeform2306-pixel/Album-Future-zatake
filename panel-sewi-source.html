@@ -638,6 +638,55 @@ html.off .off-note { display: block; }
 /* skipping and starting the intro only make sense while it runs */
 .stage:not([data-playing]) #skip { display: none; }
 
+/* ---- the stage load: the console takes the whole screen, sideways ---- */
+.stage-load { position: fixed; inset: 0; z-index: 60; background: #04030f; display: none; overflow: hidden; }
+body.stage-loading .stage-load { display: block; animation: sl-in .9s ease both; }
+@keyframes sl-in { from { opacity: 0; } to { opacity: 1; } }
+body:is(.stage-fading, .stage-loading) :is(.pads, .power, .controls) { display: none; }
+body.stage-fading .stage { animation: fade-out .9s steps(5) forwards; }
+/* a phone that will not turn itself over is turned over here instead */
+.sl-screen {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  container-type: size; aspect-ratio: 1376 / 768;
+  width: min(100vw, 177.6vh); overflow: hidden;
+}
+@media (orientation: portrait) {
+  .sl-screen { width: min(100vh, 177.6vw); transform: translate(-50%, -50%) rotate(90deg); }
+}
+.sl-screen > img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+.sl-screen::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 5;
+  background: repeating-linear-gradient(to bottom, rgba(0,0,0,.26) 0 1px, transparent 1px 3px);
+}
+body.stage-over .sl-screen { animation: sl-out 5s linear forwards; }
+@keyframes sl-out { from { opacity: 1; } to { opacity: 0; } }
+.sl-screen p { position: absolute; margin: 0; font-family: var(--f-pixel); color: #fff; white-space: nowrap; z-index: 3; }
+.sl-now, .sl-wait, .sl-stage { left: 50%; transform: translate(-50%, -50%); visibility: hidden; }
+.sl-now {
+  top: 32.2%; font-size: 5.2cqw; letter-spacing: 0;
+  text-shadow: .5cqw .55cqw 0 #1a3ad6, .5cqw .55cqw 0 #1a3ad6, 0 0 1.6cqw rgba(96,168,255,.55),
+    -.11cqw 0 0 #060a2c, .11cqw 0 0 #060a2c, 0 -.11cqw 0 #060a2c, 0 .11cqw 0 #060a2c;
+}
+.sl-wait { top: 49.1%; font-size: 2.05cqw; text-shadow: .22cqw .26cqw 0 #1a3ad6, 0 0 .9cqw rgba(96,168,255,.5); }
+.sl-stage { top: 58.6%; font-size: 2cqw; text-shadow: .22cqw .26cqw 0 #1a3ad6, 0 0 .9cqw rgba(96,168,255,.5); }
+body.sl-1 :is(.sl-now, .sl-wait) { visibility: visible; }
+body.sl-2 .sl-stage { visibility: visible; animation: sl-pop .34s steps(4) both; }
+@keyframes sl-pop { from { transform: translate(-50%, -50%) scale(.55); } to { transform: translate(-50%, -50%) scale(1); } }
+/* the count rides above the end of the bar, the way it does on the card */
+.sl-pct { top: 68%; transform: translate(-50%, -50%); font-size: 2.1cqw; text-shadow: .22cqw .26cqw 0 #1a3ad6; }
+.sl-bar { position: absolute; left: 20.93%; top: 72.4%; width: 59.59%; height: 10.42%; overflow: hidden; z-index: 2; }
+.sl-bar i {
+  display: block; width: 0; height: 100%;
+  background: linear-gradient(to bottom, #f2faff 0 16%, #8fe0ff 16% 34%, #37a0f0 34% 58%,
+                              #1f63d8 58% 80%, #123f9e 80%);
+}
+/* the lit end of the bar breaks up into pixels, as it does on the reference */
+.sl-bar b {
+  position: absolute; top: 0; height: 100%; width: 5.5%; margin-left: -5.5%;
+  background-image: repeating-conic-gradient(#cfeeff 0% 25%, transparent 0% 50%);
+  background-size: 1.4cqw 1.4cqw; opacity: .85;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .start { animation: none; }
 }
@@ -734,6 +783,17 @@ html.off .off-note { display: block; }
     </svg>
   </button>
   <p class="off-note" aria-hidden="true">PRESS POWER TO START AGAIN</p>
+
+  <div class="stage-load" id="stage-load" aria-hidden="true">
+    <div class="sl-screen">
+      <img src="assets/load-screen.jpg" alt="">
+      <p class="sl-now">NOW LOADING...</p>
+      <p class="sl-wait">PLEASE WAIT...</p>
+      <p class="sl-stage">STAGE 01 : LONDON PALACE</p>
+      <p class="sl-pct" id="sl-pct">0%</p>
+      <div class="sl-bar"><i id="sl-fill"></i><b id="sl-edge"></b></div>
+    </div>
+  </div>
 
 <script>
 (() => {
@@ -1062,6 +1122,7 @@ html.off .off-note { display: block; }
     cover.classList.remove('validating');
     startIcons.forEach(i => i.src = HEAD_PLAIN);
     dropTxt.textContent = '';
+    clearLoad();
     dropWait.textContent = 'WAIT 5 SECONDS';
     loadFill.style.width = '0';
   }
@@ -1237,6 +1298,7 @@ html.off .off-note { display: block; }
     slots.forEach(c => c.classList.remove('go'));
     ryuFrame.classList.add('art');
     clearRyuSfx();
+    clearLoad();   // a pick that is dropped takes its stage load with it
   }
   function openBoard() {
     if (boardOpen || !pickReady || cursor < 0) return;
@@ -1247,12 +1309,75 @@ html.off .off-note { display: block; }
     if (isPC) modeOpts[0].focus({ preventScroll: true });
   }
   // the mode chosen, the fighter the viewer locked in celebrates
+  // ---- choosing a fighter starts the stage: full screen, sideways, 30s ----
+  const LOAD_MS = 30000, PICK_HOLD = 3200, PICK_FADE = 900;
+  const slFill = document.getElementById('sl-fill');
+  const slEdge = document.getElementById('sl-edge');
+  const slPct = document.getElementById('sl-pct');
+  const BAR_L = 20.93, BAR_W = 59.59;   // where the bar sits on the screen art
+  let loadTimers = [], loadRaf = 0, loadDone = false;
+  function clearLoad() {
+    loadTimers.forEach(clearTimeout); loadTimers = [];
+    cancelAnimationFrame(loadRaf);
+    document.body.classList.remove('stage-fading', 'stage-loading', 'stage-over', 'sl-1', 'sl-2');
+    loadDone = false;
+  }
+  const lDo = (ms, fn) => loadTimers.push(setTimeout(fn, ms));
+
+  function goLandscape() {
+    // where the browser allows it the page really does take the screen; a
+    // phone that refuses gets the sideways version the stylesheet draws
+    const el = document.documentElement;
+    const fs = el.requestFullscreen || el.webkitRequestFullscreen;
+    const lock = () => { try { screen.orientation.lock('landscape').catch(() => {}); } catch (e) {} };
+    try {
+      if (document.fullscreenElement) return lock();
+      const r = fs && fs.call(el, { navigationUI: 'hide' });
+      if (r && r.then) r.then(lock, () => {}); else lock();
+    } catch (e) { /* the sideways stylesheet covers it */ }
+  }
+
+  function stageLoad() {
+    document.body.classList.add('stage-loading');
+    slFill.style.width = '0'; slEdge.style.left = BAR_L + '%';
+    slPct.textContent = '0%'; slPct.style.left = BAR_L + '%';
+    lDo(2000, () => { document.body.classList.add('sl-1'); blip(700, 940, .09, .05); });
+    lDo(20000, () => { document.body.classList.add('sl-2'); selectSfx(); });
+    const t0 = performance.now();
+    let step = -1;
+    (function tick() {
+      const p = Math.min(1, (performance.now() - t0) / LOAD_MS);
+      const pct = Math.floor(p * 100);
+      slFill.style.width = pct + '%';
+      slEdge.style.left = (BAR_L + BAR_W * p) + '%';
+      slPct.textContent = pct + '%';
+      slPct.style.left = Math.min(BAR_L + BAR_W * p, 97) + '%';
+      if (pct >= step + 10) { step = pct - pct % 10; if (pct) blip(300 + pct * 4, 260 + pct * 4, .04, .028); }
+      if (p < 1) loadRaf = requestAnimationFrame(tick);
+      else { pickSfx(); document.body.classList.add('stage-over'); lDo(5000, () => { loadDone = true; }); }
+    })();
+  }
+
+  function toStage() {   // the fighter is locked in; the stage comes next
+    lDo(PICK_HOLD, () => document.body.classList.add('stage-fading'));
+    lDo(PICK_HOLD + PICK_FADE, stageLoad);
+  }
+  // once it has faded to black a touch puts the console back, so the screen
+  // is never a dead end while the stage itself does not exist yet
+  document.getElementById('stage-load').addEventListener('click', () => {
+    if (!loadDone) return;
+    clearLoad();
+    if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
+  });
+
   function celebrate() {
     closeBoard();
     if (cursor < 0) return;
     slots[cursor].classList.add('go');
     if (cursor === 1) { ryuFrame.classList.remove('art'); ryuSfx(); }
     pickSfx();
+    goLandscape();   // asked for on the tap itself, which is the only time it is allowed
+    toStage();
   }
   modeOpts.forEach(b => b.addEventListener('click', e => { e.stopPropagation(); celebrate(); }));
   // a tap off the board backs out of it

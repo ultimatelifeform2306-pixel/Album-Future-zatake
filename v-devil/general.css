@@ -698,3 +698,10 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
 .nd-hero img { width: min(100%, 640px); height: auto; }
 @media (max-width: 420px) { .gl-tile { grid-template-columns: 120px minmax(0, 1fr); } .gl-tile img { width: 120px; height: 120px; } .gl-info b { font-size: 17px; } }
 .gl-info small.gl-year { border: 0; padding: 0; color: #ffd24a; font-weight: 600; }
+/* covers fill a perfect square that matches the tile's height */
+.gl-tile { align-items: stretch; }
+.gl-tile img { width: 150px; height: 150px; aspect-ratio: 1 / 1; object-fit: cover; align-self: start; }
+.gl-tile { min-height: 150px; grid-template-rows: 150px; }
+.gl-info { overflow: hidden; }
+@media (max-width: 420px) { .gl-tile { min-height: 130px; grid-template-rows: 130px; grid-template-columns: 130px minmax(0, 1fr); } .gl-tile img { width: 130px; height: 130px; }
+  .gl-info { padding: 10px 12px; gap: 2px; } .gl-info b { font-size: 16px; } .gl-info small { font-size: 12px; } .gl-price { font-size: 14px; } }

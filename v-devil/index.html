@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Russo+One&family=VT323&display=swap">
-<link rel="stylesheet" href="general.css?v=20261110d">
+<link rel="stylesheet" href="general.css?v=20261110e">
 
 <!-- sign-in gate: nobody reaches the site without an account -->
 <div class="gate" id="gate">
@@ -766,23 +766,55 @@ they crush my heart destroy my body  just like a lego
   <section class="win" id="song" data-panel="song" hidden>
     <div class="bar"><i>■</i><b>SONG.EXE · SELECT</b><i>_</i><i>×</i></div>
     <div class="body">
-      <h2>CHOOSE YOUR MUSIC</h2>
-      <div class="picks">
-        <div class="pick">
-          <span class="pick-label">ALBUM</span>
-          <div class="cover pick-cover locked">
-            <img src="album-cover.jpg" alt="New Danger 2025 album cover: Kenos in a black hood points at the camera, with KENOS in purple letters">
-            <span class="pick-lock"><span data-lock></span>COMING SOON</span>
+      <!-- categories: album, maxi single, single -->
+      <div id="song-cats">
+        <h2>CHOOSE YOUR MUSIC</h2>
+        <div class="picks picks3">
+          <div class="pick">
+            <span class="pick-label">ALBUM</span>
+            <div class="cover pick-cover"><img src="cat-album.jpg" alt="Album category: Kenos and his friends celebrating in the living room"><span class="story-title">ALBUM</span></div>
+            <button class="btn" type="button" data-song-cat="albums" style="border:0;cursor:pointer"><i class="stk" aria-hidden="true"></i> ENTER</button>
           </div>
-          <span class="btn locked" role="button" aria-disabled="true">LOCKED</span>
+          <div class="pick">
+            <span class="pick-label">MAXI SINGLE</span>
+            <div class="cover pick-cover maxi-cover">
+              <img src="maxi-cover.jpg" alt="Panel Sewi Sigmatiserie maxi single cover: Kenos in a black hoodie looks back over his shoulder on a purple background with pink Japanese letters">
+              <span class="story-title">PANEL SEWI<br>SIGMATISERIE</span>
+            </div>
+            <button class="btn" type="button" id="maxi-enter" style="border:0;cursor:pointer"><i class="stk" aria-hidden="true"></i> ENTER</button>
+          </div>
+          <div class="pick">
+            <span class="pick-label">SINGLE</span>
+            <div class="cover pick-cover cat-single"><img src="cat-single.jpg" alt="Single category: Kenos with his arms crossed above the word SINGLE"></div>
+            <button class="btn" type="button" data-song-cat="singles" style="border:0;cursor:pointer"><i class="stk" aria-hidden="true"></i> ENTER</button>
+          </div>
         </div>
-        <div class="pick">
-          <span class="pick-label">MAXI SINGLE</span>
-          <div class="cover pick-cover maxi-cover">
-            <img src="maxi-cover.jpg" alt="Panel Sewi Sigmatiserie maxi single cover: Kenos in a black hoodie looks back over his shoulder on a purple background with pink Japanese letters">
-            <span class="story-title">PANEL SEWI<br>SIGMATISERIE</span>
+      </div>
+      <!-- ALBUM category -->
+      <div id="song-albums" hidden>
+        <button type="button" class="btn alt song-back" data-song-cat="cats"><i class="stk l" aria-hidden="true"></i> ALL MUSIC</button>
+        <h2>ALBUM</h2>
+        <div class="picks">
+          <div class="pick">
+            <span class="pick-label">ALBUM</span>
+            <div class="cover pick-cover locked">
+              <img src="album-cover.jpg" alt="New Danger 2025 album cover: Kenos in a black hood points at the camera, with KENOS in purple letters">
+              <span class="pick-lock"><span data-lock></span>COMING SOON</span>
+            </div>
+            <span class="btn locked" role="button" aria-disabled="true">LOCKED</span>
           </div>
-          <button class="btn" type="button" id="maxi-enter" style="border:0;cursor:pointer"><i class="stk" aria-hidden="true"></i> ENTER</button>
+        </div>
+      </div>
+      <!-- SINGLE category -->
+      <div id="song-singles" hidden>
+        <button type="button" class="btn alt song-back" data-song-cat="cats"><i class="stk l" aria-hidden="true"></i> ALL MUSIC</button>
+        <h2>SINGLE</h2>
+        <div class="picks">
+          <div class="pick">
+            <span class="pick-label">SINGLE · 2026</span>
+            <div class="cover pick-cover"><img src="single-rich-pantin.jpg" alt="Rich Pantin single cover: Kenos in a cap and white tee on a purple background with 2K style letters"><span class="story-title">RICH<br>PANTIN</span></div>
+            <button class="btn" type="button" id="single-rich-pantin" style="border:0;cursor:pointer"><i class="stk" aria-hidden="true"></i> PLAY</button>
+          </div>
         </div>
       </div>
       <a class="btn alt" href="#home" data-tab="home">RETURN HOME</a>
@@ -2187,6 +2219,16 @@ document.querySelectorAll("[data-lock]").forEach(s => { const l = document.query
       document.title = "Kenos Last Strike 2008-2026";
     });
   });
+})();
+
+// ===== SONG tab: categories (album, maxi single, single) =====
+(() => {
+  const views = { cats: $("song-cats"), albums: $("song-albums"), singles: $("song-singles") };
+  function showCat(k) { Object.entries(views).forEach(([n, v]) => v.hidden = n !== k); $("song").scrollIntoView({ block: "start" }); }
+  document.querySelectorAll("[data-song-cat]").forEach(b => b.addEventListener("click", () => showCat(b.dataset.songCat)));
+  document.querySelectorAll('nav a[data-tab="song"]').forEach(a => a.addEventListener("click", () => setTimeout(() => showCat("cats"), 0)));
+  // the Rich Pantin single opens straight in the player
+  $("single-rich-pantin").onclick = () => { $("maxi-enter").click(); if (window.maxiPlayer) window.maxiPlayer.open(0); };
 })();
 
 // ===== GAME tab: the games list, then each game's store page =====

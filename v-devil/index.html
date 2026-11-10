@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Russo+One&family=VT323&display=swap">
-<link rel="stylesheet" href="general.css?v=20261110c">
+<link rel="stylesheet" href="general.css?v=20261110d">
 
 <!-- sign-in gate: nobody reaches the site without an account -->
 <div class="gate" id="gate">
@@ -2193,13 +2193,19 @@ document.querySelectorAll("[data-lock]").forEach(s => { const l = document.query
 (() => {
   const list = $("gl"), pages = { "panel-sewi": $("ps-page"), "new-danger": $("nd-page") };
   const names = { "panel-sewi": "PANEL SEWI", "new-danger": "NEW DANGER 2025" };
-  function showList() { list.hidden = false; Object.values(pages).forEach(p => p.hidden = true); $("game-bar").textContent = "GAME.EXE · GAMES"; }
+  function showList() { document.querySelectorAll(".gl-tile").forEach(x => x.classList.remove("on")); $("gl-msg").textContent = ""; list.hidden = false; Object.values(pages).forEach(p => p.hidden = true); $("game-bar").textContent = "GAME.EXE · GAMES"; }
   function openGame(id) {
     list.hidden = true; Object.entries(pages).forEach(([k, p]) => p.hidden = k !== id);
     $("game-bar").textContent = "GAME.EXE · " + names[id];
     $("game").scrollIntoView({ block: "start" });
   }
-  document.querySelectorAll(".gl-tile").forEach(t => t.onclick = () => openGame(t.dataset.game));
+  // a first tap only selects a game; tapping the selected game again opens it
+  const tiles = [...document.querySelectorAll(".gl-tile")];
+  tiles.forEach(t => t.onclick = () => {
+    if (t.classList.contains("on")) return openGame(t.dataset.game);
+    tiles.forEach(x => x.classList.toggle("on", x === t));
+    $("gl-msg").textContent = t.querySelector("b").textContent + " · tap again to open";
+  });
   $("gl-back").onclick = showList; $("nd-back").onclick = showList;
   // links that point at the game tab from elsewhere (home cover, MORE INFO) open Panel Sewi straight away
   document.querySelectorAll('a[data-tab="game"]').forEach(a => { if (!a.closest("#game")) a.addEventListener("click", () => setTimeout(() => openGame("panel-sewi"), 0)); });

@@ -705,3 +705,7 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
 .gl-info { overflow: hidden; }
 @media (max-width: 420px) { .gl-tile { min-height: 130px; grid-template-rows: 130px; grid-template-columns: 130px minmax(0, 1fr); } .gl-tile img { width: 130px; height: 130px; }
   .gl-info { padding: 10px 12px; gap: 2px; } .gl-info b { font-size: 16px; } .gl-info small { font-size: 12px; } .gl-price { font-size: 14px; } }
+/* the selected game: white frame and glow, like the console cursor */
+.gl-tile:hover, .gl-tile:focus-visible { transform: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,.35); }
+.gl-tile.on { box-shadow: inset 0 0 0 3px #fff, 0 0 22px rgba(140,180,255,.75); transform: scale(1.02); }
+#gl-msg { color: #dfe6ff; min-height: 1.3em; margin: 0; font: 10px/1.6 var(--f-pixel); letter-spacing: .08em; }

@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Russo+One&family=VT323&display=swap">
-<link rel="stylesheet" href="general.css?v=20261110f">
+<link rel="stylesheet" href="general.css?v=20261110g">
 
 <!-- sign-in gate: nobody reaches the site without an account -->
 <div class="gate" id="gate">
@@ -88,10 +88,10 @@
         <span class="kof-part">KENUKI 1</span>
         <span class="kof-scroll">SCROLL <i class="stk" aria-hidden="true"></i></span>
       </section>
-      <section class="kof-sec"><span class="kof-sm">TRACK 01</span><h3 class="kof-t">RICH PANTIN</h3><button type="button" class="kof-play" data-track="0"><i class="stk" aria-hidden="true"></i> PLAY</button></section>
-      <section class="kof-sec"><span class="kof-sm">TRACK 02</span><h3 class="kof-t">QUESTION MYSELF</h3><button type="button" class="kof-play" data-track="1"><i class="stk" aria-hidden="true"></i> PLAY</button></section>
-      <section class="kof-sec"><span class="kof-sm">TRACK 03</span><h3 class="kof-t">ROTTERDON</h3><button type="button" class="kof-play" data-track="2"><i class="stk" aria-hidden="true"></i> PLAY</button></section>
-      <section class="kof-sec"><span class="kof-sm">TRACK 04</span><h3 class="kof-t">FLAMENCO</h3><button type="button" class="kof-play" data-track="3"><i class="stk" aria-hidden="true"></i> PLAY</button></section>
+      <section class="kof-sec"><span class="kof-sm">TRACK 01</span><h3 class="kof-t">RICH PANTIN</h3><button type="button" class="kof-play" data-track="0"><i class="stk" aria-hidden="true"></i> <span data-i18n="play">PLAY</span></button></section>
+      <section class="kof-sec"><span class="kof-sm">TRACK 02</span><h3 class="kof-t">QUESTION MYSELF</h3><button type="button" class="kof-play" data-track="1"><i class="stk" aria-hidden="true"></i> <span data-i18n="play">PLAY</span></button></section>
+      <section class="kof-sec"><span class="kof-sm">TRACK 03</span><h3 class="kof-t">ROTTERDON</h3><button type="button" class="kof-play" data-track="2"><i class="stk" aria-hidden="true"></i> <span data-i18n="play">PLAY</span></button></section>
+      <section class="kof-sec"><span class="kof-sm">TRACK 04</span><h3 class="kof-t">FLAMENCO</h3><button type="button" class="kof-play" data-track="3"><i class="stk" aria-hidden="true"></i> <span data-i18n="play">PLAY</span></button></section>
       <section class="kof-sec kof-soon"><span class="kof-sm">PART 2</span><h3 class="kof-t">KENUKI 2</h3><span class="kof-wait">COMING SOON</span></section>
     </div>
   </div>
@@ -578,7 +578,7 @@ they crush my heart destroy my body  just like a lego
         <label for="heart-name">FULL NAME</label>
         <div class="row"><input id="heart-name" type="text" autocomplete="name" autocapitalize="words" placeholder="First name and last name"></div>
       </div>
-      <button class="btn" type="submit" style="justify-self:stretch;text-align:center;border:0;cursor:pointer"><i class="stk" aria-hidden="true"></i> ENTER</button>
+      <button class="btn" type="submit" style="justify-self:stretch;text-align:center;border:0;cursor:pointer"><i class="stk" aria-hidden="true"></i> <span data-i18n="enter">ENTER</span></button>
     </form>
   </div>
   <p class="heart-say" id="heart-say" hidden></p>
@@ -618,18 +618,19 @@ they crush my heart destroy my body  just like a lego
   <header class="logo">
     <h1>V-DEVIL <span>PRODUCTION</span></h1>
   </header>
-  <p class="tag">STORY TIME · YOU ARE FREE · NEW SONG NOTIFICATION</p>
+  <p class="tag" data-i18n="tagline">STORY TIME · YOU ARE FREE · NEW SONG NOTIFICATION</p>
 
   <nav aria-label="Sections">
-    <a href="#home" data-tab="home">HOME</a>
-    <a href="#game" data-tab="game">GAME</a>
-    <a href="#story" data-tab="story">STORY</a>
-    <a href="#song" data-tab="song">SONG</a>
-    <a href="#credits" data-tab="credits">CREDITS</a>
-    <a href="#shop" data-tab="shop">SHOP</a>
-    <a href="#wallpapers" data-tab="wallpapers">WALLPAPERS</a>
+    <a href="#home" data-tab="home" data-i18n="nav_home">HOME</a>
+    <a href="#game" data-tab="game" data-i18n="nav_game">GAME</a>
+    <a href="#story" data-tab="story" data-i18n="nav_story">STORY</a>
+    <a href="#song" data-tab="song" data-i18n="nav_song">SONG</a>
+    <a href="#credits" data-tab="credits" data-i18n="nav_credits">CREDITS</a>
+    <a href="#shop" data-tab="shop" data-i18n="nav_shop">SHOP</a>
+    <a href="#wallpapers" data-tab="wallpapers" data-i18n="nav_wallpapers">WALLPAPERS</a>
     <a href="#shop" data-tab="shop" class="kix-chip" aria-label="Your Kix, open the shop"><img src="kix.png" alt=""><span class="kix-n">0</span></a>
     <a href="#account" data-tab="account" class="acct-tab"><canvas class="avatar" id="nav-avatar" width="8" height="8" aria-hidden="true"></canvas><span id="nav-name">ACCOUNT</span></a>
+    <a href="#settings" data-tab="settings" class="gear-tab" aria-label="Settings" data-i18n-label="settings"><img src="settings-gear.png" alt=""></a>
   </nav>
 
   <!-- HOME -->
@@ -660,33 +661,33 @@ they crush my heart destroy my body  just like a lego
     <div class="bar"><i>■</i><b id="game-bar">GAME.EXE · GAMES</b><i>_</i><i>×</i></div>
     <!-- the games list, like a console store: cover first, then the name -->
     <div class="gl" id="gl">
-      <h2 class="gl-h">GAMES</h2>
+      <h2 class="gl-h" data-i18n="games">GAMES</h2>
       <div class="gl-grid">
         <button type="button" class="gl-tile" data-game="panel-sewi">
           <img src="cover.jpg" alt="">
           <span class="gl-info">
             <b>Panel Sewi: Sigmatiserie</b>
-            <small>Full Game</small>
+            <small data-i18n="full_game">Full Game</small>
             <small class="gl-plat">V-DEVIL PRODUCTION</small>
             <small class="gl-year">2026</small>
-            <span class="gl-price">Coming soon</span>
+            <span class="gl-price" data-i18n="coming_soon">Coming soon</span>
           </span>
         </button>
         <button type="button" class="gl-tile" data-game="new-danger">
           <img src="new-danger-square.jpg" alt="">
           <span class="gl-info">
             <b>New Danger 2025</b>
-            <small>Full Game</small>
+            <small data-i18n="full_game">Full Game</small>
             <small class="gl-plat">KANEL GANG PRODUCTION</small>
             <small class="gl-year">2025-2026</small>
-            <span class="gl-price">Coming soon</span>
+            <span class="gl-price" data-i18n="coming_soon">Coming soon</span>
           </span>
         </button>
       </div>
       <p class="msg" id="gl-msg" role="status"></p>
     </div>
     <div class="ps" id="ps-page" hidden>
-      <button type="button" class="gl-back" id="gl-back"><i class="stk l" aria-hidden="true"></i> ALL GAMES</button>
+      <button type="button" class="gl-back" id="gl-back"><i class="stk l" aria-hidden="true"></i> <span data-i18n="all_games">ALL GAMES</span></button>
       <div class="ps-hero">
         <div class="ps-hero-bg" aria-hidden="true"></div>
         <img class="ps-box" src="cover.jpg" alt="Panel Sewi Sigmatiserie box art">
@@ -697,7 +698,7 @@ they crush my heart destroy my body  just like a lego
           <div class="ps-buy">
             <span class="ps-price">Coming soon</span>
             <span class="ps-cta" role="button" aria-disabled="true"><svg class="lock" viewBox="0 0 12 14" width="12" height="14" shape-rendering="crispEdges" aria-hidden="true"><rect x="3" y="0" width="1" height="1" fill="#12063a"/><rect x="4" y="0" width="1" height="1" fill="#12063a"/><rect x="5" y="0" width="1" height="1" fill="#12063a"/><rect x="6" y="0" width="1" height="1" fill="#12063a"/><rect x="7" y="0" width="1" height="1" fill="#12063a"/><rect x="8" y="0" width="1" height="1" fill="#12063a"/><rect x="2" y="1" width="1" height="1" fill="#12063a"/><rect x="3" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="4" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="5" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="6" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="7" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="8" y="1" width="1" height="1" fill="#c7b8ff"/><rect x="9" y="1" width="1" height="1" fill="#12063a"/><rect x="2" y="2" width="1" height="1" fill="#12063a"/><rect x="3" y="2" width="1" height="1" fill="#c7b8ff"/><rect x="8" y="2" width="1" height="1" fill="#c7b8ff"/><rect x="9" y="2" width="1" height="1" fill="#12063a"/><rect x="1" y="3" width="1" height="1" fill="#12063a"/><rect x="2" y="3" width="1" height="1" fill="#c7b8ff"/><rect x="9" y="3" width="1" height="1" fill="#c7b8ff"/><rect x="10" y="3" width="1" height="1" fill="#12063a"/><rect x="1" y="4" width="1" height="1" fill="#12063a"/><rect x="2" y="4" width="1" height="1" fill="#c7b8ff"/><rect x="9" y="4" width="1" height="1" fill="#c7b8ff"/><rect x="10" y="4" width="1" height="1" fill="#12063a"/><rect x="1" y="5" width="1" height="1" fill="#12063a"/><rect x="2" y="5" width="1" height="1" fill="#c7b8ff"/><rect x="9" y="5" width="1" height="1" fill="#c7b8ff"/><rect x="10" y="5" width="1" height="1" fill="#12063a"/><rect x="0" y="6" width="1" height="1" fill="#12063a"/><rect x="1" y="6" width="1" height="1" fill="#12063a"/><rect x="2" y="6" width="1" height="1" fill="#12063a"/><rect x="3" y="6" width="1" height="1" fill="#12063a"/><rect x="4" y="6" width="1" height="1" fill="#12063a"/><rect x="5" y="6" width="1" height="1" fill="#12063a"/><rect x="6" y="6" width="1" height="1" fill="#12063a"/><rect x="7" y="6" width="1" height="1" fill="#12063a"/><rect x="8" y="6" width="1" height="1" fill="#12063a"/><rect x="9" y="6" width="1" height="1" fill="#12063a"/><rect x="10" y="6" width="1" height="1" fill="#12063a"/><rect x="11" y="6" width="1" height="1" fill="#12063a"/><rect x="0" y="7" width="1" height="1" fill="#12063a"/><rect x="1" y="7" width="1" height="1" fill="#ffc531"/><rect x="2" y="7" width="1" height="1" fill="#ffc531"/><rect x="3" y="7" width="1" height="1" fill="#ffc531"/><rect x="4" y="7" width="1" height="1" fill="#ffc531"/><rect x="5" y="7" width="1" height="1" fill="#ffc531"/><rect x="6" y="7" width="1" height="1" fill="#ffc531"/><rect x="7" y="7" width="1" height="1" fill="#ffc531"/><rect x="8" y="7" width="1" height="1" fill="#ffc531"/><rect x="9" y="7" width="1" height="1" fill="#ffc531"/><rect x="10" y="7" width="1" height="1" fill="#ffc531"/><rect x="11" y="7" width="1" height="1" fill="#12063a"/><rect x="0" y="8" width="1" height="1" fill="#12063a"/><rect x="1" y="8" width="1" height="1" fill="#ffc531"/><rect x="2" y="8" width="1" height="1" fill="#ffc531"/><rect x="3" y="8" width="1" height="1" fill="#ffc531"/><rect x="4" y="8" width="1" height="1" fill="#ffc531"/><rect x="5" y="8" width="1" height="1" fill="#12063a"/><rect x="6" y="8" width="1" height="1" fill="#12063a"/><rect x="7" y="8" width="1" height="1" fill="#ffc531"/><rect x="8" y="8" width="1" height="1" fill="#ffc531"/><rect x="9" y="8" width="1" height="1" fill="#ffc531"/><rect x="10" y="8" width="1" height="1" fill="#ffc531"/><rect x="11" y="8" width="1" height="1" fill="#12063a"/><rect x="0" y="9" width="1" height="1" fill="#12063a"/><rect x="1" y="9" width="1" height="1" fill="#ffc531"/><rect x="2" y="9" width="1" height="1" fill="#ffc531"/><rect x="3" y="9" width="1" height="1" fill="#ffc531"/><rect x="4" y="9" width="1" height="1" fill="#ffc531"/><rect x="5" y="9" width="1" height="1" fill="#12063a"/><rect x="6" y="9" width="1" height="1" fill="#12063a"/><rect x="7" y="9" width="1" height="1" fill="#ffc531"/><rect x="8" y="9" width="1" height="1" fill="#ffc531"/><rect x="9" y="9" width="1" height="1" fill="#ffc531"/><rect x="10" y="9" width="1" height="1" fill="#ffc531"/><rect x="11" y="9" width="1" height="1" fill="#12063a"/><rect x="0" y="10" width="1" height="1" fill="#12063a"/><rect x="1" y="10" width="1" height="1" fill="#ffc531"/><rect x="2" y="10" width="1" height="1" fill="#ffc531"/><rect x="3" y="10" width="1" height="1" fill="#ffc531"/><rect x="4" y="10" width="1" height="1" fill="#ffc531"/><rect x="5" y="10" width="1" height="1" fill="#ffc531"/><rect x="6" y="10" width="1" height="1" fill="#12063a"/><rect x="7" y="10" width="1" height="1" fill="#ffc531"/><rect x="8" y="10" width="1" height="1" fill="#ffc531"/><rect x="9" y="10" width="1" height="1" fill="#ffc531"/><rect x="10" y="10" width="1" height="1" fill="#ffc531"/><rect x="11" y="10" width="1" height="1" fill="#12063a"/><rect x="0" y="11" width="1" height="1" fill="#12063a"/><rect x="1" y="11" width="1" height="1" fill="#ffc531"/><rect x="2" y="11" width="1" height="1" fill="#ffc531"/><rect x="3" y="11" width="1" height="1" fill="#ffc531"/><rect x="4" y="11" width="1" height="1" fill="#ffc531"/><rect x="5" y="11" width="1" height="1" fill="#ffc531"/><rect x="6" y="11" width="1" height="1" fill="#12063a"/><rect x="7" y="11" width="1" height="1" fill="#ffc531"/><rect x="8" y="11" width="1" height="1" fill="#ffc531"/><rect x="9" y="11" width="1" height="1" fill="#ffc531"/><rect x="10" y="11" width="1" height="1" fill="#ffc531"/><rect x="11" y="11" width="1" height="1" fill="#12063a"/><rect x="0" y="12" width="1" height="1" fill="#12063a"/><rect x="1" y="12" width="1" height="1" fill="#ffc531"/><rect x="2" y="12" width="1" height="1" fill="#ffc531"/><rect x="3" y="12" width="1" height="1" fill="#ffc531"/><rect x="4" y="12" width="1" height="1" fill="#ffc531"/><rect x="5" y="12" width="1" height="1" fill="#ffc531"/><rect x="6" y="12" width="1" height="1" fill="#ffc531"/><rect x="7" y="12" width="1" height="1" fill="#ffc531"/><rect x="8" y="12" width="1" height="1" fill="#ffc531"/><rect x="9" y="12" width="1" height="1" fill="#ffc531"/><rect x="10" y="12" width="1" height="1" fill="#ffc531"/><rect x="11" y="12" width="1" height="1" fill="#12063a"/><rect x="0" y="13" width="1" height="1" fill="#12063a"/><rect x="1" y="13" width="1" height="1" fill="#12063a"/><rect x="2" y="13" width="1" height="1" fill="#12063a"/><rect x="3" y="13" width="1" height="1" fill="#12063a"/><rect x="4" y="13" width="1" height="1" fill="#12063a"/><rect x="5" y="13" width="1" height="1" fill="#12063a"/><rect x="6" y="13" width="1" height="1" fill="#12063a"/><rect x="7" y="13" width="1" height="1" fill="#12063a"/><rect x="8" y="13" width="1" height="1" fill="#12063a"/><rect x="9" y="13" width="1" height="1" fill="#12063a"/><rect x="10" y="13" width="1" height="1" fill="#12063a"/><rect x="11" y="13" width="1" height="1" fill="#12063a"/></svg>NOT PLAYABLE YET</span>
-            <button class="btn ps-demo" type="button" id="demo-story" style="border:0;cursor:pointer"><i class="stk" aria-hidden="true"></i> SEE THE DEMO STORY</button>
+            <button class="btn ps-demo" type="button" id="demo-story" style="border:0;cursor:pointer"><i class="stk" aria-hidden="true"></i> <span data-i18n="demo_story">SEE THE DEMO STORY</span></button>
           </div>
         </div>
       </div>
@@ -724,12 +725,12 @@ they crush my heart destroy my body  just like a lego
           <dt>Release</dt><dd>2026</dd>
         </dl>
         <p class="small">There's a big difference between playing on PC and on mobile. You'll see it soon. Just play the game.</p>
-        <a class="btn alt" href="#home" data-tab="home">RETURN HOME</a>
+        <a class="btn alt" href="#home" data-tab="home"><span data-i18n="return_home">RETURN HOME</span></a>
       </div>
     </div>
     <!-- New Danger 2025: its own store page -->
     <div class="ps nd" id="nd-page" hidden>
-      <button type="button" class="gl-back" id="nd-back"><i class="stk l" aria-hidden="true"></i> ALL GAMES</button>
+      <button type="button" class="gl-back" id="nd-back"><i class="stk l" aria-hidden="true"></i> <span data-i18n="all_games">ALL GAMES</span></button>
       <div class="nd-hero"><img src="new-danger-cover.jpg" alt="New Danger 2025"></div>
       <div class="ps-about">
         <h3>New Danger 2025</h3>
@@ -754,8 +755,8 @@ they crush my heart destroy my body  just like a lego
           <p>Where it all began. The full story of Kenos is coming soon on this page.</p>
           <span class="blink"><i class="stk" aria-hidden="true"></i> CHAPTER 1 · COMING SOON</span>
           <div class="btns">
-            <button class="btn" type="button" id="story-enter" style="border:0;cursor:pointer"><i class="stk" aria-hidden="true"></i> ENTER</button>
-            <a class="btn alt" href="#home" data-tab="home">RETURN HOME</a>
+            <button class="btn" type="button" id="story-enter" style="border:0;cursor:pointer"><i class="stk" aria-hidden="true"></i> <span data-i18n="enter">ENTER</span></button>
+            <a class="btn alt" href="#home" data-tab="home"><span data-i18n="return_home">RETURN HOME</span></a>
           </div>
         </div>
       </div>
@@ -768,55 +769,55 @@ they crush my heart destroy my body  just like a lego
     <div class="body">
       <!-- categories: album, maxi single, single -->
       <div id="song-cats">
-        <h2>CHOOSE YOUR MUSIC</h2>
+        <h2 data-i18n="choose_music">CHOOSE YOUR MUSIC</h2>
         <div class="picks picks3">
           <div class="pick">
-            <span class="pick-label">ALBUM</span>
+            <span class="pick-label" data-i18n="album">ALBUM</span>
             <div class="cover pick-cover"><img src="cat-album.jpg" alt="Album category: Kenos and his friends celebrating in the living room"><span class="story-title">ALBUM</span></div>
-            <button class="btn" type="button" data-song-cat="albums" style="border:0;cursor:pointer"><i class="stk" aria-hidden="true"></i> ENTER</button>
+            <button class="btn" type="button" data-song-cat="albums" style="border:0;cursor:pointer"><i class="stk" aria-hidden="true"></i> <span data-i18n="enter">ENTER</span></button>
           </div>
           <div class="pick">
-            <span class="pick-label">MAXI SINGLE</span>
+            <span class="pick-label" data-i18n="maxi">MAXI SINGLE</span>
             <div class="cover pick-cover maxi-cover">
               <img src="maxi-cover.jpg" alt="Panel Sewi Sigmatiserie maxi single cover: Kenos in a black hoodie looks back over his shoulder on a purple background with pink Japanese letters">
               <span class="story-title">PANEL SEWI<br>SIGMATISERIE</span>
             </div>
-            <button class="btn" type="button" id="maxi-enter" style="border:0;cursor:pointer"><i class="stk" aria-hidden="true"></i> ENTER</button>
+            <button class="btn" type="button" id="maxi-enter" style="border:0;cursor:pointer"><i class="stk" aria-hidden="true"></i> <span data-i18n="enter">ENTER</span></button>
           </div>
           <div class="pick">
-            <span class="pick-label">SINGLE</span>
+            <span class="pick-label" data-i18n="single">SINGLE</span>
             <div class="cover pick-cover cat-single"><img src="cat-single.jpg" alt="Single category: Kenos with his arms crossed above the word SINGLE"></div>
-            <button class="btn" type="button" data-song-cat="singles" style="border:0;cursor:pointer"><i class="stk" aria-hidden="true"></i> ENTER</button>
+            <button class="btn" type="button" data-song-cat="singles" style="border:0;cursor:pointer"><i class="stk" aria-hidden="true"></i> <span data-i18n="enter">ENTER</span></button>
           </div>
         </div>
       </div>
       <!-- ALBUM category -->
       <div id="song-albums" hidden>
-        <h2>ALBUM</h2>
+        <h2 data-i18n="album">ALBUM</h2>
         <div class="picks">
           <div class="pick">
-            <span class="pick-label">ALBUM</span>
+            <span class="pick-label" data-i18n="album">ALBUM</span>
             <div class="cover pick-cover locked">
               <img src="album-cover.jpg" alt="New Danger 2025 album cover: Kenos in a black hood points at the camera, with KENOS in purple letters">
               <span class="pick-lock"><span data-lock></span>COMING SOON</span>
             </div>
-            <span class="btn locked" role="button" aria-disabled="true">LOCKED</span>
+            <span class="btn locked" role="button" aria-disabled="true" data-i18n="locked">LOCKED</span>
           </div>
         </div>
       </div>
       <!-- SINGLE category -->
       <div id="song-singles" hidden>
-        <h2>SINGLE</h2>
+        <h2 data-i18n="single">SINGLE</h2>
         <div class="picks">
           <div class="pick">
             <span class="pick-label">SINGLE · 2026</span>
             <div class="cover pick-cover"><img src="single-rich-pantin.jpg" alt="Rich Pantin single cover: Kenos in a cap and white tee on a purple background with 2K style letters"><span class="story-title">RICH<br>PANTIN</span></div>
-            <button class="btn" type="button" id="single-rich-pantin" style="border:0;cursor:pointer"><i class="stk" aria-hidden="true"></i> PLAY</button>
+            <button class="btn" type="button" id="single-rich-pantin" style="border:0;cursor:pointer"><i class="stk" aria-hidden="true"></i> <span data-i18n="play">PLAY</span></button>
           </div>
         </div>
       </div>
-      <a class="btn alt" href="#home" data-tab="home" id="song-home">RETURN HOME</a>
-      <button type="button" class="btn alt" id="song-back" data-song-cat="cats" hidden style="border:0;cursor:pointer;justify-self:start">BACK</button>
+      <a class="btn alt" href="#home" data-tab="home" id="song-home"><span data-i18n="return_home">RETURN HOME</span></a>
+      <button type="button" class="btn alt" id="song-back" data-song-cat="cats" hidden style="border:0;cursor:pointer;justify-self:start"><span data-i18n="back">BACK</span></button>
     </div>
   </section>
 
@@ -940,6 +941,40 @@ they crush my heart destroy my body  just like a lego
     </div>
   </section>
 
+  <!-- SETTINGS -->
+  <section class="win" id="settings" data-panel="settings" hidden>
+    <div class="bar"><i>■</i><b><img class="bar-gear" src="settings-gear.png" alt=""> SETTINGS.EXE</b><i>_</i><i>×</i></div>
+    <div class="body set">
+      <div class="set-head"><img src="settings-gear.png" alt="Settings"></div>
+      <div class="set-row">
+        <label for="set-vol"><span data-i18n="volume">VOLUME</span> <b id="set-vol-n">100</b></label>
+        <input type="range" id="set-vol" min="0" max="100" step="5" value="100">
+        <small data-i18n="volume_note">Music and voices</small>
+      </div>
+      <div class="set-row">
+        <label for="set-sfx"><span data-i18n="sfx">SOUND EFFECTS</span> <b id="set-sfx-n">100</b></label>
+        <input type="range" id="set-sfx" min="0" max="100" step="5" value="100">
+        <small data-i18n="sfx_note">Taps, beeps and typing sounds</small>
+      </div>
+      <div class="set-row">
+        <span class="set-label" data-i18n="language">LANGUAGE</span>
+        <div class="langs" role="group">
+          <button type="button" class="lang" data-lang="fr" aria-pressed="false"><span class="flag" aria-hidden="true">🇫🇷</span><span>Français</span></button>
+          <button type="button" class="lang" data-lang="en" aria-pressed="false"><span class="flag" aria-hidden="true">🇺🇸</span><span>English</span></button>
+          <button type="button" class="lang" data-lang="es" aria-pressed="false"><span class="flag" aria-hidden="true">🇪🇸</span><span>Español</span></button>
+          <button type="button" class="lang" data-lang="de" aria-pressed="false"><span class="flag" aria-hidden="true">🇩🇪</span><span>Deutsch</span></button>
+          <button type="button" class="lang" data-lang="nl" aria-pressed="false"><span class="flag" aria-hidden="true">🇳🇱</span><span>Nederlands</span></button>
+          <button type="button" class="lang" data-lang="it" aria-pressed="false"><span class="flag" aria-hidden="true">🇮🇹</span><span>Italiano</span></button>
+          <button type="button" class="lang" data-lang="en-gb" aria-pressed="false"><span class="flag" aria-hidden="true">🇬🇧</span><span>English (UK)</span></button>
+          <button type="button" class="lang" data-lang="pt" aria-pressed="false"><span class="flag" aria-hidden="true">🇵🇹</span><span>Português</span></button>
+          <button type="button" class="lang" data-lang="pt-br" aria-pressed="false"><span class="flag" aria-hidden="true">🇧🇷</span><span>Português (Brasil)</span></button>
+        </div>
+        <small data-i18n="lang_note">The website's menus and buttons change language. The voices stay in their original language.</small>
+      </div>
+      <a class="btn alt" href="#home" data-tab="home"><span data-i18n="return_home">RETURN HOME</span></a>
+    </div>
+  </section>
+
   <section class="win" id="account" data-panel="account" hidden>
     <div class="bar"><i>■</i><b>ACCOUNT.EXE</b><i>_</i><i>×</i></div>
     <div class="body acct">
@@ -1003,8 +1038,23 @@ they crush my heart destroy my body  just like a lego
 </div>
 
 <script>
+// ===== Settings: volume, sound effects, language (saved on this device) =====
+const SET = (() => {
+  let v = {}; try { v = JSON.parse(localStorage.getItem("vdevil.settings") || "{}"); } catch (_) {}
+  return { vol: v.vol ?? 1, sfx: v.sfx ?? 1, lang: v.lang || "en" };
+})();
+const I18N = {"fr": {"nav_home": "ACCUEIL", "nav_game": "JEU", "nav_story": "HISTOIRE", "nav_song": "SON", "nav_credits": "CRÉDITS", "nav_shop": "BOUTIQUE", "nav_wallpapers": "FONDS D'ÉCRAN", "tagline": "L'HEURE DE L'HISTOIRE · TU ES LIBRE · NOUVEAU SON", "settings": "Paramètres", "volume": "VOLUME", "volume_note": "Musique et voix", "sfx": "EFFETS SONORES", "sfx_note": "Touches, bips et bruits de frappe", "language": "LANGUE", "lang_note": "Les menus et boutons du site changent de langue. Les voix restent dans leur langue d'origine.", "return_home": "RETOUR À L'ACCUEIL", "back": "RETOUR", "choose_music": "CHOISIS TA MUSIQUE", "album": "ALBUM", "maxi": "MAXI SINGLE", "single": "SINGLE", "enter": "ENTRER", "play": "JOUER", "locked": "VERROUILLÉ", "games": "JEUX", "full_game": "Jeu complet", "coming_soon": "Bientôt", "all_games": "TOUS LES JEUX", "demo_story": "VOIR L'HISTOIRE DÉMO"}, "en": {"nav_home": "HOME", "nav_game": "GAME", "nav_story": "STORY", "nav_song": "SONG", "nav_credits": "CREDITS", "nav_shop": "SHOP", "nav_wallpapers": "WALLPAPERS", "tagline": "STORY TIME · YOU ARE FREE · NEW SONG NOTIFICATION", "settings": "Settings", "volume": "VOLUME", "volume_note": "Music and voices", "sfx": "SOUND EFFECTS", "sfx_note": "Taps, beeps and typing sounds", "language": "LANGUAGE", "lang_note": "The website's menus and buttons change language. The voices stay in their original language.", "return_home": "RETURN HOME", "back": "BACK", "choose_music": "CHOOSE YOUR MUSIC", "album": "ALBUM", "maxi": "MAXI SINGLE", "single": "SINGLE", "enter": "ENTER", "play": "PLAY", "locked": "LOCKED", "games": "GAMES", "full_game": "Full Game", "coming_soon": "Coming soon", "all_games": "ALL GAMES", "demo_story": "SEE THE DEMO STORY"}, "es": {"nav_home": "INICIO", "nav_game": "JUEGO", "nav_story": "HISTORIA", "nav_song": "CANCIÓN", "nav_credits": "CRÉDITOS", "nav_shop": "TIENDA", "nav_wallpapers": "FONDOS", "tagline": "HORA DEL CUENTO · ERES LIBRE · NUEVA CANCIÓN", "settings": "Ajustes", "volume": "VOLUMEN", "volume_note": "Música y voces", "sfx": "EFECTOS DE SONIDO", "sfx_note": "Toques, pitidos y tecleo", "language": "IDIOMA", "lang_note": "Los menús y botones de la web cambian de idioma. Las voces se quedan en su idioma original.", "return_home": "VOLVER AL INICIO", "back": "VOLVER", "choose_music": "ELIGE TU MÚSICA", "album": "ÁLBUM", "maxi": "MAXI SINGLE", "single": "SENCILLO", "enter": "ENTRAR", "play": "REPRODUCIR", "locked": "BLOQUEADO", "games": "JUEGOS", "full_game": "Juego completo", "coming_soon": "Próximamente", "all_games": "TODOS LOS JUEGOS", "demo_story": "VER LA HISTORIA DEMO"}, "de": {"nav_home": "START", "nav_game": "SPIEL", "nav_story": "STORY", "nav_song": "SONG", "nav_credits": "CREDITS", "nav_shop": "SHOP", "nav_wallpapers": "HINTERGRÜNDE", "tagline": "STORY-ZEIT · DU BIST FREI · NEUER SONG", "settings": "Einstellungen", "volume": "LAUTSTÄRKE", "volume_note": "Musik und Stimmen", "sfx": "SOUNDEFFEKTE", "sfx_note": "Tippen, Pieptöne und Tastengeräusche", "language": "SPRACHE", "lang_note": "Menüs und Buttons der Website wechseln die Sprache. Die Stimmen bleiben in der Originalsprache.", "return_home": "ZUR STARTSEITE", "back": "ZURÜCK", "choose_music": "WÄHLE DEINE MUSIK", "album": "ALBUM", "maxi": "MAXI-SINGLE", "single": "SINGLE", "enter": "BETRETEN", "play": "ABSPIELEN", "locked": "GESPERRT", "games": "SPIELE", "full_game": "Vollversion", "coming_soon": "Demnächst", "all_games": "ALLE SPIELE", "demo_story": "DEMO-STORY ANSEHEN"}, "nl": {"nav_home": "HOME", "nav_game": "GAME", "nav_story": "VERHAAL", "nav_song": "NUMMER", "nav_credits": "CREDITS", "nav_shop": "WINKEL", "nav_wallpapers": "ACHTERGRONDEN", "tagline": "VERHAALTIJD · JE BENT VRIJ · NIEUW NUMMER", "settings": "Instellingen", "volume": "VOLUME", "volume_note": "Muziek en stemmen", "sfx": "GELUIDSEFFECTEN", "sfx_note": "Tikken, piepjes en typgeluiden", "language": "TAAL", "lang_note": "De menu's en knoppen van de site veranderen van taal. De stemmen blijven in de originele taal.", "return_home": "TERUG NAAR HOME", "back": "TERUG", "choose_music": "KIES JE MUZIEK", "album": "ALBUM", "maxi": "MAXI SINGLE", "single": "SINGLE", "enter": "OPENEN", "play": "AFSPELEN", "locked": "VERGRENDELD", "games": "GAMES", "full_game": "Volledige game", "coming_soon": "Binnenkort", "all_games": "ALLE GAMES", "demo_story": "DEMOVERHAAL BEKIJKEN"}, "it": {"nav_home": "HOME", "nav_game": "GIOCO", "nav_story": "STORIA", "nav_song": "CANZONE", "nav_credits": "CREDITI", "nav_shop": "NEGOZIO", "nav_wallpapers": "SFONDI", "tagline": "ORA DELLA STORIA · SEI LIBERO · NUOVA CANZONE", "settings": "Impostazioni", "volume": "VOLUME", "volume_note": "Musica e voci", "sfx": "EFFETTI SONORI", "sfx_note": "Tocchi, bip e suoni di digitazione", "language": "LINGUA", "lang_note": "Menu e pulsanti del sito cambiano lingua. Le voci restano nella lingua originale.", "return_home": "TORNA ALLA HOME", "back": "INDIETRO", "choose_music": "SCEGLI LA TUA MUSICA", "album": "ALBUM", "maxi": "MAXI SINGOLO", "single": "SINGOLO", "enter": "ENTRA", "play": "RIPRODUCI", "locked": "BLOCCATO", "games": "GIOCHI", "full_game": "Gioco completo", "coming_soon": "Prossimamente", "all_games": "TUTTI I GIOCHI", "demo_story": "GUARDA LA STORIA DEMO"}, "en-gb": {"nav_home": "HOME", "nav_game": "GAME", "nav_story": "STORY", "nav_song": "SONG", "nav_credits": "CREDITS", "nav_shop": "SHOP", "nav_wallpapers": "WALLPAPERS", "tagline": "STORY TIME · YOU ARE FREE · NEW SONG NOTIFICATION", "settings": "Settings", "volume": "VOLUME", "volume_note": "Music and voices", "sfx": "SOUND EFFECTS", "sfx_note": "Taps, beeps and typing sounds", "language": "LANGUAGE", "lang_note": "The website's menus and buttons change language. The voices stay in their original language.", "return_home": "RETURN HOME", "back": "BACK", "choose_music": "CHOOSE YOUR MUSIC", "album": "ALBUM", "maxi": "MAXI SINGLE", "single": "SINGLE", "enter": "ENTER", "play": "PLAY", "locked": "LOCKED", "games": "GAMES", "full_game": "Full Game", "coming_soon": "Coming soon", "all_games": "ALL GAMES", "demo_story": "SEE THE DEMO STORY"}, "pt": {"nav_home": "INÍCIO", "nav_game": "JOGO", "nav_story": "HISTÓRIA", "nav_song": "MÚSICA", "nav_credits": "CRÉDITOS", "nav_shop": "LOJA", "nav_wallpapers": "FUNDOS", "tagline": "HORA DA HISTÓRIA · ÉS LIVRE · NOVA MÚSICA", "settings": "Definições", "volume": "VOLUME", "volume_note": "Música e vozes", "sfx": "EFEITOS SONOROS", "sfx_note": "Toques, bips e sons de escrita", "language": "IDIOMA", "lang_note": "Os menus e botões do site mudam de idioma. As vozes ficam na língua original.", "return_home": "VOLTAR AO INÍCIO", "back": "VOLTAR", "choose_music": "ESCOLHE A TUA MÚSICA", "album": "ÁLBUM", "maxi": "MAXI SINGLE", "single": "SINGLE", "enter": "ENTRAR", "play": "REPRODUZIR", "locked": "BLOQUEADO", "games": "JOGOS", "full_game": "Jogo completo", "coming_soon": "Em breve", "all_games": "TODOS OS JOGOS", "demo_story": "VER A HISTÓRIA DEMO"}, "pt-br": {"nav_home": "INÍCIO", "nav_game": "JOGO", "nav_story": "HISTÓRIA", "nav_song": "MÚSICA", "nav_credits": "CRÉDITOS", "nav_shop": "LOJA", "nav_wallpapers": "PAPÉIS DE PAREDE", "tagline": "HORA DA HISTÓRIA · VOCÊ É LIVRE · NOVA MÚSICA", "settings": "Configurações", "volume": "VOLUME", "volume_note": "Música e vozes", "sfx": "EFEITOS SONOROS", "sfx_note": "Toques, bipes e sons de digitação", "language": "IDIOMA", "lang_note": "Os menus e botões do site mudam de idioma. As vozes continuam no idioma original.", "return_home": "VOLTAR AO INÍCIO", "back": "VOLTAR", "choose_music": "ESCOLHA SUA MÚSICA", "album": "ÁLBUM", "maxi": "MAXI SINGLE", "single": "SINGLE", "enter": "ENTRAR", "play": "TOCAR", "locked": "BLOQUEADO", "games": "JOGOS", "full_game": "Jogo completo", "coming_soon": "Em breve", "all_games": "TODOS OS JOGOS", "demo_story": "VER A HISTÓRIA DEMO"}};
+function saveSettings() { try { localStorage.setItem("vdevil.settings", JSON.stringify(SET)); } catch (_) {} window.dispatchEvent(new Event("vdevil-settings")); }
+function applyLang() {
+  const d = I18N[SET.lang] || I18N.en;
+  document.documentElement.lang = SET.lang;
+  document.querySelectorAll("[data-i18n]").forEach(el => { const t = d[el.dataset.i18n]; if (t) el.textContent = t; });
+  document.querySelectorAll("[data-i18n-label]").forEach(el => { const t = d[el.dataset.i18nLabel]; if (t) el.setAttribute("aria-label", t); });
+  document.querySelectorAll(".lang").forEach(b => { const on = b.dataset.lang === SET.lang; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); });
+}
+
 // tabs, deep-linkable as #home / #game / #credits
-const tabs = ["home", "game", "story", "song", "credits", "shop", "wallpapers", "account"];
+const tabs = ["home", "game", "story", "song", "credits", "shop", "wallpapers", "account", "settings"];
 function show(name) {
   if (!tabs.includes(name)) name = "home";
   document.querySelectorAll("[data-panel]").forEach(p => p.hidden = p.dataset.panel !== name);
@@ -1427,14 +1477,14 @@ function playTap(e) {
   if (!document.getElementById("intro").hidden) return; // the reaper intro has its own sound
   if (document.body.classList.contains("story-mode")) return; // Story and maxi single screens stay silent
   const src = ac.createBufferSource(), g = ac.createGain();
-  g.gain.value = .8; src.buffer = tapBuf; src.connect(g); g.connect(ac.destination); src.start();
+  g.gain.value = .8 * SET.sfx; src.buffer = tapBuf; src.connect(g); g.connect(ac.destination); src.start();
 }
 addEventListener("click", playTap, true);
 // get the sound ready before the first touch (a sleeping audio engine can still decode)
 try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); loadTap(AC); } catch (_) {}
 function master(ac) {
   if (ac._out) return ac._out;
-  const out = ac.createGain(); out.gain.value = .8;
+  const out = ac.createGain(); out.gain.value = .8 * SET.sfx;
   const dl = ac.createDelay(1); dl.delayTime.value = .23;
   const fb = ac.createGain(); fb.gain.value = .32;
   const wet = ac.createGain(); wet.gain.value = .35;
@@ -1781,7 +1831,7 @@ $("back").onclick = closeGame;
 // Demo story: Itachi's prologue on a black screen, ending on "Mister <your username>" and ACT 1
 $("demo-story").onclick = () => {
   const f = $("game-frame");
-  f.src = "demo-story/index.html?v=20261108d&name=" + encodeURIComponent(player); // new v= on each update: no old copy
+  f.src = "demo-story/index.html?v=20261110a&name=" + encodeURIComponent(player); // new v= on each update: no old copy
   $("player").hidden = false; $("site").inert = true;
   document.documentElement.style.overflow = "hidden";
   $("back").focus();
@@ -2014,7 +2064,8 @@ document.querySelectorAll("[data-lock]").forEach(s => { const l = document.query
   ];
   const ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.6v12.8a1 1 0 0 0 1.5.9l10.2-6.4a1 1 0 0 0 0-1.7L9.5 4.7A1 1 0 0 0 8 5.6z" fill="currentColor"/></svg>', ICON_PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.2" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1.2" fill="currentColor"/></svg>', ICON_ADDQ = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h10M4 14h10M4 19h6M18 4v6M15 7h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>', ICON_SHARE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M8 7.5 12 3.5l4 4M6 11H5a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7a1 1 0 0 0-1-1h-1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const np = $("np"), au = new Audio(), seek = $("np-seek"), msg = $("np-msg"), sheet = $("np-sheet");
-  au.preload = "metadata"; au.setAttribute("playsinline", "");
+  au.preload = "metadata"; au.setAttribute("playsinline", ""); au.volume = SET.vol;
+  window.addEventListener("vdevil-settings", () => { au.volume = SET.vol; });
   let cur = 0, shuffle = false, repeat = false, seeking = false, missing = false;
   const liked = (() => { try { return JSON.parse(localStorage.getItem("vdevil.likes") || "{}"); } catch (_) { return {}; } })();
   const fmt = (t) => { t = Math.max(0, Math.floor(t || 0)); return Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0"); };
@@ -2357,6 +2408,18 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
       myEmail = c.email; player = c.username; $("gate").hidden = true; openSite(true, true);
     } else ready();
   });
+})();
+
+// settings controls
+(() => {
+  const vol = $("set-vol"), sfx = $("set-sfx");
+  vol.value = Math.round(SET.vol * 100); sfx.value = Math.round(SET.sfx * 100);
+  const show = () => { $("set-vol-n").textContent = vol.value; $("set-sfx-n").textContent = sfx.value; };
+  show();
+  vol.addEventListener("input", () => { SET.vol = vol.value / 100; show(); saveSettings(); });
+  sfx.addEventListener("input", () => { SET.sfx = sfx.value / 100; show(); saveSettings(); });
+  document.querySelectorAll(".lang").forEach(b => b.onclick = () => { SET.lang = b.dataset.lang; saveSettings(); applyLang(); });
+  applyLang();
 })();
 </script>
 

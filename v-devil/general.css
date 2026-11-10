@@ -721,3 +721,24 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
 #song .pick .pick-cover { transition: transform .15s, box-shadow .15s; }
 #song .pick.sel .pick-cover { transform: translateY(-6px); box-shadow: 0 0 0 4px var(--gold), 0 0 26px rgba(255,197,49,.55); }
 #song .pick.sel .pick-label::after { content: "TAP AGAIN TO OPEN"; display: block; margin-top: 6px; color: var(--gold); }
+
+/* ---------- SETTINGS ---------- */
+nav a.gear-tab { display: inline-flex; align-items: center; justify-content: center; padding: 4px 8px; }
+nav a.gear-tab img { width: 28px; height: auto; image-rendering: pixelated; display: block; transition: transform .4s; }
+nav a.gear-tab:hover img, nav a.gear-tab[aria-current="page"] img { transform: rotate(60deg); }
+.bar-gear { width: 16px; height: auto; vertical-align: -3px; image-rendering: pixelated; }
+.set { gap: 22px; }
+.set-head { display: grid; place-items: center; }
+.set-head img { width: 96px; height: auto; image-rendering: pixelated; animation: gearSpin 12s linear infinite; filter: drop-shadow(0 0 14px rgba(255,46,151,.55)); }
+@keyframes gearSpin { to { transform: rotate(360deg); } }
+.set-row { display: grid; gap: 10px; padding: 14px; background: rgba(0,0,0,.3); box-shadow: inset 0 0 0 3px var(--lilac); }
+.set-row label, .set-label { display: flex; justify-content: space-between; gap: 10px; font: 12px var(--f-pixel); letter-spacing: .12em; color: var(--gold); }
+.set-row label b { color: #fff; font-weight: 400; }
+.set-row input[type=range] { width: 100%; accent-color: var(--magenta); height: 26px; }
+.set-row small { color: var(--muted); font-size: 17px; }
+.langs { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 190px), 1fr)); gap: 10px; }
+.lang { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 0; cursor: pointer; text-align: left; color: #fff; font: 18px var(--f-body); background: #12063a; box-shadow: inset 0 0 0 2px #3b2a8a; }
+.lang .flag { font-size: 26px; line-height: 1; font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; }
+.lang.on { box-shadow: inset 0 0 0 3px var(--gold), 0 0 14px rgba(255,197,49,.4); color: var(--gold); }
+.lang:focus-visible { outline: 3px dashed var(--gold); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .set-head img { animation: none; } }

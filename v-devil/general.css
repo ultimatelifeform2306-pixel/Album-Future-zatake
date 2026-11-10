@@ -720,7 +720,7 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
 #song .pick { cursor: pointer; }
 #song .pick .pick-cover { transition: transform .15s, box-shadow .15s; }
 #song .pick.sel .pick-cover { transform: translateY(-6px); box-shadow: 0 0 0 4px var(--gold), 0 0 26px rgba(255,197,49,.55); }
-#song .pick.sel .pick-label::after { content: "TAP AGAIN TO OPEN"; display: block; margin-top: 6px; color: var(--gold); }
+#song .pick.sel .pick-label::after { content: var(--tap-again, "TAP AGAIN TO OPEN"); display: block; margin-top: 6px; color: var(--gold); }
 
 /* ---------- SETTINGS ---------- */
 nav a.gear-tab { display: inline-flex; align-items: center; justify-content: center; padding: 4px 8px; }
@@ -742,3 +742,4 @@ nav a.gear-tab:hover img, nav a.gear-tab[aria-current="page"] img { transform: r
 .lang.on { box-shadow: inset 0 0 0 3px var(--gold), 0 0 14px rgba(255,197,49,.4); color: var(--gold); }
 .lang:focus-visible { outline: 3px dashed var(--gold); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .set-head img { animation: none; } }
+.set-btns { display: flex; gap: 14px; flex-wrap: wrap; }

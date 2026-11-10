@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Russo+One&family=VT323&display=swap">
-<link rel="stylesheet" href="general.css?v=20261108a">
+<link rel="stylesheet" href="general.css?v=20261110a">
 
 <!-- sign-in gate: nobody reaches the site without an account -->
 <div class="gate" id="gate">
@@ -657,8 +657,34 @@ they crush my heart destroy my body  just like a lego
 
   <!-- GAME: game store page -->
   <section class="win" id="game" data-panel="game" hidden>
-    <div class="bar"><i>■</i><b>GAME.EXE · PANEL SEWI</b><i>_</i><i>×</i></div>
-    <div class="ps">
+    <div class="bar"><i>■</i><b id="game-bar">GAME.EXE · GAMES</b><i>_</i><i>×</i></div>
+    <!-- the games list, like a console store: cover first, then the name -->
+    <div class="gl" id="gl">
+      <h2 class="gl-h">GAMES</h2>
+      <div class="gl-grid">
+        <button type="button" class="gl-tile" data-game="panel-sewi">
+          <img src="cover.jpg" alt="">
+          <span class="gl-info">
+            <b>Panel Sewi: Sigmatiserie</b>
+            <small>Full Game</small>
+            <small class="gl-plat">V-DEVIL</small>
+            <span class="gl-price">Coming soon</span>
+          </span>
+        </button>
+        <button type="button" class="gl-tile" data-game="new-danger">
+          <img src="new-danger-cover.jpg" alt="" class="contain">
+          <span class="gl-info">
+            <b>New Danger 2025</b>
+            <small>Full Game</small>
+            <small class="gl-plat">V-DEVIL</small>
+            <span class="gl-price">Coming soon</span>
+          </span>
+        </button>
+      </div>
+      <p class="msg" id="gl-msg" role="status"></p>
+    </div>
+    <div class="ps" id="ps-page" hidden>
+      <button type="button" class="gl-back" id="gl-back"><i class="stk l" aria-hidden="true"></i> ALL GAMES</button>
       <div class="ps-hero">
         <div class="ps-hero-bg" aria-hidden="true"></div>
         <img class="ps-box" src="cover.jpg" alt="Panel Sewi Sigmatiserie box art">
@@ -697,6 +723,16 @@ they crush my heart destroy my body  just like a lego
         </dl>
         <p class="small">There's a big difference between playing on PC and on mobile. You'll see it soon. Just play the game.</p>
         <a class="btn alt" href="#home" data-tab="home">RETURN HOME</a>
+      </div>
+    </div>
+    <!-- New Danger 2025: its own store page -->
+    <div class="ps nd" id="nd-page" hidden>
+      <button type="button" class="gl-back" id="nd-back"><i class="stk l" aria-hidden="true"></i> ALL GAMES</button>
+      <div class="nd-hero"><img src="new-danger-cover.jpg" alt="New Danger 2025"></div>
+      <div class="ps-about">
+        <h3>New Danger 2025</h3>
+        <p>The next game from V-Devil Production. More soon.</p>
+        <dl class="ps-facts"><dt>Publisher</dt><dd>V-Devil Production</dd><dt>Release</dt><dd>Coming soon</dd></dl>
       </div>
     </div>
     <div class="ps-zoom" id="ps-zoom" hidden><img id="ps-zoom-img" alt=""></div>
@@ -2149,6 +2185,23 @@ document.querySelectorAll("[data-lock]").forEach(s => { const l = document.query
       document.title = "Kenos Last Strike 2008-2026";
     });
   });
+})();
+
+// ===== GAME tab: the games list, then each game's store page =====
+(() => {
+  const list = $("gl"), pages = { "panel-sewi": $("ps-page"), "new-danger": $("nd-page") };
+  const names = { "panel-sewi": "PANEL SEWI", "new-danger": "NEW DANGER 2025" };
+  function showList() { list.hidden = false; Object.values(pages).forEach(p => p.hidden = true); $("game-bar").textContent = "GAME.EXE · GAMES"; }
+  function openGame(id) {
+    list.hidden = true; Object.entries(pages).forEach(([k, p]) => p.hidden = k !== id);
+    $("game-bar").textContent = "GAME.EXE · " + names[id];
+    $("game").scrollIntoView({ block: "start" });
+  }
+  document.querySelectorAll(".gl-tile").forEach(t => t.onclick = () => openGame(t.dataset.game));
+  $("gl-back").onclick = showList; $("nd-back").onclick = showList;
+  // links that point at the game tab from elsewhere (home cover, MORE INFO) open Panel Sewi straight away
+  document.querySelectorAll('a[data-tab="game"]').forEach(a => { if (!a.closest("#game")) a.addEventListener("click", () => setTimeout(() => openGame("panel-sewi"), 0)); });
+  document.querySelectorAll('nav a[data-tab="game"]').forEach(a => a.addEventListener("click", () => setTimeout(showList, 0)));
 })();
 
 // ===== GAME store page: screenshot gallery =====

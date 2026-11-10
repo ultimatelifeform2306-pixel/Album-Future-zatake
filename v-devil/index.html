@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Russo+One&family=VT323&display=swap">
-<link rel="stylesheet" href="general.css?v=20261110e">
+<link rel="stylesheet" href="general.css?v=20261110f">
 
 <!-- sign-in gate: nobody reaches the site without an account -->
 <div class="gate" id="gate">
@@ -792,7 +792,6 @@ they crush my heart destroy my body  just like a lego
       </div>
       <!-- ALBUM category -->
       <div id="song-albums" hidden>
-        <button type="button" class="btn alt song-back" data-song-cat="cats"><i class="stk l" aria-hidden="true"></i> ALL MUSIC</button>
         <h2>ALBUM</h2>
         <div class="picks">
           <div class="pick">
@@ -807,7 +806,6 @@ they crush my heart destroy my body  just like a lego
       </div>
       <!-- SINGLE category -->
       <div id="song-singles" hidden>
-        <button type="button" class="btn alt song-back" data-song-cat="cats"><i class="stk l" aria-hidden="true"></i> ALL MUSIC</button>
         <h2>SINGLE</h2>
         <div class="picks">
           <div class="pick">
@@ -817,7 +815,8 @@ they crush my heart destroy my body  just like a lego
           </div>
         </div>
       </div>
-      <a class="btn alt" href="#home" data-tab="home">RETURN HOME</a>
+      <a class="btn alt" href="#home" data-tab="home" id="song-home">RETURN HOME</a>
+      <button type="button" class="btn alt" id="song-back" data-song-cat="cats" hidden style="border:0;cursor:pointer;justify-self:start">BACK</button>
     </div>
   </section>
 
@@ -2224,7 +2223,22 @@ document.querySelectorAll("[data-lock]").forEach(s => { const l = document.query
 // ===== SONG tab: categories (album, maxi single, single) =====
 (() => {
   const views = { cats: $("song-cats"), albums: $("song-albums"), singles: $("song-singles") };
-  function showCat(k) { Object.entries(views).forEach(([n, v]) => v.hidden = n !== k); $("song").scrollIntoView({ block: "start" }); }
+  function showCat(k) {
+    Object.entries(views).forEach(([n, v]) => v.hidden = n !== k);
+    $("song-home").hidden = k !== "cats"; $("song-back").hidden = k === "cats";
+    clearSel(); $("song").scrollIntoView({ block: "start" });
+  }
+  // a first tap on a cover or its button only selects it; tapping the selected one again opens it
+  const picks = [...document.querySelectorAll("#song .pick")];
+  function clearSel() { picks.forEach(p => p.classList.remove("sel")); }
+  picks.forEach(pk => pk.addEventListener("click", e => {
+    if (pk.classList.contains("sel")) { // already selected: a tap on the cover opens it too
+      if (!e.target.closest("button, a, .btn")) { const btn = pk.querySelector("button:not([aria-disabled])"); if (btn) btn.click(); }
+      return;
+    }
+    e.stopPropagation(); e.preventDefault();
+    clearSel(); pk.classList.add("sel");
+  }, true));
   document.querySelectorAll("[data-song-cat]").forEach(b => b.addEventListener("click", () => showCat(b.dataset.songCat)));
   document.querySelectorAll('nav a[data-tab="song"]').forEach(a => a.addEventListener("click", () => setTimeout(() => showCat("cats"), 0)));
   // the Rich Pantin single opens straight in the player

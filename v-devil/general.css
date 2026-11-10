@@ -180,7 +180,7 @@ dl.stats dd { margin: 0; }
 /* song picker: album or maxi single */
 .picks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
 .pick { display: grid; gap: 14px; align-content: start; }
-.pick-label { font: 12px var(--f-pixel); letter-spacing: .2em; color: var(--magenta); }
+.pick-label { line-height: 1.6; font: 12px var(--f-pixel); letter-spacing: .2em; color: var(--magenta); }
 .pick .btn { justify-self: stretch; text-align: center; justify-content: center; }
 .pick-cover img, .pick-cover.maxi-cover img { aspect-ratio: 1 / 1; object-fit: cover; object-position: 50% 30%; image-rendering: auto; }
 .pick-cover.locked img { filter: grayscale(.75) brightness(.45) blur(1px); }
@@ -716,3 +716,8 @@ canvas.avatar.big { width: 112px; height: 112px; box-shadow: 0 0 0 3px var(--ink
 .song-back { justify-self: start; margin-bottom: 6px; }
 #song-albums, #song-singles, #song-cats { display: grid; gap: 18px; }
 #song-albums[hidden], #song-singles[hidden], #song-cats[hidden] { display: none; }
+/* SONG: the selected cover */
+#song .pick { cursor: pointer; }
+#song .pick .pick-cover { transition: transform .15s, box-shadow .15s; }
+#song .pick.sel .pick-cover { transform: translateY(-6px); box-shadow: 0 0 0 4px var(--gold), 0 0 26px rgba(255,197,49,.55); }
+#song .pick.sel .pick-label::after { content: "TAP AGAIN TO OPEN"; display: block; margin-top: 6px; color: var(--gold); }

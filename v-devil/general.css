@@ -743,3 +743,9 @@ nav a.gear-tab:hover img, nav a.gear-tab[aria-current="page"] img { transform: r
 .lang:focus-visible { outline: 3px dashed var(--gold); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .set-head img { animation: none; } }
 .set-btns { display: flex; gap: 14px; flex-wrap: wrap; }
+
+/* ---------- NEWS window on the home page ---------- */
+.news-win .body { gap: 14px; }
+.news-item { display: grid; gap: 8px; padding: 14px 16px; background: rgba(0,0,0,.35); box-shadow: inset 4px 0 0 var(--magenta), inset 0 0 0 2px var(--lilac); }
+.news-date { font: 10px var(--f-pixel); letter-spacing: .15em; color: var(--gold); }
+.news-item p { margin: 0; font-size: 22px; line-height: 1.35; color: #fff; -webkit-text-fill-color: #fff; background: none; opacity: 1; }

@@ -749,3 +749,11 @@ nav a.gear-tab:hover img, nav a.gear-tab[aria-current="page"] img { transform: r
 .news-item { display: grid; gap: 8px; padding: 14px 16px; background: rgba(0,0,0,.35); box-shadow: inset 4px 0 0 var(--magenta), inset 0 0 0 2px var(--lilac); }
 .news-date { font: 10px var(--f-pixel); letter-spacing: .15em; color: var(--gold); }
 .news-item p { margin: 0; font-size: 22px; line-height: 1.35; color: #fff; -webkit-text-fill-color: #fff; background: none; opacity: 1; }
+
+/* ---------- HOME: the Rabbid says hello ---------- */
+.greet { position: relative; margin: 0; overflow: hidden; box-shadow: 0 0 0 3px var(--ink), 0 0 0 6px var(--lilac); }
+.greet img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; object-position: 60% 50%; }
+.greet-cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 14px 12px; text-align: center;
+  font: clamp(11px, 3vw, 16px)/1.6 var(--f-pixel); color: #fff; text-shadow: 2px 2px 0 #000;
+  background: linear-gradient(transparent, rgba(10,4,30,.85)); }
+.greet-cap b { color: var(--gold); font-weight: 400; }

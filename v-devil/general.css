@@ -757,3 +757,7 @@ nav a.gear-tab:hover img, nav a.gear-tab[aria-current="page"] img { transform: r
   font: clamp(11px, 3vw, 16px)/1.6 var(--f-pixel); color: #fff; text-shadow: 2px 2px 0 #000;
   background: linear-gradient(transparent, rgba(10,4,30,.85)); }
 .greet-cap b { color: var(--gold); font-weight: 400; }
+/* a wide pack cover: the frame takes the picture's own shape so it fills it completely */
+.estar-sq.wide { width: min(100%, 480px); aspect-ratio: 1376 / 768; }
+.estar:has(.estar-sq.wide) { grid-column: span 2; }
+@media (max-width: 640px) { .estar:has(.estar-sq.wide) { grid-column: auto; } }

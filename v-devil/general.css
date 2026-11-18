@@ -761,3 +761,36 @@ nav a.gear-tab:hover img, nav a.gear-tab[aria-current="page"] img { transform: r
 .estar-sq.wide { width: min(100%, 480px); aspect-ratio: 1376 / 768; }
 .estar:has(.estar-sq.wide) { grid-column: span 2; }
 @media (max-width: 640px) { .estar:has(.estar-sq.wide) { grid-column: auto; } }
+
+/* ---------- LIVE: V-Devil TV ---------- */
+nav a.live-tab b { color: #ff2a3a; animation: blink 1.2s steps(1) infinite; }
+.live { gap: 16px; }
+.live-player { position: relative; aspect-ratio: 16 / 9; max-width: 100%; overflow: hidden; background: #000; box-shadow: 0 0 0 3px var(--ink), 0 0 0 6px var(--lilac), 8px 8px 0 6px rgba(0,0,0,.5); }
+.live-wait, .live-cam { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.live-cam { transform: scaleX(-1); } /* mirror, like a selfie camera */
+.live-soon { position: absolute; inset: 0; display: grid; place-items: center; background: linear-gradient(transparent 40%, rgba(0,0,0,.55)); pointer-events: none; }
+.live-soon span { margin-top: 30%; font: 400 clamp(14px, 4vw, 30px) var(--f-pixel); color: #fff; text-shadow: 3px 3px 0 #c8002e, 6px 6px 0 #000; animation: blink 1.2s steps(1) infinite; }
+.live-top { position: absolute; top: 10px; left: 10px; display: flex; gap: 8px; }
+.live-badge, .live-time { font: 10px var(--f-pixel); padding: 6px 9px; color: #fff; background: rgba(0,0,0,.7); }
+.live-badge.on { background: #e0102a; box-shadow: 0 0 12px rgba(255,20,40,.8); }
+.live-cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 14px 12px; background: linear-gradient(transparent, rgba(0,0,0,.8)); }
+.live-cap span { font: 400 clamp(11px, 2.4vw, 16px)/1.5 var(--f-pixel); color: #fff; text-shadow: 2px 2px 0 #000; overflow-wrap: anywhere; }
+.live-title { margin: 0; overflow-wrap: anywhere; }
+.live-title.empty { color: var(--muted); }
+.live-studio { display: grid; gap: 14px; padding: 14px; background: #12063a; box-shadow: 0 0 0 3px var(--ink), 0 0 0 6px #e0102a; }
+.live-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.live-row input { flex: 1; min-width: 0; font: 20px var(--f-body); color: var(--bone); background: var(--ink); border: 0; padding: 8px 10px; box-shadow: inset 3px 3px 0 #000, 0 0 0 3px var(--lilac); }
+.live-row .btn { border: 0; cursor: pointer; }
+.live-go { background: #e0102a; color: #fff; box-shadow: inset -4px -4px 0 #8a0014, inset 4px 4px 0 #ff7a88, 4px 4px 0 var(--ink); }
+.live-go.end { background: var(--bone); color: var(--ink); box-shadow: inset -4px -4px 0 #9d8fd6, 4px 4px 0 var(--ink); }
+.live-mic { display: grid; gap: 10px; }
+.live-mic-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font: 9px var(--f-pixel); color: var(--muted); }
+.live-mic-top b { font-weight: 400; color: var(--gold); }
+.live-mic-top input { flex: 1; min-width: 120px; accent-color: #e0102a; }
+.live-meter { height: 12px; background: var(--ink); box-shadow: 0 0 0 2px var(--lilac); }
+.live-meter i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #3ddc84, var(--gold) 60%, #e0102a); }
+.live-hear { font-size: 18px; color: var(--bone); display: flex; gap: 8px; align-items: center; }
+.live-unlock summary { cursor: pointer; font: 9px var(--f-pixel); color: var(--muted); }
+.live-unlock form { margin-top: 10px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+@media (prefers-reduced-motion: reduce) { nav a.live-tab b, .live-soon span { animation: none; } }

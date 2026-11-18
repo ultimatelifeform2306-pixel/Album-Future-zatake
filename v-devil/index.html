@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Russo+One&family=VT323&display=swap">
-<link rel="stylesheet" href="general.css?v=20261111c">
+<link rel="stylesheet" href="general.css?v=20261118a">
 
 <!-- sign-in gate: nobody reaches the site without an account -->
 <div class="gate" id="gate">
@@ -625,6 +625,7 @@ they crush my heart destroy my body  just like a lego
     <a href="#game" data-tab="game" data-i18n="nav_game">GAME</a>
     <a href="#story" data-tab="story" data-i18n="nav_story">STORY</a>
     <a href="#song" data-tab="song" data-i18n="nav_song">SONG</a>
+    <a href="#live" data-tab="live" class="live-tab"><b aria-hidden="true">●</b> LIVE</a>
     <a href="#credits" data-tab="credits" data-i18n="nav_credits">CREDITS</a>
     <a href="#shop" data-tab="shop" data-i18n="nav_shop">SHOP</a>
     <a href="#wallpapers" data-tab="wallpapers" data-i18n="nav_wallpapers">WALLPAPERS</a>
@@ -820,6 +821,51 @@ they crush my heart destroy my body  just like a lego
       </div>
       <a class="btn alt" href="#home" data-tab="home" id="song-home"><span data-i18n="return_home">RETURN HOME</span></a>
       <button type="button" class="btn alt" id="song-back" data-song-cat="cats" hidden style="border:0;cursor:pointer;justify-self:start"><span data-i18n="back">BACK</span></button>
+    </div>
+  </section>
+
+  <!-- LIVE: V-Devil TV -->
+  <section class="win" id="live" data-panel="live" hidden>
+    <div class="bar"><i>■</i><b>LIVE.EXE · V-DEVIL TV</b><i>_</i><i>×</i></div>
+    <div class="body live">
+      <div class="live-player" id="live-player">
+        <img class="live-wait" id="live-wait" src="live-wait.jpg" alt="Shadow in sunglasses, pointing at you: waiting screen">
+        <video class="live-cam" id="live-cam" playsinline muted hidden></video>
+        <div class="live-soon" id="live-soon"><span>STARTING SOON</span></div>
+        <div class="live-top"><span class="live-badge" id="live-badge">OFFLINE</span><span class="live-time" id="live-time" hidden>00:00</span></div>
+        <div class="live-cap"><span id="live-title-show">Enter your title</span></div>
+      </div>
+      <h2 class="live-title" id="live-title">Enter your title</h2>
+
+      <!-- creator controls -->
+      <div class="live-studio" id="live-studio" hidden>
+        <div class="live-row">
+          <label class="sr" for="live-title-in">Stream title</label>
+          <input id="live-title-in" type="text" maxlength="80" placeholder="Enter your title">
+          <button class="btn alt" type="button" id="live-title-save">SAVE</button>
+        </div>
+        <div class="live-row">
+          <button class="btn live-go" type="button" id="live-go">● GO LIVE</button>
+        </div>
+        <div class="live-mic">
+          <div class="live-mic-top"><b>MIC</b><span>CLEAN</span><input id="live-mix" type="range" min="0" max="100" value="50" aria-label="Clean to earrape mix"><span>EARRAPE</span></div>
+          <div class="live-meter" aria-hidden="true"><i id="live-level"></i></div>
+          <label class="live-hear"><input type="checkbox" id="live-hear"> Hear myself (use headphones)</label>
+        </div>
+        <p class="msg" id="live-msg" role="status"></p>
+        <p class="small">Only you see these controls. Viewers can't watch the camera yet: broadcasting to them needs a streaming server. For now the stream shows on your own screen.</p>
+      </div>
+
+      <!-- creator unlock for the public site, where Claude can't say who the owner is -->
+      <details class="live-unlock" id="live-unlock">
+        <summary>Creator?</summary>
+        <form id="live-code-form" class="live-row" novalidate>
+          <label class="sr" for="live-code">Creator code</label>
+          <input id="live-code" type="password" autocomplete="off" placeholder="Creator code">
+          <button class="btn alt" type="submit">UNLOCK</button>
+        </form>
+        <p class="msg" id="live-code-msg" role="status"></p>
+      </details>
     </div>
   </section>
 
@@ -1107,7 +1153,7 @@ function applyLang() {
 }
 
 // tabs, deep-linkable as #home / #game / #credits
-const tabs = ["home", "game", "story", "song", "credits", "shop", "wallpapers", "account", "settings"];
+const tabs = ["home", "game", "story", "song", "live", "credits", "shop", "wallpapers", "account", "settings"];
 function show(name) {
   if (!tabs.includes(name)) name = "home";
   if (name !== "settings" && typeof leaveSettings === "function") leaveSettings();
@@ -2451,6 +2497,139 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
   fillAccount(); showOwned();
   msg.classList.add("ok"); msg.textContent = name + " unlocked! " + price + " Kix spent.";
 });
+
+// ===== LIVE: V-Devil TV (creator streams camera + mic; everyone else sees the waiting screen) =====
+(() => {
+  const CREATOR_CODE_HASH = "fc681edcbe80b33c4cf5ae35a1ac97a80b97e85ad195c9a51ffbcdb6110a7934"; // SHA-256 of the creator code
+  const TITLE_KEY = "vdevil.liveTitle", UNLOCK_KEY = "vdevil.liveCreator";
+  const PUBLIC_URL = "https://ultimatelifeform2306-pixel.github.io/Album-Future-zatake/v-devil/#live";
+  let stream = null, nodes = null, t0 = 0, timer = 0, meterRaf = 0;
+  const msg = (t, ok) => { const m = $("live-msg"); m.textContent = t; m.classList.toggle("ok", !!ok); };
+
+  // ---- title ----
+  let title = ""; try { title = localStorage.getItem(TITLE_KEY) || ""; } catch (_) {}
+  function showTitle() {
+    $("live-title").textContent = title || (creator() ? "Enter your title" : "V-DEVIL TV");
+    $("live-title-show").textContent = title || (creator() ? "Enter your title" : "V-DEVIL TV");
+    $("live-title").classList.toggle("empty", !title);
+  }
+  let titleRef = null;
+  (async () => { // on the Claude link the title is shared with every viewer
+    try {
+      if (!window.claude || !window.claude.use) return;
+      const db = await window.claude.use("db"); if (!db) return;
+      titleRef = db.doc("live/state");
+      const snap = await titleRef.get();
+      if (snap.exists && typeof snap.data().title === "string") { title = snap.data().title; showTitle(); }
+    } catch (_) {}
+  })();
+  $("live-title-save").onclick = async () => {
+    title = $("live-title-in").value.trim().slice(0, 80);
+    try { localStorage.setItem(TITLE_KEY, title); } catch (_) {}
+    showTitle();
+    try { if (titleRef) await titleRef.set({ title, at: Date.now() }); } catch (_) {}
+    msg(title ? "Title saved." : "Title cleared.", true);
+  };
+
+  // ---- who is the creator ----
+  let unlocked = false; try { unlocked = localStorage.getItem(UNLOCK_KEY) === CREATOR_CODE_HASH; } catch (_) {}
+  const creator = () => isCreator || unlocked;
+  function refresh() {
+    $("live-studio").hidden = !creator();
+    $("live-unlock").hidden = creator();
+    $("live-title-in").value = title;
+    showTitle();
+  }
+  $("live-code-form").addEventListener("submit", async e => {
+    e.preventDefault();
+    const code = $("live-code").value.trim().toUpperCase(), m = $("live-code-msg");
+    let h = ""; try { h = hex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(code))); } catch (_) {}
+    if (h !== CREATOR_CODE_HASH) { m.classList.remove("ok"); m.textContent = "Wrong code."; return; }
+    unlocked = true; try { localStorage.setItem(UNLOCK_KEY, h); } catch (_) {}
+    $("live-code").value = ""; m.textContent = ""; refresh(); msg("Creator mode on.", true);
+  });
+  // the owner check on the Claude link finishes a little after load
+  let tries = 0; const poll = setInterval(() => { refresh(); if (isCreator || ++tries > 20) clearInterval(poll); }, 500);
+
+  // ---- the mic: a clean voice and an earrape copy of it, mixed together ----
+  function buildMic(ac, s) {
+    const src = ac.createMediaStreamSource(s);
+    const hp = ac.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 90;       // cut rumble
+    // clean: browser noise suppression is on the track; level it out
+    const comp = ac.createDynamicsCompressor(); comp.threshold.value = -26; comp.ratio.value = 4; comp.attack.value = .005; comp.release.value = .2;
+    const clean = ac.createGain();
+    // earrape: huge boost into a hard clipper, fat low end, harsh top
+    const drive = ac.createGain(); drive.gain.value = 30;
+    const clip = ac.createWaveShaper(); const n = 2048, c = new Float32Array(n);
+    for (let k = 0; k < n; k++) { const x = k / (n - 1) * 2 - 1; c[k] = Math.max(-1, Math.min(1, x * 6)) * .9; }
+    clip.curve = c; clip.oversample = "none";
+    const bass = ac.createBiquadFilter(); bass.type = "lowshelf"; bass.frequency.value = 180; bass.gain.value = 12;
+    const harsh = ac.createBiquadFilter(); harsh.type = "peaking"; harsh.frequency.value = 2800; harsh.Q.value = .8; harsh.gain.value = 8;
+    const ear = ac.createGain();
+    // both into a limiter so it stays loud without breaking up into silence
+    const lim = ac.createDynamicsCompressor(); lim.threshold.value = -3; lim.ratio.value = 20; lim.attack.value = .001; lim.release.value = .05;
+    const out = ac.createGain(); out.gain.value = 0;   // monitor off unless asked
+    const an = ac.createAnalyser(); an.fftSize = 1024;
+    const dest = ac.createMediaStreamDestination();    // the processed stream, ready for a broadcast or recording
+    src.connect(hp);
+    hp.connect(comp); comp.connect(clean); clean.connect(lim);
+    hp.connect(drive); drive.connect(clip); clip.connect(bass); bass.connect(harsh); harsh.connect(ear); ear.connect(lim);
+    lim.connect(an); lim.connect(dest); lim.connect(out); out.connect(ac.destination);
+    return { src, clean, ear, out, an, dest };
+  }
+  function setMix() {
+    if (!nodes) return;
+    const m = $("live-mix").value / 100;
+    nodes.clean.gain.value = 1 - m * .5;   // the clean voice always stays readable
+    nodes.ear.gain.value = m * .7;
+  }
+  $("live-mix").oninput = setMix;
+  $("live-hear").onchange = () => { if (nodes) nodes.out.gain.value = $("live-hear").checked ? 1 : 0; };
+  function meter() {
+    if (!nodes) return;
+    const d = new Float32Array(nodes.an.fftSize); nodes.an.getFloatTimeDomainData(d);
+    let r = 0; for (const v of d) r += v * v; r = Math.sqrt(r / d.length);
+    $("live-level").style.width = Math.min(100, r * 260) + "%";
+    meterRaf = requestAnimationFrame(meter);
+  }
+
+  // ---- go live / end ----
+  async function goLive() {
+    const ac = audio(); // inside the tap
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { msg("This browser can't open the camera. Use the public site: " + PUBLIC_URL); return; }
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" },
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+      });
+    } catch (err) {
+      msg(err && err.name === "NotAllowedError"
+        ? "The camera and mic were blocked. Allow them for this site in your browser settings. On the Claude link they are always blocked: use the public site " + PUBLIC_URL
+        : "No camera or mic found, or they are busy in another app.");
+      return;
+    }
+    const cam = $("live-cam"); cam.srcObject = stream; cam.hidden = false; cam.play().catch(() => {});
+    $("live-wait").hidden = true; $("live-soon").hidden = true;
+    if (ac) { nodes = buildMic(ac, stream); setMix(); nodes.out.gain.value = $("live-hear").checked ? 1 : 0; meter(); }
+    $("live-badge").textContent = "● LIVE"; $("live-badge").classList.add("on"); $("live-time").hidden = false;
+    t0 = Date.now(); timer = setInterval(() => { const s = Math.floor((Date.now() - t0) / 1000); $("live-time").textContent = String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0"); }, 500);
+    $("live-go").textContent = "■ END STREAM"; $("live-go").classList.add("end");
+    msg("You're live.", true);
+  }
+  function endLive() {
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    stream = null; cancelAnimationFrame(meterRaf);
+    if (nodes) { try { nodes.src.disconnect(); nodes.out.disconnect(); } catch (_) {} nodes = null; }
+    clearInterval(timer); $("live-time").hidden = true; $("live-time").textContent = "00:00"; $("live-level").style.width = "0";
+    const cam = $("live-cam"); cam.srcObject = null; cam.hidden = true;
+    $("live-wait").hidden = false; $("live-soon").hidden = false;
+    $("live-badge").textContent = "OFFLINE"; $("live-badge").classList.remove("on");
+    $("live-go").textContent = "● GO LIVE"; $("live-go").classList.remove("end");
+    msg("Stream ended.", true);
+  }
+  $("live-go").onclick = () => stream ? endLive() : goLive();
+  refresh();
+})();
 
 // Logged in before on this device (until LOG OUT): open the site straight away
 (() => {

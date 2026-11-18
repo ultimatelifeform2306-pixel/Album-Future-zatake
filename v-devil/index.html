@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Russo+One&family=VT323&display=swap">
-<link rel="stylesheet" href="general.css?v=20261118a">
+<link rel="stylesheet" href="general.css?v=20261118b">
 
 <!-- sign-in gate: nobody reaches the site without an account -->
 <div class="gate" id="gate">
@@ -828,12 +828,24 @@ they crush my heart destroy my body  just like a lego
   <section class="win" id="live" data-panel="live" hidden>
     <div class="bar"><i>■</i><b>LIVE.EXE · V-DEVIL TV</b><i>_</i><i>×</i></div>
     <div class="body live">
+      <div class="live-stage">
       <div class="live-player" id="live-player">
         <img class="live-wait" id="live-wait" src="live-wait.jpg" alt="Shadow in sunglasses, pointing at you: waiting screen">
         <video class="live-cam" id="live-cam" playsinline muted hidden></video>
         <div class="live-soon" id="live-soon"><span>STARTING SOON</span></div>
         <div class="live-top"><span class="live-badge" id="live-badge">OFFLINE</span><span class="live-time" id="live-time" hidden>00:00</span></div>
         <div class="live-cap"><span id="live-title-show">Enter your title</span></div>
+      </div>
+      <aside class="live-chat" aria-label="Live chat">
+        <div class="live-chat-head">LIVE CHAT</div>
+        <ol class="live-chat-list" id="chat-list" aria-live="polite"></ol>
+        <form class="live-chat-form" id="chat-form" novalidate>
+          <label class="sr" for="chat-in">Message</label>
+          <input id="chat-in" type="text" maxlength="200" autocomplete="off" placeholder="Say something…">
+          <button class="btn" type="submit">SEND</button>
+        </form>
+        <p class="live-chat-note" id="chat-note"></p>
+      </aside>
       </div>
       <h2 class="live-title" id="live-title">Enter your title</h2>
 
@@ -846,6 +858,9 @@ they crush my heart destroy my body  just like a lego
         </div>
         <div class="live-row">
           <button class="btn live-go" type="button" id="live-go">● GO LIVE</button>
+          <label class="btn alt live-pick" for="live-wait-in">CHANGE WAITING SCREEN</label>
+          <input id="live-wait-in" type="file" accept="image/*" hidden>
+          <button class="btn alt" type="button" id="live-wait-reset">RESET PICTURE</button>
         </div>
         <div class="live-mic">
           <div class="live-mic-top"><b>MIC</b><span>CLEAN</span><input id="live-mix" type="range" min="0" max="100" value="50" aria-label="Clean to earrape mix"><span>EARRAPE</span></div>
@@ -2513,23 +2528,115 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     $("live-title-show").textContent = title || (creator() ? "Enter your title" : "V-DEVIL TV");
     $("live-title").classList.toggle("empty", !title);
   }
-  let titleRef = null;
-  (async () => { // on the Claude link the title is shared with every viewer
+  // ---- waiting screen picture ----
+  const WAIT_KEY = "vdevil.liveWait", DEFAULT_WAIT = "live-wait.jpg";
+  let waitImg = ""; try { waitImg = localStorage.getItem(WAIT_KEY) || ""; } catch (_) {}
+  const showWait = () => { $("live-wait").src = waitImg || DEFAULT_WAIT; };
+  showWait();
+
+  // ---- shared state on the Claude link: live/state is written only by the owner ----
+  let stateRef = null, state = {}, db = null, me = null;
+  async function saveState(patch) {
+    state = Object.assign({}, state, patch);
+    try { if (stateRef && isCreator) await stateRef.set(state); } catch (_) {}
+  }
+  (async () => {
     try {
-      if (!window.claude || !window.claude.use) return;
-      const db = await window.claude.use("db"); if (!db) return;
-      titleRef = db.doc("live/state");
-      const snap = await titleRef.get();
-      if (snap.exists && typeof snap.data().title === "string") { title = snap.data().title; showTitle(); }
-    } catch (_) {}
+      if (!window.claude || !window.claude.use) return chatOff("Live chat works on the Claude link of the site.");
+      const [d, u] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+      if (!d) return chatOff("Sign in to Claude to join the live chat.");
+      db = d; me = u ? await u.id() : null;
+      stateRef = db.doc("live/state");
+      stateRef.onSnapshot(snap => {
+        state = snap.exists ? snap.data() : {};
+        if (typeof state.title === "string") title = state.title;
+        if (typeof state.wait === "string") waitImg = state.wait;
+        showTitle(); showWait(); drawChat();
+        // the owner marks the chat so their messages carry the CREATOR tag
+        if (isCreator && me && state.ownerId !== me) saveState({ ownerId: me });
+      });
+      startChat();
+    } catch (_) { chatOff("The live chat could not start."); }
   })();
+
   $("live-title-save").onclick = async () => {
     title = $("live-title-in").value.trim().slice(0, 80);
     try { localStorage.setItem(TITLE_KEY, title); } catch (_) {}
     showTitle();
-    try { if (titleRef) await titleRef.set({ title, at: Date.now() }); } catch (_) {}
+    await saveState({ title, at: Date.now() });
     msg(title ? "Title saved." : "Title cleared.", true);
   };
+  // shrink the picked photo to a 16:9 JPEG small enough to share
+  $("live-wait-in").onchange = e => {
+    const f = e.target.files && e.target.files[0]; e.target.value = "";
+    if (!f) return;
+    const img = new Image(), url = URL.createObjectURL(f);
+    img.onload = async () => {
+      const W = 960, H = 540, c = document.createElement("canvas"); c.width = W; c.height = H;
+      const k = Math.max(W / img.width, H / img.height), w = img.width * k, h = img.height * k;
+      c.getContext("2d").drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
+      URL.revokeObjectURL(url);
+      waitImg = c.toDataURL("image/jpeg", .72);
+      try { localStorage.setItem(WAIT_KEY, waitImg); } catch (_) {}
+      showWait();
+      await saveState({ wait: waitImg });
+      msg("Waiting screen changed.", true);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); msg("That file is not a picture this browser can open."); };
+    img.src = url;
+  };
+  $("live-wait-reset").onclick = async () => {
+    waitImg = ""; try { localStorage.removeItem(WAIT_KEY); } catch (_) {}
+    showWait(); await saveState({ wait: "" }); msg("Waiting screen back to the Shadow picture.", true);
+  };
+
+  // ---- live chat: each person keeps their own last messages in livechat/<their id> ----
+  let chatDocs = [], myMsgs = [];
+  function chatOff(why) { $("chat-in").disabled = true; $("chat-form").querySelector("button").disabled = true; $("chat-note").textContent = why; drawChat(); }
+  function startChat() {
+    if (!me) return chatOff("Sign in to Claude to join the live chat.");
+    db.collection("livechat").onSnapshot(snap => {
+      chatDocs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const mine = chatDocs.find(d => d.id === me); myMsgs = mine && Array.isArray(mine.msgs) ? mine.msgs : [];
+      drawChat();
+    }, () => chatOff("The live chat stopped. Reload the page to reconnect."));
+  }
+  function drawChat() {
+    const list = $("chat-list"), all = [];
+    chatDocs.forEach(d => (Array.isArray(d.msgs) ? d.msgs : []).forEach((m, k) => {
+      if (m && typeof m.t === "string") all.push({ uid: d.id, k, name: String(d.name || "Player").slice(0, 20), t: m.t.slice(0, 200), at: +m.at || 0 });
+    }));
+    all.sort((a, b) => a.at - b.at);
+    const atEnd = list.scrollHeight - list.scrollTop - list.clientHeight < 40;
+    list.textContent = "";
+    if (!all.length) { const li = document.createElement("li"); li.className = "empty"; li.textContent = "No messages yet. Say hi!"; list.append(li); }
+    all.slice(-100).forEach(m => {
+      const li = document.createElement("li");
+      if (m.uid === state.ownerId) { const tag = document.createElement("b"); tag.className = "crt"; tag.textContent = "CREATOR"; li.append(tag); }
+      const n = document.createElement("strong"); n.textContent = m.name + ":"; n.style.color = "hsl(" + [...m.uid].reduce((h, ch) => h + ch.charCodeAt(0), 0) % 360 + " 85% 70%)";
+      const t = document.createElement("span"); t.textContent = " " + m.t;
+      li.append(n, t);
+      if (isCreator && m.uid !== me) { // the creator can remove a message
+        const x = document.createElement("button"); x.type = "button"; x.className = "chat-x"; x.textContent = "×"; x.setAttribute("aria-label", "Delete message");
+        x.onclick = async () => { const d = chatDocs.find(d => d.id === m.uid); if (!d) return; const msgs = d.msgs.filter((_, i) => i !== m.k); try { await db.doc("livechat/" + m.uid).set({ name: d.name || "Player", msgs }); } catch (_) {} };
+        li.append(x);
+      }
+      list.append(li);
+    });
+    if (atEnd) list.scrollTop = list.scrollHeight;
+  }
+  let sending = false;
+  $("chat-form").addEventListener("submit", async e => {
+    e.preventDefault();
+    const t = $("chat-in").value.trim().slice(0, 200);
+    if (!t || sending || !db || !me) return;
+    if (isOffensive(t)) { $("chat-note").textContent = "That message has a word that isn't allowed here."; return; }
+    sending = true;
+    const msgs = myMsgs.concat({ t, at: Date.now() }).slice(-30); // keep each person's last 30
+    try { await db.doc("livechat/" + me).set({ name: player || "Player", msgs }); $("chat-in").value = ""; $("chat-note").textContent = ""; }
+    catch (_) { $("chat-note").textContent = "You can read the chat but your access to this page doesn't let you write in it."; }
+    sending = false;
+  });
 
   // ---- who is the creator ----
   let unlocked = false; try { unlocked = localStorage.getItem(UNLOCK_KEY) === CREATOR_CODE_HASH; } catch (_) {}

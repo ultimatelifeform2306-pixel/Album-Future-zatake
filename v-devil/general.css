@@ -794,3 +794,22 @@ nav a.live-tab b { color: #ff2a3a; animation: blink 1.2s steps(1) infinite; }
 .live-unlock form { margin-top: 10px; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 @media (prefers-reduced-motion: reduce) { nav a.live-tab b, .live-soon span { animation: none; } }
+
+/* LIVE: player and chat side by side */
+.live-stage { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 300px); gap: 16px; align-items: stretch; }
+.live-stage > * { min-width: 0; }
+.live-chat { display: flex; flex-direction: column; min-height: 320px; max-height: 100%; background: #0b0430; box-shadow: 0 0 0 3px var(--ink), 0 0 0 6px var(--lilac); }
+.live-chat-head { font: 10px var(--f-pixel); letter-spacing: .2em; color: var(--gold); padding: 10px 12px; border-bottom: 2px solid #2a1a6b; }
+.live-chat-list { flex: 1; min-height: 0; overflow-y: auto; margin: 0; padding: 8px 12px; list-style: none; display: grid; gap: 6px; align-content: start; font-size: 18px; line-height: 1.25; }
+.live-chat-list li { overflow-wrap: anywhere; }
+.live-chat-list li.empty { color: var(--muted); }
+.live-chat-list strong { font-weight: 400; }
+.live-chat-list .crt { font: 7px var(--f-pixel); font-weight: 400; color: #fff; background: #e0102a; padding: 3px 4px; margin-right: 5px; vertical-align: 2px; }
+.chat-x { margin-left: 6px; border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 18px; }
+.live-chat-form { display: flex; gap: 6px; padding: 8px; border-top: 2px solid #2a1a6b; }
+.live-chat-form input { flex: 1; min-width: 0; font: 18px var(--f-body); color: var(--bone); background: var(--ink); border: 0; padding: 6px 8px; box-shadow: 0 0 0 2px var(--lilac); }
+.live-chat-form .btn { border: 0; cursor: pointer; font-size: 10px; padding: 8px 10px; }
+.live-chat-form :disabled { opacity: .5; cursor: not-allowed; }
+.live-chat-note { margin: 0; padding: 0 10px 8px; font-size: 15px; color: var(--muted); }
+.live-pick { cursor: pointer; }
+@media (max-width: 760px) { .live-stage { grid-template-columns: 1fr; } .live-chat { height: 340px; } }

@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Russo+One&family=VT323&display=swap">
-<link rel="stylesheet" href="general.css?v=20261121b">
+<link rel="stylesheet" href="general.css?v=20261121c">
 
 <!-- sign-in gate: nobody reaches the site without an account -->
 <div class="gate" id="gate">
@@ -947,10 +947,9 @@ they crush my heart destroy my body  just like a lego
         </form>
 
         <!-- new post -->
+        <input id="yrs-new-file" type="file" accept="image/*,video/mp4,video/webm" hidden>
         <form class="yrs-form" id="yrs-new" hidden novalidate>
-          <h2 class="ig-h">Post your video or photo</h2>
-          <label class="ig-btn" for="yrs-new-file">Choose a photo or video</label>
-          <input id="yrs-new-file" type="file" accept="image/*,video/mp4,video/webm" hidden>
+          <h2 class="ig-h">New post</h2>
           <div class="yrs-new-prev" id="yrs-new-prev"></div>
           <label for="yrs-new-desc">Description</label>
           <textarea id="yrs-new-desc" maxlength="300" rows="3" placeholder="Write a description"></textarea>
@@ -965,6 +964,30 @@ they crush my heart destroy my body  just like a lego
         <button type="button" data-ig="friends" aria-label="Friends"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.5-4 3-6 6.5-6s6 2 6.5 6"/><circle cx="17" cy="9" r="2.8"/><path d="M16.5 14c3 .2 4.6 2 5 5"/></svg></button>
         <button type="button" data-ig="inbox" aria-label="Inbox"><svg viewBox="0 0 24 24"><path d="M21 3 3 10.5l7 2.5 2.5 7z"/><path d="m10 13 11-10"/></svg></button>
       </nav>
+
+      <!-- editor: before a story or a post -->
+      <div class="ige" id="ig-editor" hidden>
+        <div class="ige-top"><button type="button" class="ig-ico" id="ige-back" aria-label="Cancel"><svg viewBox="0 0 24 24"><path d="M15 4 7 12l8 8"/></svg></button><span class="ige-tip" id="ige-tip"></span></div>
+        <div class="ige-tools" role="toolbar" aria-label="Edit">
+          <button type="button" data-tool="text" aria-label="Text"><b>Aa</b></button>
+          <button type="button" data-tool="sticker" aria-label="Stickers"><svg viewBox="0 0 24 24"><path d="M20 12.5V7a3 3 0 0 0-3-3H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h5.5z"/><path d="M12.5 20c0-4 3.5-7.5 7.5-7.5"/><circle cx="9" cy="10" r=".9"/><circle cx="15" cy="10" r=".9"/><path d="M8.5 14.5c1.6 1.4 3.9 1.4 5.5 0"/></svg></button>
+          <button type="button" data-tool="filter" aria-label="Filters"><svg viewBox="0 0 24 24"><circle cx="9" cy="9" r="5"/><circle cx="15" cy="9" r="5"/><circle cx="12" cy="15" r="5"/></svg></button>
+          <button type="button" data-tool="crop" aria-label="Crop"><svg viewBox="0 0 24 24"><path d="M7 2v15h15"/><path d="M2 7h15v15"/></svg></button>
+        </div>
+        <div class="ige-wrap"><div class="ige-stage" id="ige-stage"><canvas id="ige-canvas"></canvas><video id="ige-video" playsinline loop muted hidden></video></div></div>
+        <div class="ige-panel" id="ige-panel"></div>
+        <div class="ige-bottom"><button type="button" class="ige-story" id="ige-story"><img class="yrs-av" id="ige-story-av" alt="">Your Story</button><button type="button" class="ige-next" id="ige-next">Next</button></div>
+      </div>
+
+      <!-- story viewer -->
+      <div class="igs" id="ig-story" hidden>
+        <div class="igs-bars" id="igs-bars"></div>
+        <div class="igs-head"><img class="yrs-av" id="igs-av" alt=""><strong id="igs-name"></strong><span class="ig-time" id="igs-time"></span><button type="button" class="igs-x" id="igs-x" aria-label="Close">×</button></div>
+        <div class="igs-media" id="igs-media"></div>
+        <button type="button" class="igs-tap prev" id="igs-prev" aria-label="Previous"></button>
+        <button type="button" class="igs-tap next" id="igs-next" aria-label="Next"></button>
+        <button type="button" class="ig-btn red igs-del" id="igs-del" hidden>Delete story</button>
+      </div>
 
       <!-- one post, full size -->
       <div class="yrs-view" id="yrs-view" hidden>
@@ -1694,6 +1717,7 @@ function playTap(e) {
   if (!tapBuf || now - lastTap < 60) return;
   lastTap = now;
   if (!document.getElementById("intro").hidden) return; // the reaper intro has its own sound
+  if (document.documentElement.classList.contains("ig-open")) return; // Yours stays silent
   if (document.body.classList.contains("story-mode")) return; // Story and maxi single screens stay silent
   const src = ac.createBufferSource(), g = ac.createGain();
   g.gain.value = .8 * SET.sfx; src.buffer = tapBuf; src.connect(g); g.connect(ac.destination); src.start();
@@ -2845,8 +2869,10 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
 (() => {
   const BLOB = id => "/_blob/" + id;
   let db = null, assets = null, me = null, ownerId = null;
-  const profiles = {}, posts = {}, likes = {}, cmts = {};
+  const profiles = {}, posts = {}, likes = {}, cmts = {}, stories = {};
   let viewing = null, profUid = null, newFile = null, editPhoto = null, tab = "home";
+  const DAY = 24 * 60 * 60 * 1000;
+  const activeStories = uid => ((stories[uid] && Array.isArray(stories[uid].items)) ? stories[uid].items : []).filter(s => s && s.src && Date.now() - s.at < DAY).sort((a, b) => a.at - b.at);
   const off = t => { const o = $("yrs-off"); o.hidden = !t; o.textContent = t || ""; };
   const isOwnerId = uid => !!ownerId && uid === ownerId;
   const nameOf = uid => (profiles[uid] && profiles[uid].name) || (isOwnerId(uid) ? "Kenos" : "Player");
@@ -2874,7 +2900,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
   // ---- opening and leaving the app (it covers the whole website) ----
   const app = $("ig");
   function enterApp() { document.documentElement.classList.add("ig-open"); go(tab); }
-  function leaveApp() { document.documentElement.classList.remove("ig-open"); closeView(); show("home"); try { history.replaceState(null, "", "#home"); } catch (_) {} }
+  function leaveApp() { document.documentElement.classList.remove("ig-open"); closeView(); closeEditor(); closeStories(); show("home"); try { history.replaceState(null, "", "#home"); } catch (_) {} }
   $("ig-back").onclick = leaveApp;
   new MutationObserver(() => { if (!$("yours").hidden) enterApp(); else document.documentElement.classList.remove("ig-open"); }).observe($("yours"), { attributes: true, attributeFilter: ["hidden"] });
   if (!$("yours").hidden) enterApp();
@@ -2902,6 +2928,12 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     db.doc("live/state").onSnapshot(sn => { ownerId = sn.exists ? sn.data().ownerId || null : null; if (isCreator) ownerId = ownerId || me; render(); });
     const watch = (col, store) => db.collection(col).onSnapshot(sn => { Object.keys(store).forEach(k => delete store[k]); sn.docs.forEach(x => { store[x.id] = x.data(); }); render(); }, () => {});
     watch("profiles", profiles); watch("posts", posts); watch("likes", likes); watch("cmts", cmts);
+    let cleaned = false; // my stories older than 24 hours are removed, with their files
+    db.collection("stories").onSnapshot(sn => {
+      Object.keys(stories).forEach(k => delete stories[k]); sn.docs.forEach(x => { stories[x.id] = x.data(); }); render();
+      const mine = (stories[me] && stories[me].items) || [], old = mine.filter(s => Date.now() - s.at >= DAY);
+      if (!cleaned && old.length) { cleaned = true; db.doc("stories/" + me).set({ items: mine.filter(s => Date.now() - s.at < DAY) }).then(() => old.forEach(s => s.asset && assets && assets.delete(s.asset).catch(() => {}))).catch(() => {}); }
+    }, () => {});
   })();
   setInterval(() => { // keep the creator's counters climbing on screen
     if ($("yours").hidden || !allPosts().some(p => isOwnerId(p.uid))) return;
@@ -2960,11 +2992,13 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     const all = allPosts();
     if (!$("ig-home").hidden) {
       const st = $("yrs-people"); st.textContent = "";
-      everyone().forEach(uid => {
+      [me, ...everyone().filter(u => u !== me && activeStories(u).length)].forEach(uid => {
+        const has = activeStories(uid).length > 0;
         const b = el("button", "ig-story"); b.type = "button";
-        const ring = el("span", "ig-ring" + (all.some(p => p.uid === uid) ? "" : " seen")); ring.append(avatar(uid));
+        const ring = el("span", "ig-ring" + (has ? "" : " none")); ring.append(avatar(uid));
+        if (uid === me) { const plus = el("span", "ig-plus", "+"); plus.onclick = e => { e.stopPropagation(); $("yrs-post-btn").click(); }; ring.append(plus); }
         b.append(ring, el("span", "", uid === me ? "Your story" : nameOf(uid)));
-        b.onclick = () => uid === me ? $("yrs-post-btn").click() : openProfile(uid);
+        b.onclick = () => has ? openStories(uid) : $("yrs-post-btn").click();
         st.append(b);
       });
       const feed = $("yrs-feed"); feed.textContent = "";
@@ -3053,43 +3087,182 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     catch (_) { m.textContent = "Your access to this page doesn't let you change a profile."; }
   });
 
-  // ---- new post ----
+  // ---- new post or story: pick a file, edit it, then Your Story or Next ----
+  const FILTERS = [["Normal", "none"], ["Vivid", "saturate(1.6) contrast(1.1)"], ["B&W", "grayscale(1) contrast(1.15)"], ["Warm", "sepia(.35) saturate(1.3) hue-rotate(-10deg)"], ["Cool", "saturate(1.1) hue-rotate(18deg) brightness(1.05)"], ["Purple", "sepia(.45) hue-rotate(225deg) saturate(1.8)"], ["VHS", "contrast(1.25) saturate(1.45) hue-rotate(-8deg) blur(.5px)"]];
+  const ASPECTS = [["Original", 0], ["1:1", 1], ["4:5", .8], ["9:16", 9 / 16], ["16:9", 16 / 9]];
+  const STICKERS = ["🔥", "💜", "😈", "💀", "👑", "⭐", "💯", "😂", "🥶", "🎮", "🎤", "🎧", "😕", "❤️", "✨", "🖤"];
+  const COLORS = ["#ffffff", "#000000", "#ff3040", "#ffc531", "#3ddc84", "#3897f0", "#a640ff", "#ff2e97"];
+  const E = { kind: null, file: null, img: null, url: "", filter: "none", aspect: 0, items: [], sel: -1, panel: "" };
+  const stage = $("ige-stage"), cv = $("ige-canvas"), vid = $("ige-video");
+  const ratio = () => E.aspect || (E.img ? E.img.width / E.img.height : (vid.videoWidth / vid.videoHeight) || 9 / 16);
+  function cropRect(r) { // centre crop of the photo to the chosen shape
+    const w = E.img.width, h = E.img.height;
+    return w / h > r ? { sx: (w - h * r) / 2, sy: 0, sw: h * r, sh: h } : { sx: 0, sy: (h - w / r) / 2, sw: w, sh: w / r };
+  }
+  function drawBase(c, W) {
+    const r = ratio(), H = Math.round(W / r); c.width = W; c.height = H;
+    const x = c.getContext("2d"), k = cropRect(r);
+    x.filter = E.filter; x.drawImage(E.img, k.sx, k.sy, k.sw, k.sh, 0, 0, W, H); x.filter = "none";
+    return x;
+  }
+  function layout() { // fit the stage in the space between the top bar and the buttons
+    if (E.kind === "photo" && !E.img) return; // still loading
+    const wrap = stage.parentElement, r = ratio();
+    const w = Math.min(wrap.clientWidth, wrap.clientHeight * r);
+    stage.style.width = w + "px"; stage.style.height = w / r + "px";
+    if (E.kind === "photo") { const d = Math.min(2, devicePixelRatio || 1); drawBase(cv, Math.round(w * d)); }
+    drawItems();
+  }
+  function drawItems() {
+    stage.querySelectorAll(".ige-item").forEach(n => n.remove());
+    const w = stage.clientWidth;
+    E.items.forEach((it, i) => {
+      const n = el("div", "ige-item" + (it.type === "text" ? " txt" : "") + (i === E.sel ? " sel" : ""), it.text);
+      n.style.left = it.x * 100 + "%"; n.style.top = it.y * 100 + "%"; n.style.fontSize = it.size * w + "px"; if (it.type === "text") n.style.color = it.color;
+      n.addEventListener("pointerdown", ev => {
+        ev.preventDefault(); E.sel = i; panel("item"); drawItems();
+        const r = stage.getBoundingClientRect(), node = stage.querySelectorAll(".ige-item")[i];
+        node.setPointerCapture(ev.pointerId);
+        const move = m => { it.x = Math.min(1, Math.max(0, (m.clientX - r.left) / r.width)); it.y = Math.min(1, Math.max(0, (m.clientY - r.top) / r.height)); node.style.left = it.x * 100 + "%"; node.style.top = it.y * 100 + "%"; };
+        node.onpointermove = move; node.onpointerup = () => { node.onpointermove = null; };
+      });
+      stage.append(n);
+    });
+  }
+  function panel(name) {
+    E.panel = name; const p = $("ige-panel"); p.textContent = "";
+    requestAnimationFrame(() => { if (!$("ig-editor").hidden) layout(); }); // the picture shrinks to make room for the panel
+    document.querySelectorAll(".ige-tools button").forEach(b => b.classList.toggle("on", b.dataset.tool === name));
+    if (name === "filter") FILTERS.forEach(([n, f]) => { const b = el("button", "ige-chip" + (E.filter === f ? " on" : "")); b.type = "button"; const sw = el("span", "ige-sw"); sw.style.backgroundImage = "url(" + E.url + ")"; sw.style.filter = f; b.append(sw, el("span", "", n)); b.onclick = () => { E.filter = f; layout(); panel("filter"); }; p.append(b); });
+    if (name === "crop") ASPECTS.forEach(([n, a]) => { const b = el("button", "ige-chip txt" + (E.aspect === a ? " on" : ""), n); b.type = "button"; b.onclick = () => { E.aspect = a; layout(); panel("crop"); }; p.append(b); });
+    if (name === "sticker") STICKERS.forEach(s => { const b = el("button", "ige-emo", s); b.type = "button"; b.onclick = () => { E.items.push({ type: "sticker", text: s, x: .5, y: .5, size: .16 }); E.sel = E.items.length - 1; drawItems(); panel("item"); }; p.append(b); });
+    if (name === "text") {
+      const f = el("form", "ige-textform"); const i = el("input"); i.type = "text"; i.maxLength = 60; i.placeholder = "Type your text"; i.id = "ige-text-in";
+      const ok = el("button", "ig-btn blue", "Add"); ok.type = "submit"; f.append(i, ok);
+      f.onsubmit = e => { e.preventDefault(); const t = i.value.trim(); if (!t) return; if (isOffensive(t)) { $("ige-tip").textContent = "That text has a word that isn't allowed here."; return; } E.items.push({ type: "text", text: t, x: .5, y: .45, size: .08, color: "#ffffff" }); E.sel = E.items.length - 1; drawItems(); panel("item"); };
+      p.append(f); setTimeout(() => i.focus(), 0);
+    }
+    if (name === "item" && E.items[E.sel]) {
+      const it = E.items[E.sel], btn = (t, fn, lab) => { const b = el("button", "ige-chip txt", t); b.type = "button"; if (lab) b.setAttribute("aria-label", lab); b.onclick = fn; p.append(b); };
+      btn("A−", () => { it.size = Math.max(.03, it.size * .85); drawItems(); }, "Smaller");
+      btn("A+", () => { it.size = Math.min(.5, it.size * 1.18); drawItems(); }, "Bigger");
+      if (it.type === "text") COLORS.forEach(c => { const b = el("button", "ige-color" + (it.color === c ? " on" : "")); b.type = "button"; b.style.background = c; b.setAttribute("aria-label", "Color " + c); b.onclick = () => { it.color = c; drawItems(); panel("item"); }; p.append(b); });
+      btn("Delete", () => { E.items.splice(E.sel, 1); E.sel = -1; drawItems(); panel(""); });
+    }
+  }
+  document.querySelectorAll(".ige-tools button").forEach(b => b.onclick = () => { if (E.kind !== "photo") return; E.sel = -1; drawItems(); panel(E.panel === b.dataset.tool ? "" : b.dataset.tool); });
+  stage.addEventListener("pointerdown", e => { if (e.target === cv || e.target === stage) { E.sel = -1; drawItems(); if (E.panel === "item") panel(""); } });
+  addEventListener("resize", () => { if (!$("ig-editor").hidden) layout(); });
+
   $("yrs-post-btn").onclick = () => {
     if (!db) return;
     if (!assets) { off("Your access to this page lets you watch and like, not post. Ask the creator for Contributor access."); return; }
-    off(""); newFile = null; $("yrs-new-prev").textContent = ""; $("yrs-new-desc").value = ""; $("yrs-new-msg").textContent = "";
+    off(""); $("yrs-new-file").click();
+  };
+  $("yrs-new-file").onchange = e => {
+    const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+    if (f.type.startsWith("video/")) {
+      if (!/^video\/(mp4|webm)$/.test(f.type)) return off("This video type can't be posted. Use MP4 (on iPhone: Settings, Camera, Formats, Most Compatible).");
+      if (f.size > 20 * 1024 * 1024) return off("Videos can be up to 20 MB. Trim it or send a shorter clip.");
+      return openEditor("video", f);
+    }
+    openEditor("photo", f);
+  };
+  function openEditor(kind, file) {
+    Object.assign(E, { kind, file, img: null, filter: "none", aspect: 0, items: [], sel: -1 });
+    if (E.url) URL.revokeObjectURL(E.url); E.url = URL.createObjectURL(file);
+    $("ige-tip").textContent = kind === "photo" ? "Drag text and stickers to place them" : "Editing tools work on photos";
+    $("ige-story-av").src = avatarOf(me); $("ig-editor").hidden = false; panel("");
+    $("ig-editor").classList.toggle("video", kind === "video");
+    cv.hidden = kind !== "photo"; vid.hidden = kind !== "video";
+    if (kind === "video") { vid.src = E.url; vid.onloadedmetadata = layout; vid.play().catch(() => {}); return; }
+    const img = new Image(); img.onload = () => { E.img = img; layout(); };
+    img.onerror = () => { closeEditor(); off("That file is not a picture this browser can open."); }; img.src = E.url;
+  }
+  function closeEditor() { $("ig-editor").hidden = true; vid.pause(); vid.removeAttribute("src"); }
+  $("ige-back").onclick = closeEditor;
+  function finalBlob() { // bake crop, filter, text and stickers into one JPEG
+    if (E.kind === "video") return Promise.resolve(E.file);
+    const c = document.createElement("canvas"), x = drawBase(c, 1080), W = c.width;
+    x.textAlign = "center"; x.textBaseline = "middle";
+    E.items.forEach(it => {
+      const px = it.size * W; x.font = (it.type === "text" ? "800 " : "") + px + "px system-ui, -apple-system, 'Segoe UI', sans-serif";
+      if (it.type === "text") { x.lineJoin = "round"; x.lineWidth = px * .14; x.strokeStyle = it.color === "#000000" ? "#ffffff" : "#000000"; x.strokeText(it.text, it.x * W, it.y * c.height); x.fillStyle = it.color; }
+      x.fillText(it.text, it.x * W, it.y * c.height);
+    });
+    return new Promise((ok, no) => c.toBlob(b => b ? ok(b) : no(), "image/jpeg", .9));
+  }
+  const upErr = err => ({ too_large: "That file is too big (20 MB max).", unsupported_type: "That file type can't be posted.", quota_or_state: "The site's storage is full right now.", rate_limited: "Too many uploads at once. Wait a moment and try again." }[err && err.code] || "It could not be shared. Try again.");
+  // Your Story: shared for 24 hours, never on the profile
+  $("ige-story").onclick = async () => {
+    const b = $("ige-story"); b.disabled = true; $("ige-tip").textContent = "Sharing to your story…";
+    try {
+      const blob = await finalBlob(), up = await assets.upload(blob);
+      const now = Date.now(), items = ((stories[me] && stories[me].items) || []).filter(s => now - s.at < DAY).concat({ id: now.toString(36), kind: E.kind, src: BLOB(up.id), asset: up.id, at: now }).slice(-30);
+      await db.doc("stories/" + me).set({ items });
+      closeEditor(); go("home");
+    } catch (err) { $("ige-tip").textContent = upErr(err); }
+    b.disabled = false;
+  };
+  // Next: write a description, then Share to the profile and feed
+  let readyBlob = null;
+  $("ige-next").onclick = async () => {
+    try { readyBlob = await finalBlob(); } catch (_) { $("ige-tip").textContent = "That picture could not be prepared."; return; }
+    closeEditor();
+    const prev = $("yrs-new-prev"); prev.textContent = "";
+    const m = E.kind === "video" ? el("video") : el("img"); m.src = URL.createObjectURL(readyBlob); if (E.kind === "video") { m.controls = true; m.playsInline = true; } else m.alt = "Preview";
+    prev.append(m); $("yrs-new-desc").value = ""; $("yrs-new-msg").textContent = "";
     document.querySelectorAll(".ig-nav button").forEach(b => b.classList.remove("on")); screen("yrs-new");
   };
   $("yrs-new-cancel").onclick = () => go("home");
-  $("yrs-new-file").onchange = async e => {
-    const f = e.target.files[0]; e.target.value = ""; if (!f) return;
-    const m = $("yrs-new-msg"), prev = $("yrs-new-prev"); m.textContent = ""; prev.textContent = ""; newFile = null;
-    if (f.type.startsWith("video/")) {
-      if (!/^video\/(mp4|webm)$/.test(f.type)) { m.textContent = "This video type can't be posted. Use MP4 (on iPhone: Settings, Camera, Formats, Most Compatible)."; return; }
-      if (f.size > 20 * 1024 * 1024) { m.textContent = "Videos can be up to 20 MB. Trim it or send a shorter clip."; return; }
-      newFile = { blob: f, kind: "video" };
-      const v = el("video"); v.src = URL.createObjectURL(f); v.controls = true; v.playsInline = true; prev.append(v);
-    } else {
-      try { const r = await shrink(f, 1440, false); newFile = { blob: r.blob, kind: "photo" }; const im = el("img"); im.src = URL.createObjectURL(r.blob); im.alt = "Preview"; prev.append(im); }
-      catch (_) { m.textContent = "That file is not a picture this browser can open."; }
-    }
-  };
   $("yrs-new").addEventListener("submit", async e => {
     e.preventDefault();
     const m = $("yrs-new-msg"), desc = $("yrs-new-desc").value.trim().slice(0, 300);
-    if (!newFile) { m.textContent = "Choose a photo or video first."; return; }
+    if (!readyBlob) { m.textContent = "Pick a photo or video first."; return; }
     if (isOffensive(desc)) { m.textContent = "Your description has a word that isn't allowed here."; return; }
     $("yrs-new-go").disabled = true; m.textContent = "Uploading…";
     try {
-      const up = await assets.upload(newFile.blob);
-      const items = ((posts[me] && posts[me].items) || []).concat({ id: Date.now().toString(36), kind: newFile.kind, src: BLOB(up.id), asset: up.id, desc, at: Date.now() }).slice(-60);
+      const up = await assets.upload(readyBlob);
+      const items = ((posts[me] && posts[me].items) || []).concat({ id: Date.now().toString(36), kind: E.kind, src: BLOB(up.id), asset: up.id, desc, at: Date.now() }).slice(-60);
       await db.doc("posts/" + me).set({ items });
-      m.textContent = ""; go("home");
-    } catch (err) {
-      m.textContent = { too_large: "That file is too big (20 MB max).", unsupported_type: "That file type can't be posted.", quota_or_state: "The site's storage is full right now.", rate_limited: "Too many uploads at once. Wait a moment and try again." }[err && err.code] || "The post could not be shared. Try again.";
-    }
+      m.textContent = ""; readyBlob = null; go("home");
+    } catch (err) { m.textContent = upErr(err); }
     $("yrs-new-go").disabled = false;
   });
+
+  // ---- stories: watch them like Instagram, gone after 24 hours ----
+  let sv = null; // { uid, list, i, timer }
+  function openStories(uid) {
+    const list = activeStories(uid); if (!list.length) return;
+    sv = { uid, list, i: 0, timer: 0 }; $("ig-story").hidden = false; showStory();
+  }
+  function showStory() {
+    clearTimeout(sv.timer);
+    const s = sv.list[sv.i], bars = $("igs-bars"); bars.textContent = "";
+    sv.list.forEach((_, k) => { const b = el("span", k < sv.i ? "done" : k === sv.i ? "now" : ""); b.append(el("i")); bars.append(b); });
+    $("igs-av").src = avatarOf(sv.uid); $("igs-name").textContent = nameOf(sv.uid); $("igs-time").textContent = ago(s.at);
+    $("igs-del").hidden = sv.uid !== me;
+    const box = $("igs-media"); box.textContent = "";
+    const bar = bars.children[sv.i].firstChild;
+    if (s.kind === "video") {
+      const v = el("video"); v.src = s.src; v.playsInline = true; v.autoplay = true; box.append(v);
+      v.onloadedmetadata = () => { bar.style.animationDuration = (v.duration || 5) + "s"; bar.classList.add("run"); };
+      v.onended = nextStory; v.play().catch(() => {});
+    } else {
+      const im = el("img"); im.src = s.src; im.alt = "Story"; box.append(im);
+      bar.style.animationDuration = "5s"; bar.classList.add("run"); sv.timer = setTimeout(nextStory, 5000);
+    }
+  }
+  function nextStory() { if (!sv) return; if (sv.i < sv.list.length - 1) { sv.i++; showStory(); } else closeStories(); }
+  function prevStory() { if (!sv) return; if (sv.i > 0) { sv.i--; } showStory(); }
+  function closeStories() { if (sv) clearTimeout(sv.timer); sv = null; $("ig-story").hidden = true; $("igs-media").textContent = ""; }
+  $("igs-next").onclick = nextStory; $("igs-prev").onclick = prevStory; $("igs-x").onclick = closeStories;
+  $("igs-del").onclick = async () => {
+    if (!sv || sv.uid !== me) return;
+    const s = sv.list[sv.i], items = ((stories[me] && stories[me].items) || []).filter(x => x.id !== s.id);
+    try { await db.doc("stories/" + me).set({ items }); if (s.asset && assets) assets.delete(s.asset).catch(() => {}); } catch (_) {}
+    closeStories();
+  };
 
   // ---- one post, full size ----
   function openView(key) { viewing = key; $("yrs-view").hidden = false; $("yrs-v-media").textContent = ""; fillView(true); }
@@ -3135,7 +3308,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     const id = viewing && viewing.split(":")[1], list = (posts[me] && posts[me].items) || [], it = list.find(x => x.id === id);
     try { await db.doc("posts/" + me).set({ items: list.filter(x => x.id !== id) }); closeView(); if (it && it.asset && assets) assets.delete(it.asset).catch(() => {}); } catch (_) {}
   };
-  addEventListener("keydown", e => { if (e.key === "Escape" && !$("yours").hidden) { if (viewing) closeView(); else leaveApp(); } });
+  addEventListener("keydown", e => { if (e.key !== "Escape" || $("yours").hidden) return; if (sv) closeStories(); else if (!$("ig-editor").hidden) closeEditor(); else if (viewing) closeView(); else leaveApp(); });
 })();
 
 // Logged in before on this device (until LOG OUT): open the site straight away

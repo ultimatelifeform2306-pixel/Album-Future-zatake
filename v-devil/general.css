@@ -1222,3 +1222,8 @@ html.ig-open, html.ig-open body { overflow: hidden; }
 .yrs-tile.pending { opacity: .75; }
 .yrs-spin { position: absolute; left: 50%; top: 50%; width: 26px; height: 26px; margin: -13px 0 0 -13px; border: 3px solid rgba(255,255,255,.35); border-top-color: #fff; border-radius: 50%; animation: yrs-spin .8s linear infinite; }
 @keyframes yrs-spin { to { transform: rotate(360deg); } }
+
+/* editor: rotate */
+.ige-stage video { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(var(--rot, 0deg)); transition: transform .3s ease, filter .25s ease; }
+.ige-tools button.spin svg { animation: ige-spin .35s ease-out; }
+@keyframes ige-spin { from { transform: rotate(-90deg); } }

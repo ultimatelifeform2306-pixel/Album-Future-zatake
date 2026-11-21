@@ -1197,3 +1197,11 @@ html.ig-open, html.ig-open body { overflow: hidden; }
 .ig-post-media img { pointer-events: none; }
 .ig-ripple { position: absolute; width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.55), rgba(255,255,255,.15) 60%, transparent 70%); pointer-events: none; animation: ig-ripple .45s ease-out forwards; }
 @keyframes ig-ripple { to { transform: scale(9); opacity: .25; } }
+
+/* editor: video tools on, filter name flash when swiping */
+.ige.video .ige-tools { opacity: 1; pointer-events: auto; }
+.ige-fname { position: absolute; z-index: 3; left: 0; right: 64px; top: 45%; margin: 0; text-align: center; font: 700 30px system-ui, -apple-system, sans-serif; color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,.7); opacity: 0; pointer-events: none; }
+.ige-fname.on { animation: ige-fname .9s ease-out; }
+@keyframes ige-fname { 0% { opacity: 0; transform: scale(.8); } 20% { opacity: 1; transform: scale(1.05); } 70% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+.ige-stage canvas, .ige-stage video { transition: filter .25s ease; }
+.ige-next:disabled, .ige-story:disabled { opacity: .5; }

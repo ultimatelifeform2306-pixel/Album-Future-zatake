@@ -858,6 +858,7 @@ they crush my heart destroy my body  just like a lego
           <button type="button" id="live-pp" aria-label="Pause"><svg viewBox="0 0 24 24"><path d="M7 5h3v14H7zM14 5h3v14h-3z"/></svg></button>
           <button type="button" id="live-vol" aria-label="Hear myself"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="w" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/><path class="x" d="m16 9 6 6M22 9l-6 6"/></svg></button>
           <button type="button" id="live-flip" aria-label="Switch camera"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><path d="M9.5 12.5a3 3 0 0 1 5-1.5M14.5 14.5a3 3 0 0 1-5 1.5"/><path d="M14.5 9.5v1.8h-1.8M9.5 17.5v-1.8h1.8"/></svg></button>
+          <button type="button" id="live-rot" aria-label="Turn the picture"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v4h4"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg></button>
           <button type="button" id="live-cine-btn" aria-label="Cinematic filter">CINE</button>
           <span class="live-ctl-sp"></span>
           <button type="button" id="live-wide" aria-label="Widescreen"><svg viewBox="0 0 24 24"><path class="in" d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/><path class="out" d="M9 4v5H4M20 9h-5V4M15 20v-5h5M4 15h5v5"/></svg></button>
@@ -2998,6 +2999,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
   // ---- go live / end ----
   async function goLive() {
     const ac = audio(); // inside the tap
+    askMotion(); // iPhone asks once to let the live know when the phone is turned sideways
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { msg("This browser can't open the camera. Use the public site: " + PUBLIC_URL); return; }
     try {
       // try the best camera first, then simpler asks (some phones and in-app browsers refuse the detailed one)
@@ -3040,7 +3042,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     if (fs) { try { const r = fs.call(box); if (r && r.then) r.then(lock).catch(() => {}); else lock(); } catch (_) {} }
   }
   function exitFull() {
-    document.documentElement.classList.remove("live-full"); $("live-back").hidden = true; $("live-sure").hidden = true;
+    document.documentElement.classList.remove("live-full", "rot90", "rot-90"); $("live-back").hidden = true; $("live-sure").hidden = true;
     try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch (_) {}
     const fe = document.fullscreenElement || document.webkitFullscreenElement;
     if (fe) { const x = document.exitFullscreen || document.webkitExitFullscreen; try { const r = x.call(document); if (r && r.catch) r.catch(() => {}); } catch (_) {} }
@@ -3051,8 +3053,42 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     const t = stream && stream.getVideoTracks()[0], st = t && t.getSettings ? t.getSettings() : {}, h = Math.min(st.width || 0, st.height || 0);
     const q = $("live-q"); q.hidden = !h;
     q.textContent = h >= 2000 ? "4K" : h >= 1400 ? "1440p" : h >= 1000 ? "1080p HD" : h >= 700 ? "720p HD" : h + "p";
-    $("live-cam").style.transform = facing === "user" ? "" : "none"; // only the selfie camera is mirrored
+    placeCam(); // only the selfie camera is mirrored
   }
+  // ---- landscape: turning the phone sideways puts the live in widescreen, the right way up ----
+  const IOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  let side = 0, motionOn = false;
+  function askMotion() {
+    try { if (window.DeviceMotionEvent && typeof DeviceMotionEvent.requestPermission === "function") DeviceMotionEvent.requestPermission().then(r => { if (r === "granted") listenMotion(); }).catch(() => {}); else listenMotion(); } catch (_) {}
+  }
+  function listenMotion() { if (motionOn) return; motionOn = true; addEventListener("devicemotion", onMotion); }
+  function onMotion(e) {
+    const g = e.accelerationIncludingGravity; if (!g || g.x == null) return;
+    const x = IOS ? -g.x : g.x, y = Math.abs(g.y || 0);
+    let next = side;
+    if (x > 7 && y < 5) next = 90; else if (x < -7 && y < 5) next = -90; else if (y > 7) next = 0;
+    if (next !== side) { side = next; applySide(); }
+  }
+  addEventListener("resize", () => applySide());
+  function applySide() {
+    if (!stream) return;
+    const portraitScreen = innerHeight > innerWidth, html = document.documentElement;
+    if (side !== 0 && !html.classList.contains("live-full")) enterFull();     // phone turned sideways: widescreen
+    if (!portraitScreen && !html.classList.contains("live-full")) enterFull(); // the screen itself turned
+    html.classList.toggle("rot90", portraitScreen && side === 90);            // the screen didn't turn (rotation lock): turn the live ourselves
+    html.classList.toggle("rot-90", portraitScreen && side === -90);
+    syncCtl();
+  }
+  // the camera picture itself can be turned by hand if a phone sends it sideways
+  let camRot = 0;
+  function placeCam() {
+    const cam = $("live-cam"), pl = $("live-player"), w = pl.clientWidth, h = pl.clientHeight, side90 = camRot % 180 !== 0;
+    cam.style.width = side90 ? h + "px" : ""; cam.style.height = side90 ? w + "px" : "";
+    cam.style.left = side90 ? (w - h) / 2 + "px" : ""; cam.style.top = side90 ? (h - w) / 2 + "px" : "";
+    cam.style.transform = "rotate(" + camRot + "deg)" + (facing === "user" ? " scaleX(-1)" : "");
+  }
+  $("live-rot").onclick = e => { e.stopPropagation(); camRot = (camRot + 90) % 360; placeCam(); showCtl(); };
+  addEventListener("resize", () => { if (camRot) setTimeout(placeCam, 50); });
   $("live-flip").onclick = async e => {
     e.stopPropagation(); if (!stream) return;
     const next = facing === "user" ? "environment" : "user";
@@ -3076,7 +3112,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
   function showCtl() { const pl = $("live-player"); pl.classList.add("ctl-on"); clearTimeout(ctlT); ctlT = setTimeout(() => pl.classList.remove("ctl-on"), 3500); syncCtl(); }
   function syncCtl() {
     const cam = $("live-cam"), paused = !!stream && cam.paused;
-    $("live-pp").hidden = !stream; $("live-vol").hidden = !stream; $("live-flip").hidden = !stream; $("live-cine-btn").hidden = !stream;
+    $("live-pp").hidden = !stream; $("live-vol").hidden = !stream; $("live-flip").hidden = !stream; $("live-rot").hidden = !stream; $("live-cine-btn").hidden = !stream;
     $("live-pp").innerHTML = paused ? '<svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>' : '<svg viewBox="0 0 24 24"><path d="M7 5h3v14H7zM14 5h3v14h-3z"/></svg>';
     $("live-pp").setAttribute("aria-label", paused ? "Play" : "Pause");
     $("live-vol").classList.toggle("off", !$("live-hear").checked);

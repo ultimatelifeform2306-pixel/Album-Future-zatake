@@ -1323,3 +1323,10 @@ html.live-full #live .live-top { left: 120px; }
 #live-cine-btn { font: 700 11px system-ui, sans-serif; width: auto; padding: 0 8px; letter-spacing: .05em; }
 #live-cine-btn.on { background: rgba(255,197,49,.25); color: var(--gold); }
 .live-top { z-index: 3; }
+
+/* LIVE: phone turned sideways while the screen stays upright (rotation lock) — the live turns itself */
+html.live-full.rot90 #live .live-stage, html.live-full.rot-90 #live .live-stage {
+  inset: auto; left: 50%; top: 50%; width: 100vh; height: 100vw; width: 100dvh; height: 100dvw; padding: 0;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 26%); grid-template-rows: minmax(0, 1fr); }
+html.live-full.rot90 #live .live-stage { transform: translate(-50%, -50%) rotate(90deg); }
+html.live-full.rot-90 #live .live-stage { transform: translate(-50%, -50%) rotate(-90deg); }

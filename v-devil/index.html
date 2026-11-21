@@ -3072,7 +3072,8 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     if (p.kind === "video") { const v = el("video"); v.src = p.src; v.playsInline = true; v.loop = true; v.controls = true; v.preload = "metadata"; if (feed) v.muted = true; return dressVideo(v, p); }
     const im = el("img"); im.src = p.src; im.alt = p.desc ? p.desc.slice(0, 80) : "Post"; im.loading = "lazy"; return im;
   }
-  function feedPost(p) {
+  const boxCache = new Map();
+  function feedPost(p, where) {
     const art = el("article", "ig-post");
     const head = el("div", "ig-post-head");
     const who = el("button", "ig-who"); who.type = "button"; who.append(avatar(p.uid, "ring"), el("span", "", nameOf(p.uid)));
@@ -3085,7 +3086,9 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
       del.onclick = e => { e.stopPropagation(); menu.hidden = true; askDelete(p); };
       menu.append(del); wrap.append(dots, menu); head.append(who, wrap);
     } else head.append(who);
-    const box = el("div", "ig-post-media"); box.append(media(p, true)); box.ondblclick = () => toggleLike(p.key, true); holdable(box, p);
+    const ck = (where || "home") + "|" + p.key + "|" + p.src + "|" + (p.fx || "") + "|" + (p.ar || "") + "|" + JSON.stringify(p.ov || "");
+    let box = boxCache.get(ck);
+    if (!box) { box = el("div", "ig-post-media"); box.append(media(p, true)); box.ondblclick = () => toggleLike(p.key, true); holdable(box, p); boxCache.set(ck, box); if (boxCache.size > 120) boxCache.delete(boxCache.keys().next().value); }
     const acts = el("div", "ig-acts");
     const like = el("button", "ig-ico like" + (iLike(p.key) ? " on" : "")); like.type = "button"; like.setAttribute("aria-label", "Like");
     like.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-8.6-9C2.3 7.6 4.6 4.5 7.8 4.5c1.9 0 3.3 1 4.2 2.4.9-1.4 2.3-2.4 4.2-2.4 3.2 0 5.5 3.1 4.4 6.5C19 15.6 12 20 12 20z"/></svg>';
@@ -3375,9 +3378,10 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     cv.hidden = kind !== "photo"; vid.hidden = kind !== "video";
     if (kind === "video") {
       vid.muted = true; vid.playsInline = true; vid.preload = "auto"; vid.onloadedmetadata = layout; vid.onloadeddata = null;
-      vid.src = E.url + "#t=0.001"; vid.load(); vid.play().catch(() => {});
+      vid.src = E.url; vid.load(); vid.play().catch(() => {});
+      setTimeout(() => { if (!$("ig-editor").hidden && E.kind === "video") layout(); }, 1200); // show the frame even if the phone is slow to report the size
       vid.addEventListener("loadeddata", function once() { vid.removeEventListener("loadeddata", once); layout(); try { const c = document.createElement("canvas"); c.width = 120; c.height = Math.round(120 * vid.videoHeight / vid.videoWidth) || 200; c.getContext("2d").drawImage(vid, 0, 0, c.width, c.height); E.thumb = c.toDataURL("image/jpeg", .7); if (E.panel === "filter") panel("filter"); } catch (_) {} });
-      vid.onerror = () => { closeEditor(); off("This browser can't open that video."); };
+      vid.onerror = () => { $("ige-tip").textContent = "Swipe the picture to change the filter"; layout(); }; // the preview may not play here, but the video can still be posted
       return;
     }
     const img = new Image(); img.onload = () => { E.img = img; layout(); };
@@ -3414,11 +3418,11 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
         const dur = isFinite(v.duration) && v.duration > 0 ? v.duration : 60;
         if (dur > 180) { cleanup(); return fail("too_long"); }
         const r = E.aspect || v.videoWidth / v.videoHeight || 9 / 16, slow = E.filter !== "none" && !CANVAS_FILTER;
-        let W = Math.min(slow ? 480 : 720, cropRect(r).sw); W -= W % 2; const H = Math.round(W / r / 2) * 2;
+        let W = Math.min(slow ? 400 : 540, cropRect(r).sw); W -= W % 2; const H = Math.round(W / r / 2) * 2;
         const c = document.createElement("canvas"); c.width = W; c.height = H; const x = c.getContext("2d");
         const draw = () => { paint(x, v, W, H, true); drawItemsOn(x, W, H); };
         draw();
-        const stream = c.captureStream(30); if (dest) dest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
+        const stream = c.captureStream(24); if (dest) dest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
         const mime = ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].find(t => { try { return MediaRecorder.isTypeSupported(t); } catch (_) { return false; } });
         const bps = Math.max(400000, Math.min(2500000, 19 * 1024 * 1024 * 8 / dur * .85 - 128000));
         let rec; try { rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: bps, audioBitsPerSecond: 96000 } : { videoBitsPerSecond: bps }); } catch (_) { cleanup(); return fail("no_recorder"); }
@@ -3676,7 +3680,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     if (!postsOf) return;
     const list = $("igp-list"), keep = list.scrollTop, theirs = allPosts().filter(p => p.uid === postsOf);
     list.textContent = "";
-    theirs.forEach(p => { const a = feedPost(p); a.dataset.key = p.key; list.append(a); });
+    theirs.forEach(p => { const a = feedPost(p, "posts"); a.dataset.key = p.key; list.append(a); });
     if (!theirs.length) list.append(el("p", "ig-empty", "No posts yet."));
     list.scrollTop = keep;
   }

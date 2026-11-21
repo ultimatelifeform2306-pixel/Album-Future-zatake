@@ -1268,9 +1268,9 @@ html.live-full #live .live-chat { height: 100%; min-height: 0; max-height: none;
 html.live-full .live-back { display: block; position: absolute; z-index: 5; left: calc(10px + env(safe-area-inset-left)); top: calc(10px + env(safe-area-inset-top)); border: 0; padding: 8px 12px; font: 10px var(--f-pixel); color: #fff; background: rgba(0,0,0,.6); box-shadow: 0 0 0 2px var(--lilac); cursor: pointer; }
 html.live-full .live-back[hidden] { display: none; }
 html.live-full #live .live-top { left: 120px; }
-/* a phone held upright: the live turns sideways anyway */
+/* a phone held upright: camera on top, chat underneath (nothing is turned, so the picture is never sideways) */
 @media (orientation: portrait) {
-  html.live-full #live .live-stage { inset: auto; left: 50%; top: 50%; width: 100vh; height: 100vw; width: 100dvh; height: 100dvw; transform: translate(-50%, -50%) rotate(90deg); padding: 0; }
+  html.live-full #live .live-stage { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 62%) minmax(0, 1fr); }
 }
 .live-sure { position: absolute; inset: 0; z-index: 10; display: grid; place-items: center; background: rgba(0,0,0,.65); }
 .live-sure[hidden] { display: none; }
@@ -1310,3 +1310,16 @@ html.live-full #live .live-top { left: 120px; }
 #live-vol .x { display: none; } #live-vol.off .x { display: inline; } #live-vol.off .w { display: none; }
 #live-wide .out { display: none; } #live-wide.on .out { display: inline; } #live-wide.on .in { display: none; }
 .live-ctl-sp { flex: 1; }
+
+/* ===== LIVE: cinematic look, quality badge, camera flip ===== */
+.live-cine { position: absolute; inset: 0; z-index: 2; pointer-events: none; display: none;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.55) 100%); }
+.live-cine::before, .live-cine::after { content: ""; position: absolute; left: 0; right: 0; height: 9%; background: #000; }
+.live-cine::before { top: 0; } .live-cine::after { bottom: 0; }
+.live-player.cine.on-air .live-cine { display: block; }
+.live-player.cine .live-cam { filter: contrast(1.12) saturate(1.18) brightness(.96) sepia(.07); }
+.live-q { padding: 4px 6px; font: 9px var(--f-pixel); color: #000; background: var(--gold); }
+.live-q[hidden] { display: none; }
+#live-cine-btn { font: 700 11px system-ui, sans-serif; width: auto; padding: 0 8px; letter-spacing: .05em; }
+#live-cine-btn.on { background: rgba(255,197,49,.25); color: var(--gold); }
+.live-top { z-index: 3; }

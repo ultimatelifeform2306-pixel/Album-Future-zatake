@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Russo+One&family=VT323&display=swap">
-<link rel="stylesheet" href="general.css?v=20261121e">
+<link rel="stylesheet" href="general.css?v=20261121f">
 
 <!-- sign-in gate: nobody reaches the site without an account -->
 <div class="gate" id="gate">
@@ -953,6 +953,11 @@ they crush my heart destroy my body  just like a lego
           <div class="yrs-new-prev" id="yrs-new-prev"></div>
           <label for="yrs-new-desc">Description</label>
           <textarea id="yrs-new-desc" maxlength="300" rows="3" placeholder="Write a description"></textarea>
+          <div class="yrs-arch" id="yrs-arch" hidden>
+            <label class="yrs-arch-on"><input type="checkbox" id="yrs-arch-on"> Archive date <small>(creator only)</small></label>
+            <input type="date" id="yrs-arch-date" aria-label="Archive date" disabled>
+            <p class="yrs-arch-tip">The post shows this date, like “November 17”. From the next year on it shows “2026-11-17”.</p>
+          </div>
           <div class="ig-row"><button class="ig-btn blue" type="submit" id="yrs-new-go">Share</button><button class="ig-btn" type="button" id="yrs-new-cancel">Cancel</button></div>
           <p class="ig-msg" id="yrs-new-msg" role="status"></p>
         </form>
@@ -997,6 +1002,7 @@ they crush my heart destroy my body  just like a lego
           <div class="yrs-card-body">
             <div class="yrs-acts"><button type="button" class="yrs-like" id="yrs-v-like" aria-label="Like">♡</button><span id="yrs-v-likes"></span><span id="yrs-v-views" class="yrs-views"></span></div>
             <p class="yrs-desc" id="yrs-v-desc"></p>
+            <p class="yrs-date" id="yrs-v-date"></p>
             <div class="yrs-mine" id="yrs-v-mine" hidden>
               <textarea id="yrs-v-edit" maxlength="300" rows="2" aria-label="Edit description"></textarea>
               <div class="ig-row"><button class="ig-btn" type="button" id="yrs-v-save">Save description</button><button class="ig-btn red" type="button" id="yrs-v-del">Delete post</button></div>
@@ -2939,6 +2945,14 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
   const RAMP = 5 * 60 * 1000, ramp = (at, top) => Math.round(top * Math.pow(Math.min(1, Math.max(0, Date.now() - at) / RAMP), .6));
   const likesShown = p => (isOwnerId(p.uid) ? ramp(p.at, 100000) : 0) + likers(p.key).length;
   const iLike = key => !!(likes[me] && Array.isArray(likes[me].keys) && likes[me].keys.includes(key));
+  // a post's date: "now / 5m / 3h" for fresh posts, "November 17" this year, "2026-11-17" from an older year
+  const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  function dateLabel(p) {
+    const d = new Date(p.at), now = new Date();
+    if (!p.arch && Date.now() - p.at < 7 * 86400000) return ago(p.at);
+    if (d.getFullYear() === now.getFullYear()) return MONTHS[d.getMonth()] + " " + d.getDate();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
   const postsLabel = n => n + (n === 1 ? " post" : " posts");
   const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
 
@@ -2999,7 +3013,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     const who = el("button", "ig-who"); who.type = "button"; who.append(avatar(p.uid, "ring"), el("span", "", nameOf(p.uid)));
     if (isOwnerId(p.uid)) who.append(el("span", "ig-check", "✔"));
     who.onclick = () => openProfile(p.uid);
-    head.append(who, el("span", "ig-time", ago(p.at)));
+    head.append(who, el("span", "ig-time", dateLabel(p)));
     const box = el("div", "ig-post-media"); box.append(media(p, true)); box.ondblclick = () => toggleLike(p.key, true);
     const acts = el("div", "ig-acts");
     const like = el("button", "ig-ico like" + (iLike(p.key) ? " on" : "")); like.type = "button"; like.setAttribute("aria-label", "Like");
@@ -3265,17 +3279,26 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     const prev = $("yrs-new-prev"); prev.textContent = "";
     const m = E.kind === "video" ? el("video") : el("img"); m.src = URL.createObjectURL(readyBlob); if (E.kind === "video") { m.controls = true; m.playsInline = true; } else m.alt = "Preview";
     prev.append(m); $("yrs-new-desc").value = ""; $("yrs-new-msg").textContent = "";
+    $("yrs-arch").hidden = !isCreator; $("yrs-arch-on").checked = false; $("yrs-arch-date").disabled = true;
+    const t = new Date(); $("yrs-arch-date").value = t.getFullYear() + "-" + String(t.getMonth() + 1).padStart(2, "0") + "-" + String(t.getDate()).padStart(2, "0"); $("yrs-arch-date").max = $("yrs-arch-date").value;
     document.querySelectorAll(".ig-nav button").forEach(b => b.classList.remove("on")); screen("yrs-new");
   };
   $("yrs-new-cancel").onclick = () => go("home");
+  $("yrs-arch-on").onchange = () => { $("yrs-arch-date").disabled = !$("yrs-arch-on").checked; };
   $("yrs-new").addEventListener("submit", async e => {
     e.preventDefault();
     const m = $("yrs-new-msg"), desc = $("yrs-new-desc").value.trim().slice(0, 300);
     if (!readyBlob) { m.textContent = "Pick a photo or video first."; return; }
+    let at = Date.now(), arch = false;
+    if (isCreator && $("yrs-arch-on").checked) {
+      const v = $("yrs-arch-date").value.split("-").map(Number);
+      if (v.length !== 3 || !v[0]) { m.textContent = "Pick the archive date."; return; }
+      at = new Date(v[0], v[1] - 1, v[2], 12).getTime(); arch = true;
+    }
     $("yrs-new-go").disabled = true; m.textContent = "Uploading…";
     try {
       const up = await assets.upload(readyBlob);
-      const items = ((posts[me] && posts[me].items) || []).concat({ id: Date.now().toString(36), kind: E.kind, src: BLOB(up.id), asset: up.id, desc, at: Date.now() }).slice(-60);
+      const items = ((posts[me] && posts[me].items) || []).concat({ id: Date.now().toString(36), kind: E.kind, src: BLOB(up.id), asset: up.id, desc, at, ...(arch ? { arch: 1 } : {}) }).slice(-60);
       await db.doc("posts/" + me).set({ items });
       m.textContent = ""; readyBlob = null; go("home");
     } catch (err) { m.textContent = upErr(err); }
@@ -3330,7 +3353,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     $("yrs-v-like").textContent = mine ? "♥" : "♡"; $("yrs-v-like").classList.toggle("on", mine);
     $("yrs-v-likes").textContent = fmt(likesShown(p)) + " likes";
     $("yrs-v-views").textContent = isOwnerId(p.uid) ? fmt(ramp(p.at, 1000000)) + " views" : "";
-    $("yrs-v-desc").textContent = p.desc || "";
+    $("yrs-v-desc").textContent = p.desc || ""; $("yrs-v-date").textContent = dateLabel(p);
     $("yrs-v-mine").hidden = p.uid !== me;
     const creatorPost = isOwnerId(p.uid), n = cmtsOf(p.key).length;
     $("yrs-v-cbtn").textContent = creatorPost ? "Comments are turned off" : n ? "View all " + n + " comments" : "Add a comment…";

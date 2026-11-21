@@ -2984,6 +2984,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
       if (!stream) throw last || new Error("none");
     } catch (err) {
       const name = err && err.name || "";
+      setTimeout(() => { const m = $("live-msg"); if (m && m.textContent && !/\[/.test(m.textContent)) m.textContent += " [" + (name || "unknown") + " · " + location.hostname + "]"; }, 0); // a code to tell what blocked it
       if (inClaude()) msg("Claude blocks the camera on this link. Tap 📷 OPEN MY CAMERA: the live opens on the public site, already signed in.");
       else if (name === "NotAllowedError" || name === "SecurityError") msg("The camera and mic were blocked. Allow them for this site in your browser settings.");
       else msg("The camera didn't start. Open this page in Safari or Chrome (not inside another app), close other apps using the camera, then try again.");

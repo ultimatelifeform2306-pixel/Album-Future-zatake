@@ -1205,3 +1205,20 @@ html.ig-open, html.ig-open body { overflow: hidden; }
 @keyframes ige-fname { 0% { opacity: 0; transform: scale(.8); } 20% { opacity: 1; transform: scale(1.05); } 70% { opacity: 1; transform: none; } 100% { opacity: 0; } }
 .ige-stage canvas, .ige-stage video { transition: filter .25s ease; }
 .ige-next:disabled, .ige-story:disabled { opacity: .5; }
+
+/* ===== YOURS: background upload bar, video edits layer, pending tiles ===== */
+.ig-up { position: relative; display: grid; gap: 4px; padding: 6px 14px 8px; background: #0d0d0d; border-bottom: 1px solid #1f1f1f; font-size: 13px; color: #c7c7cc; }
+.ig-up[hidden] { display: none; }
+.ig-up i { display: block; height: 3px; border-radius: 3px; background: #262626; overflow: hidden; }
+.ig-up b { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #a640ff, #ff3b7a); transition: width .3s; }
+.ig-up.busy b { width: 35%; animation: ig-up 1.1s ease-in-out infinite; }
+@keyframes ig-up { from { transform: translateX(-100%); } to { transform: translateX(300%); } }
+.ig-vfx { position: relative; container-type: inline-size; overflow: hidden; width: 100%; }
+.ig-vfx video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.ig-post-media .ig-vfx video, .yrs-media .ig-vfx video, .igh-media .ig-vfx video { max-height: none; }
+.ig-vfx-item { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; line-height: 1.1; pointer-events: none; padding: 2px 6px; }
+.ig-vfx-item.txt { font-weight: 800; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-text-stroke: .07em #000; paint-order: stroke fill; }
+.igs-media .ig-vfx { height: 100%; display: grid; place-items: center; }
+.yrs-tile.pending { opacity: .75; }
+.yrs-spin { position: absolute; left: 50%; top: 50%; width: 26px; height: 26px; margin: -13px 0 0 -13px; border: 3px solid rgba(255,255,255,.35); border-top-color: #fff; border-radius: 50%; animation: yrs-spin .8s linear infinite; }
+@keyframes yrs-spin { to { transform: rotate(360deg); } }

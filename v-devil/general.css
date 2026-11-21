@@ -1281,3 +1281,5 @@ html.live-full #live .live-top { left: 120px; }
 .live-sure-row { display: flex; gap: 12px; }
 .live-sure-row .btn { border: 0; cursor: pointer; min-width: 90px; justify-content: center; }
 .live-sure-yes { background: #e0102a; }
+.live-cam-link { background: #3897f0; text-decoration: none; }
+.live-cam-link[hidden] { display: none; }

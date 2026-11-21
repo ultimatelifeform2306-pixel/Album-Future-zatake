@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Russo+One&family=VT323&display=swap">
-<link rel="stylesheet" href="general.css?v=20261121a">
+<link rel="stylesheet" href="general.css?v=20261121b">
 
 <!-- sign-in gate: nobody reaches the site without an account -->
 <div class="gate" id="gate">
@@ -885,87 +885,103 @@ they crush my heart destroy my body  just like a lego
     </div>
   </section>
 
-  <!-- YOURS: everyone's profiles and posts -->
+  <!-- YOURS: a full-screen, dark, Instagram-style app over the website -->
   <section class="win" id="yours" data-panel="yours" hidden>
-    <div class="bar"><i>■</i><b>YOURS.EXE</b><i>_</i><i>×</i></div>
-    <div class="body yrs">
-      <p class="msg" id="yrs-off" hidden></p>
+    <div class="ig" id="ig">
+      <header class="ig-top">
+        <button type="button" class="ig-ico" id="ig-back" aria-label="Back to the website"><svg viewBox="0 0 24 24"><path d="M15 4 7 12l8 8"/></svg></button>
+        <h1 class="ig-logo" id="ig-logo">Yours</h1>
+        <button type="button" class="ig-ico" id="yrs-post-btn" aria-label="New post"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+        <button type="button" class="ig-me" id="yrs-mine-btn" aria-label="Your profile"><img class="yrs-av" id="yrs-my-av" src="yours-creator.jpg" alt=""></button>
+      </header>
 
-      <!-- home of the page: me + people + everyone's posts -->
-      <div id="yrs-home">
-        <div class="yrs-me">
-          <img class="yrs-av big" id="yrs-my-av" src="yours-creator.jpg" alt="">
-          <div class="yrs-me-txt">
-            <strong id="yrs-my-name">…</strong>
-            <span id="yrs-my-bio" class="yrs-bio"></span>
-            <div class="yrs-me-btns">
-              <button class="btn" type="button" id="yrs-post-btn">＋ POST</button>
-              <button class="btn alt" type="button" id="yrs-edit-btn">EDIT PROFILE</button>
-              <button class="btn alt" type="button" id="yrs-mine-btn">MY PROFILE</button>
+      <main class="ig-main" id="ig-main">
+        <p class="ig-off" id="yrs-off" hidden></p>
+
+        <!-- HOME: stories + feed -->
+        <div id="ig-home">
+          <div class="ig-stories" id="yrs-people"></div>
+          <div class="ig-feed" id="yrs-feed"></div>
+        </div>
+
+        <!-- SEARCH -->
+        <div id="ig-search" hidden>
+          <div class="ig-searchbar"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><input id="ig-q" type="search" placeholder="Search people" aria-label="Search people"></div>
+          <div class="ig-list" id="ig-results"></div>
+          <div class="yrs-grid" id="ig-explore"></div>
+        </div>
+
+        <!-- FRIENDS -->
+        <div id="ig-friends" hidden>
+          <h2 class="ig-h">Friends</h2>
+          <div class="ig-list" id="ig-friend-list"></div>
+        </div>
+
+        <!-- INBOX: what happened on your posts -->
+        <div id="ig-inbox" hidden>
+          <h2 class="ig-h">Inbox</h2>
+          <div class="ig-list" id="ig-act"></div>
+        </div>
+
+        <!-- someone's profile -->
+        <div id="yrs-prof" hidden>
+          <div class="yrs-prof-head">
+            <img class="yrs-av huge" id="yrs-prof-av" alt="">
+            <div class="yrs-stats"><span><b id="yrs-prof-posts">0</b>posts</span><span><b id="yrs-prof-likes">0</b>likes</span><span><b id="yrs-prof-views">0</b>views</span></div>
+          </div>
+          <div class="ig-prof-txt"><strong class="yrs-prof-name" id="yrs-prof-name"></strong> <span class="yrs-badge" id="yrs-prof-badge" hidden>CREATOR</span><p class="yrs-bio" id="yrs-prof-bio"></p></div>
+          <button class="ig-btn" type="button" id="yrs-edit-btn" hidden>Edit profile</button>
+          <div class="yrs-grid" id="yrs-prof-grid"></div>
+        </div>
+
+        <!-- edit profile -->
+        <form class="yrs-form" id="yrs-edit" hidden novalidate>
+          <h2 class="ig-h">Edit profile</h2>
+          <div class="yrs-edit-av"><img class="yrs-av huge" id="yrs-edit-av" alt=""><label class="ig-btn" for="yrs-edit-photo">Change photo</label><input id="yrs-edit-photo" type="file" accept="image/*" hidden></div>
+          <label for="yrs-edit-name">Name</label>
+          <input id="yrs-edit-name" type="text" maxlength="15" placeholder="Your name">
+          <label for="yrs-edit-bio">Description</label>
+          <textarea id="yrs-edit-bio" maxlength="160" rows="3" placeholder="Say something about you"></textarea>
+          <div class="ig-row"><button class="ig-btn blue" type="submit">Save</button><button class="ig-btn" type="button" id="yrs-edit-cancel">Cancel</button></div>
+          <p class="ig-msg" id="yrs-edit-msg" role="status"></p>
+        </form>
+
+        <!-- new post -->
+        <form class="yrs-form" id="yrs-new" hidden novalidate>
+          <h2 class="ig-h">Post your video or photo</h2>
+          <label class="ig-btn" for="yrs-new-file">Choose a photo or video</label>
+          <input id="yrs-new-file" type="file" accept="image/*,video/mp4,video/webm" hidden>
+          <div class="yrs-new-prev" id="yrs-new-prev"></div>
+          <label for="yrs-new-desc">Description</label>
+          <textarea id="yrs-new-desc" maxlength="300" rows="3" placeholder="Write a description"></textarea>
+          <div class="ig-row"><button class="ig-btn blue" type="submit" id="yrs-new-go">Share</button><button class="ig-btn" type="button" id="yrs-new-cancel">Cancel</button></div>
+          <p class="ig-msg" id="yrs-new-msg" role="status"></p>
+        </form>
+      </main>
+
+      <nav class="ig-nav" aria-label="Yours">
+        <button type="button" data-ig="home" aria-label="Home" class="on"><svg viewBox="0 0 24 24"><path d="M4 11 12 4l8 7v9h-5v-6H9v6H4z"/></svg></button>
+        <button type="button" data-ig="search" aria-label="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg></button>
+        <button type="button" data-ig="friends" aria-label="Friends"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.5-4 3-6 6.5-6s6 2 6.5 6"/><circle cx="17" cy="9" r="2.8"/><path d="M16.5 14c3 .2 4.6 2 5 5"/></svg></button>
+        <button type="button" data-ig="inbox" aria-label="Inbox"><svg viewBox="0 0 24 24"><path d="M21 3 3 10.5l7 2.5 2.5 7z"/><path d="m10 13 11-10"/></svg></button>
+      </nav>
+
+      <!-- one post, full size -->
+      <div class="yrs-view" id="yrs-view" hidden>
+        <div class="yrs-card">
+          <div class="yrs-card-top"><button type="button" class="yrs-who" id="yrs-v-who"><img class="yrs-av" id="yrs-v-av" alt=""><span id="yrs-v-name"></span></button><button type="button" class="yrs-close" id="yrs-v-close" aria-label="Close">×</button></div>
+          <div class="yrs-media" id="yrs-v-media"></div>
+          <div class="yrs-card-body">
+            <div class="yrs-acts"><button type="button" class="yrs-like" id="yrs-v-like" aria-label="Like">♡</button><span id="yrs-v-likes"></span><span id="yrs-v-views" class="yrs-views"></span></div>
+            <p class="yrs-desc" id="yrs-v-desc"></p>
+            <div class="yrs-mine" id="yrs-v-mine" hidden>
+              <textarea id="yrs-v-edit" maxlength="300" rows="2" aria-label="Edit description"></textarea>
+              <div class="ig-row"><button class="ig-btn" type="button" id="yrs-v-save">Save description</button><button class="ig-btn red" type="button" id="yrs-v-del">Delete post</button></div>
             </div>
+            <ol class="yrs-cmts" id="yrs-v-cmts"></ol>
+            <form class="yrs-cmt-form" id="yrs-v-cform" novalidate><label class="sr" for="yrs-v-cin">Comment</label><input id="yrs-v-cin" type="text" maxlength="200" placeholder="Add a comment…"><button class="ig-btn blue" type="submit">Post</button></form>
+            <p class="yrs-cnote" id="yrs-v-cnote"></p>
           </div>
-        </div>
-        <h3 class="yrs-h">PEOPLE</h3>
-        <div class="yrs-people" id="yrs-people"></div>
-        <h3 class="yrs-h">POSTS</h3>
-        <div class="yrs-grid" id="yrs-feed"></div>
-      </div>
-
-      <!-- someone's profile -->
-      <div id="yrs-prof" hidden>
-        <button class="btn alt" type="button" id="yrs-prof-back">BACK</button>
-        <div class="yrs-prof-head">
-          <img class="yrs-av huge" id="yrs-prof-av" alt="">
-          <div>
-            <strong class="yrs-prof-name" id="yrs-prof-name"></strong>
-            <span class="yrs-badge" id="yrs-prof-badge" hidden>CREATOR</span>
-            <div class="yrs-stats"><span><b id="yrs-prof-posts">0</b> posts</span><span><b id="yrs-prof-likes">0</b> likes</span></div>
-            <p class="yrs-bio" id="yrs-prof-bio"></p>
-          </div>
-        </div>
-        <div class="yrs-grid" id="yrs-prof-grid"></div>
-      </div>
-
-      <!-- edit profile -->
-      <form class="yrs-form" id="yrs-edit" hidden novalidate>
-        <h3 class="yrs-h">EDIT PROFILE</h3>
-        <div class="yrs-edit-av"><img class="yrs-av huge" id="yrs-edit-av" alt=""><label class="btn alt" for="yrs-edit-photo">CHANGE PHOTO</label><input id="yrs-edit-photo" type="file" accept="image/*" hidden></div>
-        <label for="yrs-edit-name">NAME</label>
-        <input id="yrs-edit-name" type="text" maxlength="15" placeholder="Your name">
-        <label for="yrs-edit-bio">DESCRIPTION</label>
-        <textarea id="yrs-edit-bio" maxlength="160" rows="3" placeholder="Say something about you"></textarea>
-        <div class="yrs-me-btns"><button class="btn" type="submit">SAVE</button><button class="btn alt" type="button" id="yrs-edit-cancel">CANCEL</button></div>
-        <p class="msg" id="yrs-edit-msg" role="status"></p>
-      </form>
-
-      <!-- new post -->
-      <form class="yrs-form" id="yrs-new" hidden novalidate>
-        <h3 class="yrs-h">POST YOUR VIDEO OR PHOTO</h3>
-        <label class="btn alt" for="yrs-new-file">CHOOSE A PHOTO OR VIDEO</label>
-        <input id="yrs-new-file" type="file" accept="image/*,video/mp4,video/webm" hidden>
-        <div class="yrs-new-prev" id="yrs-new-prev"></div>
-        <label for="yrs-new-desc">DESCRIPTION</label>
-        <textarea id="yrs-new-desc" maxlength="300" rows="3" placeholder="Write a description"></textarea>
-        <div class="yrs-me-btns"><button class="btn" type="submit" id="yrs-new-go">SHARE</button><button class="btn alt" type="button" id="yrs-new-cancel">CANCEL</button></div>
-        <p class="msg" id="yrs-new-msg" role="status"></p>
-      </form>
-    </div>
-
-    <!-- one post, full size -->
-    <div class="yrs-view" id="yrs-view" hidden>
-      <div class="yrs-card">
-        <div class="yrs-card-top"><button type="button" class="yrs-who" id="yrs-v-who"><img class="yrs-av" id="yrs-v-av" alt=""><span id="yrs-v-name"></span></button><button type="button" class="yrs-close" id="yrs-v-close" aria-label="Close">×</button></div>
-        <div class="yrs-media" id="yrs-v-media"></div>
-        <div class="yrs-card-body">
-          <div class="yrs-acts"><button type="button" class="yrs-like" id="yrs-v-like">♡</button><span id="yrs-v-likes"></span><span id="yrs-v-views" class="yrs-views"></span></div>
-          <p class="yrs-desc" id="yrs-v-desc"></p>
-          <div class="yrs-mine" id="yrs-v-mine" hidden>
-            <textarea id="yrs-v-edit" maxlength="300" rows="2" aria-label="Edit description"></textarea>
-            <div class="yrs-me-btns"><button class="btn alt" type="button" id="yrs-v-save">SAVE DESCRIPTION</button><button class="btn alt" type="button" id="yrs-v-del">DELETE POST</button></div>
-          </div>
-          <ol class="yrs-cmts" id="yrs-v-cmts"></ol>
-          <form class="yrs-cmt-form" id="yrs-v-cform" novalidate><label class="sr" for="yrs-v-cin">Comment</label><input id="yrs-v-cin" type="text" maxlength="200" placeholder="Add a comment…"><button class="btn" type="submit">SEND</button></form>
-          <p class="yrs-cnote" id="yrs-v-cnote"></p>
         </div>
       </div>
     </div>
@@ -2825,90 +2841,191 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
   refresh();
 })();
 
-// ===== YOURS: profiles, posts, likes and comments (Claude link only; shared through db) =====
+// ===== YOURS: a full-screen Instagram-style app (Claude link only; shared through db) =====
 (() => {
   const BLOB = id => "/_blob/" + id;
   let db = null, assets = null, me = null, ownerId = null;
   const profiles = {}, posts = {}, likes = {}, cmts = {};
-  let viewing = null, profUid = null, newFile = null, editPhoto = null;
-  const off = t => { const o = $("yrs-off"); o.hidden = false; o.textContent = t; };
+  let viewing = null, profUid = null, newFile = null, editPhoto = null, tab = "home";
+  const off = t => { const o = $("yrs-off"); o.hidden = !t; o.textContent = t || ""; };
   const isOwnerId = uid => !!ownerId && uid === ownerId;
-  const avatarOf = uid => (profiles[uid] && profiles[uid].photo) || (isOwnerId(uid) ? "yours-creator.jpg" : letterAvatar(nameOf(uid)));
   const nameOf = uid => (profiles[uid] && profiles[uid].name) || (isOwnerId(uid) ? "Kenos" : "Player");
+  const avatarOf = uid => (profiles[uid] && profiles[uid].photo) || (isOwnerId(uid) ? "yours-creator.jpg" : letterAvatar(nameOf(uid)));
+  const letters = {};
   function letterAvatar(n) {
+    if (letters[n]) return letters[n];
     const c = document.createElement("canvas"); c.width = c.height = 64; const x = c.getContext("2d");
-    x.fillStyle = "hsl(" + [...n].reduce((h, ch) => h + ch.charCodeAt(0), 0) % 360 + " 60% 40%)"; x.fillRect(0, 0, 64, 64);
-    x.fillStyle = "#fff"; x.font = "28px 'Press Start 2P', monospace"; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText((n[0] || "?").toUpperCase(), 32, 36);
-    return c.toDataURL();
+    x.fillStyle = "hsl(" + [...n].reduce((h, ch) => h + ch.charCodeAt(0), 0) % 360 + " 55% 42%)"; x.fillRect(0, 0, 64, 64);
+    x.fillStyle = "#fff"; x.font = "bold 30px system-ui, sans-serif"; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText((n[0] || "?").toUpperCase(), 32, 34);
+    return (letters[n] = c.toDataURL());
   }
   const fmt = n => n >= 1e6 ? (n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace(/\.0$/, "") + "M" : n >= 1e3 ? (n / 1e3).toFixed(n >= 1e4 ? 0 : 1).replace(/\.0$/, "") + "K" : String(n);
+  const ago = at => { const s = Math.max(0, (Date.now() - at) / 1000); return s < 60 ? "now" : s < 3600 ? Math.floor(s / 60) + "m" : s < 86400 ? Math.floor(s / 3600) + "h" : Math.floor(s / 86400) + "d"; };
   const allPosts = () => Object.entries(posts).flatMap(([uid, d]) => (Array.isArray(d.items) ? d.items : []).filter(p => p && p.id && p.src).map(p => ({ ...p, uid, key: uid + ":" + p.id }))).sort((a, b) => b.at - a.at);
-  const likeCount = key => Object.values(likes).filter(l => Array.isArray(l.keys) && l.keys.includes(key)).length;
+  const likers = key => Object.entries(likes).filter(([, l]) => Array.isArray(l.keys) && l.keys.includes(key)).map(([u]) => u);
+  const cmtsOf = key => Object.entries(cmts).flatMap(([uid, d]) => (Array.isArray(d.items) ? d.items : []).filter(c => c && c.k === key && typeof c.t === "string").map(c => ({ uid, t: c.t.slice(0, 200), at: +c.at || 0 }))).sort((a, b) => a.at - b.at);
   // the creator's posts climb to 1M views and 100K likes over their first five minutes
   const RAMP = 5 * 60 * 1000, ramp = (at, top) => Math.round(top * Math.pow(Math.min(1, Math.max(0, Date.now() - at) / RAMP), .6));
-  const likesShown = p => isOwnerId(p.uid) ? ramp(p.at, 100000) + likeCount(p.key) : likeCount(p.key);
+  const likesShown = p => (isOwnerId(p.uid) ? ramp(p.at, 100000) : 0) + likers(p.key).length;
+  const iLike = key => !!(likes[me] && Array.isArray(likes[me].keys) && likes[me].keys.includes(key));
+  const postsLabel = n => n + (n === 1 ? " post" : " posts");
+  const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
 
-  // ---- start ----
+  // ---- opening and leaving the app (it covers the whole website) ----
+  const app = $("ig");
+  function enterApp() { document.documentElement.classList.add("ig-open"); go(tab); }
+  function leaveApp() { document.documentElement.classList.remove("ig-open"); closeView(); show("home"); try { history.replaceState(null, "", "#home"); } catch (_) {} }
+  $("ig-back").onclick = leaveApp;
+  new MutationObserver(() => { if (!$("yours").hidden) enterApp(); else document.documentElement.classList.remove("ig-open"); }).observe($("yours"), { attributes: true, attributeFilter: ["hidden"] });
+  if (!$("yours").hidden) enterApp();
+
+  // ---- screens and the bottom bar ----
+  const SCREENS = ["ig-home", "ig-search", "ig-friends", "ig-inbox", "yrs-prof", "yrs-edit", "yrs-new"];
+  function screen(id) { SCREENS.forEach(x => $(x).hidden = x !== id); $("ig-main").scrollTop = 0; }
+  function go(t) {
+    tab = t; profUid = null;
+    document.querySelectorAll(".ig-nav button").forEach(b => b.classList.toggle("on", b.dataset.ig === t));
+    screen("ig-" + t); render();
+  }
+  document.querySelectorAll(".ig-nav button").forEach(b => b.onclick = () => go(b.dataset.ig));
+  $("ig-logo").onclick = () => go("home");
+  function openProfile(uid) { profUid = uid; document.querySelectorAll(".ig-nav button").forEach(b => b.classList.remove("on")); screen("yrs-prof"); render(); }
+  $("yrs-mine-btn").onclick = () => me && openProfile(me);
+
+  // ---- data ----
   (async () => {
-    if (!window.claude || !window.claude.use) return off("YOURS works on the Claude link of the site.");
+    if (!window.claude || !window.claude.use) return off("Yours works on the Claude link of the site.");
     const [d, u, a] = await Promise.all([window.claude.use("db"), window.claude.use("user"), window.claude.use("assets")]);
-    if (!d || !u) return off("Sign in to Claude to use YOURS.");
+    if (!d || !u) return off("Sign in to Claude to use Yours.");
     db = d; assets = a; me = await u.id();
-    if (!me) return off("Sign in to Claude to use YOURS.");
+    if (!me) return off("Sign in to Claude to use Yours.");
     db.doc("live/state").onSnapshot(sn => { ownerId = sn.exists ? sn.data().ownerId || null : null; if (isCreator) ownerId = ownerId || me; render(); });
     const watch = (col, store) => db.collection(col).onSnapshot(sn => { Object.keys(store).forEach(k => delete store[k]); sn.docs.forEach(x => { store[x.id] = x.data(); }); render(); }, () => {});
     watch("profiles", profiles); watch("posts", posts); watch("likes", likes); watch("cmts", cmts);
-    if (!assets) $("yrs-post-btn").title = "Your access lets you watch, not post";
   })();
-  setInterval(() => { if (!$("yours").hidden && allPosts().some(p => isOwnerId(p.uid))) { renderGrids(); if (viewing) fillView(); } }, 1000);
+  setInterval(() => { // keep the creator's counters climbing on screen
+    if ($("yours").hidden || !allPosts().some(p => isOwnerId(p.uid))) return;
+    document.querySelectorAll("[data-live-likes]").forEach(e => { const p = allPosts().find(p => p.key === e.dataset.liveLikes); if (p) e.textContent = fmt(likesShown(p)) + " likes"; });
+    document.querySelectorAll("[data-live-views]").forEach(e => { const p = allPosts().find(p => p.key === e.dataset.liveViews); if (p) e.textContent = fmt(ramp(p.at, 1000000)) + " views"; });
+    if (viewing) fillView();
+  }, 1000);
 
-  // ---- drawing ----
+  // ---- pieces ----
+  function avatar(uid, cls) { const i = el("img", "yrs-av" + (cls ? " " + cls : "")); i.src = avatarOf(uid); i.alt = ""; return i; }
+  function media(p, feed) {
+    if (p.kind === "video") { const v = el("video"); v.src = p.src; v.playsInline = true; v.loop = true; v.controls = true; v.preload = "metadata"; if (feed) v.muted = true; return v; }
+    const im = el("img"); im.src = p.src; im.alt = p.desc ? p.desc.slice(0, 80) : "Post"; im.loading = "lazy"; return im;
+  }
+  function feedPost(p) {
+    const art = el("article", "ig-post");
+    const head = el("div", "ig-post-head");
+    const who = el("button", "ig-who"); who.type = "button"; who.append(avatar(p.uid, "ring"), el("span", "", nameOf(p.uid)));
+    if (isOwnerId(p.uid)) who.append(el("span", "ig-check", "✔"));
+    who.onclick = () => openProfile(p.uid);
+    head.append(who, el("span", "ig-time", ago(p.at)));
+    const box = el("div", "ig-post-media"); box.append(media(p, true)); box.ondblclick = () => toggleLike(p.key, true);
+    const acts = el("div", "ig-acts");
+    const like = el("button", "ig-ico like" + (iLike(p.key) ? " on" : "")); like.type = "button"; like.setAttribute("aria-label", "Like");
+    like.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-8.6-9C2.3 7.6 4.6 4.5 7.8 4.5c1.9 0 3.3 1 4.2 2.4.9-1.4 2.3-2.4 4.2-2.4 3.2 0 5.5 3.1 4.4 6.5C19 15.6 12 20 12 20z"/></svg>';
+    like.onclick = () => toggleLike(p.key);
+    const cm = el("button", "ig-ico"); cm.type = "button"; cm.setAttribute("aria-label", "Comments");
+    cm.innerHTML = '<svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-3.3-6.5A8 8 0 0 1 20 12zM20 20l-2.5-2.6"/></svg>';
+    cm.onclick = () => openView(p.key);
+    acts.append(like, cm);
+    const meta = el("div", "ig-meta");
+    const lk = el("strong", "", fmt(likesShown(p)) + " likes"); lk.dataset.liveLikes = p.key; meta.append(lk);
+    if (isOwnerId(p.uid)) { const vw = el("span", "ig-views", fmt(ramp(p.at, 1000000)) + " views"); vw.dataset.liveViews = p.key; meta.append(vw); }
+    const cap = el("p", "ig-cap"); cap.append(el("strong", "", nameOf(p.uid) + " "), document.createTextNode(p.desc || ""));
+    art.append(head, box, acts, meta, cap);
+    if (!isOwnerId(p.uid)) { const n = cmtsOf(p.key).length; const more = el("button", "ig-more", n ? "View all " + n + " comments" : "Add a comment…"); more.type = "button"; more.onclick = () => openView(p.key); art.append(more); }
+    return art;
+  }
   function tile(p) {
-    const b = document.createElement("button"); b.type = "button"; b.className = "yrs-tile";
-    if (p.kind === "video") { const v = document.createElement("video"); v.src = p.src; v.muted = true; v.playsInline = true; v.preload = "metadata"; b.append(v); const i = document.createElement("i"); i.textContent = "▶"; b.append(i); }
-    else { const im = document.createElement("img"); im.src = p.src; im.alt = p.desc ? p.desc.slice(0, 80) : "Post"; im.loading = "lazy"; b.append(im); }
-    const c = document.createElement("span"); c.className = "yrs-tc"; c.textContent = "♥ " + fmt(likesShown(p)) + (isOwnerId(p.uid) ? "  ▶ " + fmt(ramp(p.at, 1000000)) : ""); b.append(c);
+    const b = el("button", "yrs-tile"); b.type = "button";
+    if (p.kind === "video") { const v = el("video"); v.src = p.src; v.muted = true; v.playsInline = true; v.preload = "metadata"; b.append(v, el("i", "", "▶")); }
+    else { const im = el("img"); im.src = p.src; im.alt = p.desc ? p.desc.slice(0, 80) : "Post"; im.loading = "lazy"; b.append(im); }
     b.onclick = () => openView(p.key); return b;
   }
-  function renderGrids() {
-    const all = allPosts();
-    const feed = $("yrs-feed"); feed.textContent = "";
-    all.forEach(p => feed.append(tile(p)));
-    if (!all.length) feed.innerHTML = '<p class="yrs-empty">No posts yet. Be the first: tap ＋ POST.</p>';
-    if (profUid) {
-      const g = $("yrs-prof-grid"); g.textContent = "";
-      const mine = all.filter(p => p.uid === profUid); mine.forEach(p => g.append(tile(p)));
-      if (!mine.length) g.innerHTML = '<p class="yrs-empty">No posts yet.</p>';
-      $("yrs-prof-posts").textContent = mine.length;
-      $("yrs-prof-likes").textContent = fmt(mine.reduce((s, p) => s + likesShown(p), 0));
-    }
+  function personRow(uid, sub) {
+    const b = el("button", "ig-person-row"); b.type = "button";
+    const t = el("span", "ig-pr-txt"); t.append(el("strong", "", nameOf(uid) + (uid === me ? " (you)" : "")), el("span", "", sub));
+    b.append(avatar(uid), t); b.onclick = () => openProfile(uid); return b;
   }
+  const everyone = () => [...new Set([...(ownerId ? [ownerId] : []), ...(me ? [me] : []), ...Object.keys(profiles), ...Object.keys(posts)])];
+
+  // ---- drawing each screen ----
   function render() {
     if (!me) return;
-    $("yrs-my-av").src = avatarOf(me); $("yrs-my-name").textContent = nameOf(me); $("yrs-my-bio").textContent = (profiles[me] && profiles[me].bio) || "";
-    const ppl = $("yrs-people"); ppl.textContent = "";
-    const uids = [...new Set([...(ownerId ? [ownerId] : []), ...Object.keys(profiles), ...Object.keys(posts)])];
-    uids.forEach(uid => {
-      const b = document.createElement("button"); b.type = "button"; b.className = "yrs-person";
-      const im = document.createElement("img"); im.className = "yrs-av"; im.src = avatarOf(uid); im.alt = "";
-      const n = document.createElement("span"); n.textContent = nameOf(uid) + (uid === me ? " (you)" : "");
-      b.append(im, n); b.onclick = () => openProfile(uid); ppl.append(b);
-    });
-    if (profUid) { $("yrs-prof-av").src = avatarOf(profUid); $("yrs-prof-name").textContent = nameOf(profUid); $("yrs-prof-bio").textContent = (profiles[profUid] && profiles[profUid].bio) || ""; $("yrs-prof-badge").hidden = !isOwnerId(profUid); }
-    renderGrids();
+    $("yrs-my-av").src = avatarOf(me);
+    const all = allPosts();
+    if (!$("ig-home").hidden) {
+      const st = $("yrs-people"); st.textContent = "";
+      everyone().forEach(uid => {
+        const b = el("button", "ig-story"); b.type = "button";
+        const ring = el("span", "ig-ring" + (all.some(p => p.uid === uid) ? "" : " seen")); ring.append(avatar(uid));
+        b.append(ring, el("span", "", uid === me ? "Your story" : nameOf(uid)));
+        b.onclick = () => uid === me ? $("yrs-post-btn").click() : openProfile(uid);
+        st.append(b);
+      });
+      const feed = $("yrs-feed"); feed.textContent = "";
+      all.forEach(p => feed.append(feedPost(p)));
+      if (!all.length) feed.append(el("p", "ig-empty", "No posts yet. Tap ＋ to post the first one."));
+    }
+    if (!$("ig-search").hidden) {
+      const q = $("ig-q").value.trim().toLowerCase(), res = $("ig-results"); res.textContent = "";
+      if (q) everyone().filter(uid => nameOf(uid).toLowerCase().includes(q)).forEach(uid => res.append(personRow(uid, postsLabel(all.filter(p => p.uid === uid).length))));
+      if (q && !res.children.length) res.append(el("p", "ig-empty", "Nobody called “" + q + "”."));
+      const ex = $("ig-explore"); ex.textContent = ""; if (!q) all.forEach(p => ex.append(tile(p)));
+    }
+    if (!$("ig-friends").hidden) {
+      const fl = $("ig-friend-list"); fl.textContent = "";
+      everyone().filter(uid => uid !== me).forEach(uid => fl.append(personRow(uid, isOwnerId(uid) ? "Creator" : (profiles[uid] && profiles[uid].bio) || postsLabel(all.filter(p => p.uid === uid).length))));
+      if (!fl.children.length) fl.append(el("p", "ig-empty", "Nobody else is here yet. Share the site with your friends."));
+    }
+    if (!$("ig-inbox").hidden) {
+      const ac = $("ig-act"); ac.textContent = "";
+      const mine = all.filter(p => p.uid === me), evs = [];
+      mine.forEach(p => {
+        likers(p.key).filter(u => u !== me).forEach(u => evs.push({ uid: u, t: "liked your post.", at: p.at, p }));
+        cmtsOf(p.key).filter(c => c.uid !== me).forEach(c => evs.push({ uid: c.uid, t: "commented: " + c.t, at: c.at, p }));
+      });
+      evs.sort((a, b) => b.at - a.at).slice(0, 100).forEach(e => {
+        const row = el("button", "ig-person-row"); row.type = "button";
+        const t = el("span", "ig-pr-txt"); const line = el("span", "ig-pr-line"); line.append(el("strong", "", nameOf(e.uid) + " "), document.createTextNode(e.t + " "), el("span", "ig-time", ago(e.at))); t.append(line);
+        const th = el("span", "ig-thumb"); th.append(media(e.p, true)); if (th.firstChild.tagName === "VIDEO") th.firstChild.controls = false;
+        row.append(avatar(e.uid), t, th); row.onclick = () => openView(e.p.key); ac.append(row);
+      });
+      if (!evs.length) ac.append(el("p", "ig-empty", "When people like or comment on your posts, you'll see it here."));
+    }
+    if (profUid && !$("yrs-prof").hidden) {
+      $("yrs-prof-av").src = avatarOf(profUid); $("yrs-prof-name").textContent = nameOf(profUid);
+      $("yrs-prof-bio").textContent = (profiles[profUid] && profiles[profUid].bio) || ""; $("yrs-prof-badge").hidden = !isOwnerId(profUid);
+      $("yrs-edit-btn").hidden = profUid !== me;
+      const g = $("yrs-prof-grid"); g.textContent = "";
+      const theirs = all.filter(p => p.uid === profUid); theirs.forEach(p => g.append(tile(p)));
+      if (!theirs.length) g.append(el("p", "ig-empty", "No posts yet."));
+      $("yrs-prof-posts").textContent = theirs.length;
+      $("yrs-prof-likes").textContent = fmt(theirs.reduce((s, p) => s + likesShown(p), 0));
+      $("yrs-prof-views").textContent = fmt(theirs.reduce((s, p) => s + (isOwnerId(p.uid) ? ramp(p.at, 1000000) : 0), 0));
+    }
     if (viewing) fillView();
   }
-  const screen = id => ["yrs-home", "yrs-prof", "yrs-edit", "yrs-new"].forEach(x => $(x).hidden = x !== id);
-  function openProfile(uid) { profUid = uid; screen("yrs-prof"); render(); }
-  $("yrs-prof-back").onclick = () => { profUid = null; screen("yrs-home"); };
-  $("yrs-mine-btn").onclick = () => openProfile(me);
+  $("ig-q").oninput = render;
+
+  // ---- likes ----
+  async function toggleLike(key, onlyAdd) {
+    if (!db || !me) return;
+    const keys = ((likes[me] && likes[me].keys) || []).slice(), i = keys.indexOf(key);
+    if (i >= 0) { if (onlyAdd) return; keys.splice(i, 1); } else keys.push(key);
+    try { await db.doc("likes/" + me).set({ keys: keys.slice(-500) }); } catch (_) { off("Your access to this page doesn't let you like posts."); }
+  }
 
   // ---- edit profile ----
-  function shrink(file, size, cover) { // photo -> small JPEG data URL
+  function shrink(file, size, cover) {
     return new Promise((ok, no) => {
       const url = URL.createObjectURL(file), img = new Image();
       img.onload = () => {
-        const c = document.createElement("canvas"); let w = img.width, h = img.height;
+        const c = document.createElement("canvas"); const w = img.width, h = img.height;
         if (cover) { c.width = c.height = size; const k = Math.max(size / w, size / h); c.getContext("2d").drawImage(img, (size - w * k) / 2, (size - h * k) / 2, w * k, h * k); }
         else { const k = Math.min(1, size / Math.max(w, h)); c.width = Math.round(w * k); c.height = Math.round(h * k); c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); }
         URL.revokeObjectURL(url); c.toBlob(b => b ? ok({ blob: b, data: cover ? c.toDataURL("image/jpeg", .8) : null }) : no(), "image/jpeg", .82);
@@ -2921,7 +3038,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     editPhoto = null; screen("yrs-edit");
     $("yrs-edit-av").src = avatarOf(me); $("yrs-edit-name").value = nameOf(me); $("yrs-edit-bio").value = (profiles[me] && profiles[me].bio) || ""; $("yrs-edit-msg").textContent = "";
   };
-  $("yrs-edit-cancel").onclick = () => screen("yrs-home");
+  $("yrs-edit-cancel").onclick = () => openProfile(me);
   $("yrs-edit-photo").onchange = async e => {
     const f = e.target.files[0]; e.target.value = ""; if (!f) return;
     try { editPhoto = (await shrink(f, 256, true)).data; $("yrs-edit-av").src = editPhoto; } catch (_) { $("yrs-edit-msg").textContent = "That file is not a picture this browser can open."; }
@@ -2932,16 +3049,18 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     const bad = checkUsername(name); if (bad) { m.textContent = bad; return; }
     if (isOffensive(bio)) { m.textContent = "Your description has a word that isn't allowed here."; return; }
     const prev = profiles[me] || {};
-    try { await db.doc("profiles/" + me).set({ name, bio, photo: editPhoto || prev.photo || "" }); screen("yrs-home"); }
+    try { await db.doc("profiles/" + me).set({ name, bio, photo: editPhoto || prev.photo || "" }); openProfile(me); }
     catch (_) { m.textContent = "Your access to this page doesn't let you change a profile."; }
   });
 
   // ---- new post ----
   $("yrs-post-btn").onclick = () => {
+    if (!db) return;
     if (!assets) { off("Your access to this page lets you watch and like, not post. Ask the creator for Contributor access."); return; }
-    newFile = null; $("yrs-new-prev").textContent = ""; $("yrs-new-desc").value = ""; $("yrs-new-msg").textContent = ""; screen("yrs-new");
+    off(""); newFile = null; $("yrs-new-prev").textContent = ""; $("yrs-new-desc").value = ""; $("yrs-new-msg").textContent = "";
+    document.querySelectorAll(".ig-nav button").forEach(b => b.classList.remove("on")); screen("yrs-new");
   };
-  $("yrs-new-cancel").onclick = () => screen("yrs-home");
+  $("yrs-new-cancel").onclick = () => go("home");
   $("yrs-new-file").onchange = async e => {
     const f = e.target.files[0]; e.target.value = ""; if (!f) return;
     const m = $("yrs-new-msg"), prev = $("yrs-new-prev"); m.textContent = ""; prev.textContent = ""; newFile = null;
@@ -2949,9 +3068,9 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
       if (!/^video\/(mp4|webm)$/.test(f.type)) { m.textContent = "This video type can't be posted. Use MP4 (on iPhone: Settings, Camera, Formats, Most Compatible)."; return; }
       if (f.size > 20 * 1024 * 1024) { m.textContent = "Videos can be up to 20 MB. Trim it or send a shorter clip."; return; }
       newFile = { blob: f, kind: "video" };
-      const v = document.createElement("video"); v.src = URL.createObjectURL(f); v.controls = true; v.playsInline = true; prev.append(v);
+      const v = el("video"); v.src = URL.createObjectURL(f); v.controls = true; v.playsInline = true; prev.append(v);
     } else {
-      try { const r = await shrink(f, 1440, false); newFile = { blob: r.blob, kind: "photo" }; const im = document.createElement("img"); im.src = URL.createObjectURL(r.blob); im.alt = "Preview"; prev.append(im); }
+      try { const r = await shrink(f, 1440, false); newFile = { blob: r.blob, kind: "photo" }; const im = el("img"); im.src = URL.createObjectURL(r.blob); im.alt = "Preview"; prev.append(im); }
       catch (_) { m.textContent = "That file is not a picture this browser can open."; }
     }
   };
@@ -2960,20 +3079,19 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     const m = $("yrs-new-msg"), desc = $("yrs-new-desc").value.trim().slice(0, 300);
     if (!newFile) { m.textContent = "Choose a photo or video first."; return; }
     if (isOffensive(desc)) { m.textContent = "Your description has a word that isn't allowed here."; return; }
-    $("yrs-new-go").disabled = true; m.classList.add("ok"); m.textContent = "Uploading…";
+    $("yrs-new-go").disabled = true; m.textContent = "Uploading…";
     try {
       const up = await assets.upload(newFile.blob);
       const items = ((posts[me] && posts[me].items) || []).concat({ id: Date.now().toString(36), kind: newFile.kind, src: BLOB(up.id), asset: up.id, desc, at: Date.now() }).slice(-60);
       await db.doc("posts/" + me).set({ items });
-      m.textContent = ""; screen("yrs-home");
+      m.textContent = ""; go("home");
     } catch (err) {
-      m.classList.remove("ok");
       m.textContent = { too_large: "That file is too big (20 MB max).", unsupported_type: "That file type can't be posted.", quota_or_state: "The site's storage is full right now.", rate_limited: "Too many uploads at once. Wait a moment and try again." }[err && err.code] || "The post could not be shared. Try again.";
     }
     $("yrs-new-go").disabled = false;
   });
 
-  // ---- one post ----
+  // ---- one post, full size ----
   function openView(key) { viewing = key; $("yrs-view").hidden = false; $("yrs-v-media").textContent = ""; fillView(true); }
   function closeView() { viewing = null; $("yrs-view").hidden = true; $("yrs-v-media").textContent = ""; }
   $("yrs-v-close").onclick = closeView;
@@ -2981,36 +3099,24 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
   $("yrs-v-who").onclick = () => { const p = allPosts().find(p => p.key === viewing); closeView(); if (p) openProfile(p.uid); };
   function fillView(fresh) {
     const p = allPosts().find(p => p.key === viewing); if (!p) return closeView();
-    $("yrs-v-av").src = avatarOf(p.uid); $("yrs-v-name").textContent = nameOf(p.uid) + (isOwnerId(p.uid) ? " · CREATOR" : "");
-    if (fresh) {
-      const box = $("yrs-v-media");
-      if (p.kind === "video") { const v = document.createElement("video"); v.src = p.src; v.controls = true; v.playsInline = true; v.autoplay = true; box.append(v); }
-      else { const im = document.createElement("img"); im.src = p.src; im.alt = p.desc || "Post"; box.append(im); }
-      $("yrs-v-edit").value = p.desc || "";
-    }
-    const mineLike = !!(likes[me] && Array.isArray(likes[me].keys) && likes[me].keys.includes(p.key));
-    $("yrs-v-like").textContent = mineLike ? "♥" : "♡"; $("yrs-v-like").classList.toggle("on", mineLike);
+    $("yrs-v-av").src = avatarOf(p.uid); $("yrs-v-name").textContent = nameOf(p.uid) + (isOwnerId(p.uid) ? " ✔" : "");
+    if (fresh) { const m = media(p, false); if (m.tagName === "VIDEO") m.autoplay = true; $("yrs-v-media").append(m); $("yrs-v-edit").value = p.desc || ""; }
+    const mine = iLike(p.key);
+    $("yrs-v-like").textContent = mine ? "♥" : "♡"; $("yrs-v-like").classList.toggle("on", mine);
     $("yrs-v-likes").textContent = fmt(likesShown(p)) + " likes";
     $("yrs-v-views").textContent = isOwnerId(p.uid) ? fmt(ramp(p.at, 1000000)) + " views" : "";
     $("yrs-v-desc").textContent = p.desc || "";
     $("yrs-v-mine").hidden = p.uid !== me;
-    // comments: open on everyone's posts, off on the creator's
-    const list = $("yrs-v-cmts"); list.textContent = "";
-    const creatorPost = isOwnerId(p.uid);
+    const creatorPost = isOwnerId(p.uid), list = $("yrs-v-cmts"); list.textContent = "";
     $("yrs-v-cform").hidden = creatorPost;
     $("yrs-v-cnote").textContent = creatorPost ? "Comments are turned off on the creator's posts." : "";
     if (!creatorPost) {
-      const all = Object.entries(cmts).flatMap(([uid, d]) => (Array.isArray(d.items) ? d.items : []).filter(c => c && c.k === p.key && typeof c.t === "string").map(c => ({ uid, t: c.t.slice(0, 200), at: +c.at || 0 }))).sort((a, b) => a.at - b.at);
-      all.forEach(c => { const li = document.createElement("li"); const n = document.createElement("strong"); n.textContent = nameOf(c.uid) + " "; const t = document.createElement("span"); t.textContent = c.t; li.append(n, t); list.append(li); });
-      if (!all.length) { const li = document.createElement("li"); li.className = "yrs-empty"; li.textContent = "No comments yet."; list.append(li); }
+      const all = cmtsOf(p.key);
+      all.forEach(c => { const li = el("li"); li.append(el("strong", "", nameOf(c.uid) + " "), el("span", "", c.t)); list.append(li); });
+      if (!all.length) list.append(el("li", "yrs-empty", "No comments yet."));
     }
   }
-  $("yrs-v-like").onclick = async () => {
-    const p = allPosts().find(p => p.key === viewing); if (!p) return;
-    const keys = ((likes[me] && likes[me].keys) || []).slice(); const i = keys.indexOf(p.key);
-    if (i >= 0) keys.splice(i, 1); else keys.push(p.key);
-    try { await db.doc("likes/" + me).set({ keys: keys.slice(-500) }); } catch (_) { $("yrs-v-cnote").textContent = "Your access to this page doesn't let you like posts."; }
-  };
+  $("yrs-v-like").onclick = () => viewing && toggleLike(viewing);
   $("yrs-v-cform").addEventListener("submit", async e => {
     e.preventDefault();
     const t = $("yrs-v-cin").value.trim().slice(0, 200), p = allPosts().find(p => p.key === viewing);
@@ -3026,11 +3132,10 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     try { await db.doc("posts/" + me).set({ items }); } catch (_) {}
   };
   $("yrs-v-del").onclick = async () => {
-    const id = viewing && viewing.split(":")[1], it = ((posts[me] && posts[me].items) || []).find(x => x.id === id);
-    const items = ((posts[me] && posts[me].items) || []).filter(x => x.id !== id);
-    try { await db.doc("posts/" + me).set({ items }); closeView(); if (it && it.asset && assets) assets.delete(it.asset).catch(() => {}); } catch (_) {}
+    const id = viewing && viewing.split(":")[1], list = (posts[me] && posts[me].items) || [], it = list.find(x => x.id === id);
+    try { await db.doc("posts/" + me).set({ items: list.filter(x => x.id !== id) }); closeView(); if (it && it.asset && assets) assets.delete(it.asset).catch(() => {}); } catch (_) {}
   };
-  addEventListener("keydown", e => { if (e.key === "Escape" && viewing) closeView(); });
+  addEventListener("keydown", e => { if (e.key === "Escape" && !$("yours").hidden) { if (viewing) closeView(); else leaveApp(); } });
 })();
 
 // Logged in before on this device (until LOG OUT): open the site straight away

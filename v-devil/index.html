@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Russo+One&family=VT323&display=swap">
-<link rel="stylesheet" href="general.css?v=20261121d">
+<link rel="stylesheet" href="general.css?v=20261121e">
 
 <!-- sign-in gate: nobody reaches the site without an account -->
 <div class="gate" id="gate">
@@ -1017,11 +1017,28 @@ they crush my heart destroy my body  just like a lego
           <form class="ig-cs-form" id="ig-cs-form" novalidate>
             <img class="yrs-av" id="ig-cs-av" alt="">
             <label class="sr" for="ig-cs-in">Comment</label><input id="ig-cs-in" type="text" maxlength="200" placeholder="Add a comment…" autocomplete="off">
-            <button type="button" class="ig-cs-mic" id="ig-cs-mic" aria-label="Record a voice comment"><svg viewBox="0 0 16 16" shape-rendering="crispEdges"><path d="M6 1h4v1h1v7h-1v1H6V9H5V2h1z"/><path d="M3 7h1v2h1v1h1v1h4v-1h1V9h1V7h1v3h-1v1h-1v1H9v2h2v1H5v-1h2v-2H5v-1H4v-1H3z"/></svg></button>
+            <button type="button" class="ig-cs-mic" id="ig-cs-mic" aria-label="Record a voice comment"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button>
             <button type="submit" class="ig-cs-send" id="ig-cs-send">Post</button>
           </form>
           <p class="ig-cs-note" id="ig-cs-note" role="status"></p>
         </div>
+      </div>
+
+      <!-- chat with a friend -->
+      <div class="igc" id="ig-chat" hidden>
+        <div class="igc-top">
+          <button type="button" class="ig-ico" id="igc-back" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 4 7 12l8 8"/></svg></button>
+          <img class="yrs-av" id="igc-av" alt="">
+          <strong id="igc-name"></strong>
+          <button type="button" class="igc-prof" id="igc-prof" aria-label="See profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c.6-4.3 3.7-7 8-7s7.4 2.7 8 7"/></svg>Profile</button>
+        </div>
+        <div class="igc-list" id="igc-list"></div>
+        <form class="igc-form" id="igc-form" novalidate>
+          <img class="yrs-av" id="igc-me" alt="">
+          <label class="sr" for="igc-in">Message</label><input id="igc-in" type="text" maxlength="500" placeholder="Message…" autocomplete="off">
+          <button type="submit" class="igc-send" aria-label="Send"><svg viewBox="0 0 24 24"><path d="M3 4l18 8-18 8 3-8zM6 12h8" /></svg></button>
+        </form>
+        <p class="igc-note" id="igc-note"></p>
       </div>
     </div>
   </section>
@@ -2928,7 +2945,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
   // ---- opening and leaving the app (it covers the whole website) ----
   const app = $("ig");
   function enterApp() { document.documentElement.classList.add("ig-open"); go(tab); }
-  function leaveApp() { document.documentElement.classList.remove("ig-open"); closeComments(true); closeView(); closeEditor(); closeStories(); show("home"); try { history.replaceState(null, "", "#home"); } catch (_) {} }
+  function leaveApp() { document.documentElement.classList.remove("ig-open"); closeComments(true); closeChat(); closeView(); closeEditor(); closeStories(); show("home"); try { history.replaceState(null, "", "#home"); } catch (_) {} }
   $("ig-back").onclick = leaveApp;
   new MutationObserver(() => { if (!$("yours").hidden) enterApp(); else document.documentElement.classList.remove("ig-open"); }).observe($("yours"), { attributes: true, attributeFilter: ["hidden"] });
   if (!$("yours").hidden) enterApp();
@@ -2955,7 +2972,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     if (!me) return off("Sign in to Claude to use Yours.");
     db.doc("live/state").onSnapshot(sn => { ownerId = sn.exists ? sn.data().ownerId || null : null; if (isCreator) ownerId = ownerId || me; render(); });
     const watch = (col, store) => db.collection(col).onSnapshot(sn => { Object.keys(store).forEach(k => delete store[k]); sn.docs.forEach(x => { store[x.id] = x.data(); }); render(); }, () => {});
-    watch("profiles", profiles); watch("posts", posts); watch("likes", likes); watch("cmts", cmts);
+    watch("profiles", profiles); watch("posts", posts); watch("likes", likes); watch("cmts", cmts); watch("dms", dms);
     let cleaned = false; // my stories older than 24 hours are removed, with their files
     db.collection("stories").onSnapshot(sn => {
       Object.keys(stories).forEach(k => delete stories[k]); sn.docs.forEach(x => { stories[x.id] = x.data(); }); render();
@@ -3041,7 +3058,13 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     }
     if (!$("ig-friends").hidden) {
       const fl = $("ig-friend-list"); fl.textContent = "";
-      everyone().filter(uid => uid !== me).forEach(uid => fl.append(personRow(uid, isOwnerId(uid) ? "Creator" : uid === BOT ? "Bot friend · example" : bioOf(uid) || postsLabel(all.filter(p => p.uid === uid).length))));
+      everyone().filter(uid => uid !== me).sort((a, b) => Math.max(0, ...chatMsgs(b).map(m => m.at)) - Math.max(0, ...chatMsgs(a).map(m => m.at))).forEach(uid => {
+        const ms = chatMsgs(uid), last = ms[ms.length - 1];
+        const row = personRow(uid, last ? (last.from === me ? "You: " : "") + last.t.slice(0, 60) + " · " + ago(last.at) : isOwnerId(uid) ? "Creator · tap to chat" : uid === BOT ? "Bot friend · tap to chat" : "Tap to chat");
+        row.onclick = () => openChat(uid);
+        if (unread(uid)) { row.append(el("span", "ig-pr-dot")); row.querySelector("strong").style.fontWeight = "800"; }
+        fl.append(row);
+      });
       if (!fl.children.length) fl.append(el("p", "ig-empty", "Nobody else is here yet. Share the site with your friends."));
     }
     if (!$("ig-inbox").hidden) {
@@ -3072,6 +3095,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     }
     if (viewing) fillView();
     if (csKey) renderComments();
+    if (chatWith) renderChat();
   }
   $("ig-q").oninput = render;
 
@@ -3324,10 +3348,88 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     try { await db.doc("posts/" + me).set({ items: list.filter(x => x.id !== id) }); closeView(); if (it && it.asset && assets) assets.delete(it.asset).catch(() => {}); } catch (_) {}
   };
 
+
+  // ---- chat with a friend; their profile sits in the far right corner ----
+  const dms = {};
+  let chatWith = null, botBusy = false, sampler = null;
+  if (window.claude && window.claude.use) window.claude.use("sample").then(s => { sampler = s; }).catch(() => {});
+  const seenKey = uid => "yrs-seen-" + uid;
+  const seen = uid => { try { return +localStorage.getItem(seenKey(uid)) || 0; } catch (_) { return 0; } };
+  const markSeen = uid => { try { localStorage.setItem(seenKey(uid), String(Date.now())); } catch (_) {} };
+  function chatMsgs(uid) { // every message between me and uid, oldest first
+    const mine = ((dms[me] && Array.isArray(dms[me].items)) ? dms[me].items : []).filter(m => m && m.to === uid && typeof m.t === "string")
+      .map(m => ({ from: m.bot ? uid : me, t: m.t, at: +m.at || 0 }));
+    const theirs = uid === BOT ? [] : ((dms[uid] && Array.isArray(dms[uid].items)) ? dms[uid].items : []).filter(m => m && m.to === me && typeof m.t === "string" && !m.bot)
+      .map(m => ({ from: uid, t: m.t, at: +m.at || 0 }));
+    return mine.concat(theirs).sort((a, b) => a.at - b.at);
+  }
+  const lastFrom = uid => { const l = chatMsgs(uid).filter(m => m.from === uid); return l.length ? l[l.length - 1].at : 0; };
+  const unread = uid => lastFrom(uid) > seen(uid);
+  function openChat(uid) {
+    chatWith = uid; $("ig-chat").hidden = false; $("igc-in").value = ""; $("igc-note").textContent = uid === BOT ? "Zololo is A.I. (a bot), not a real person." : "Messages in Yours can be seen by people who have access to this page.";
+    renderChat(true); markSeen(uid); setTimeout(() => $("igc-in").focus(), 50);
+  }
+  function closeChat() { if (!chatWith) return; markSeen(chatWith); chatWith = null; $("ig-chat").hidden = true; render(); }
+  $("igc-back").onclick = closeChat;
+  $("igc-prof").onclick = () => { const u = chatWith; closeChat(); openProfile(u); };
+  function renderChat(toBottom) {
+    if (!chatWith) return;
+    const uid = chatWith, list = $("igc-list"), near = list.scrollHeight - list.scrollTop - list.clientHeight < 60;
+    $("igc-av").src = avatarOf(uid); $("igc-name").textContent = nameOf(uid); $("igc-me").src = avatarOf(me);
+    list.textContent = "";
+    const intro = el("p", "igc-intro", uid === BOT ? "Zololo is a bot friend made by V-Devil Production" : "This is the start of your chat with " + nameOf(uid));
+    intro.append(el("small", "", uid === BOT ? "Say anything, he answers." : "Say hi 👋"));
+    list.append(intro);
+    const msgs = chatMsgs(uid);
+    if (uid === BOT && !msgs.length) msgs.push({ from: BOT, t: "Bip boup! I'm Zololo, your bot friend 🤖 What's up?", at: Date.now() });
+    msgs.forEach(m => {
+      const row = el("div", "igc-msg" + (m.from === me ? " mine" : "")), box = el("div");
+      box.append(el("p", "", m.t), el("time", "", ago(m.at)));
+      if (m.from !== me) row.append(avatar(uid));
+      row.append(box); list.append(row);
+    });
+    if (uid === BOT && botBusy) { const row = el("div", "igc-msg igc-typing"); row.append(avatar(BOT)); const b = el("div"); b.append(el("p", "", "•••")); row.append(b); list.append(row); }
+    if (toBottom || near) list.scrollTop = list.scrollHeight;
+    markSeen(uid);
+  }
+  async function saveDm(item) {
+    const items = ((dms[me] && dms[me].items) || []).concat(item).slice(-400);
+    dms[me] = { items }; // show it straight away
+    await db.doc("dms/" + me).set({ items });
+  }
+  const BOT_LINES = ["Bip boup! 🤖", "Haha, that's crazy 😂", "Kenos made me, so I'm always online 💜", "Did you check the new posts on Yours?", "I'm just a bot, but I like your vibe 🔥", "Skull of Death is on repeat in my circuits 🎧", "Tell me more!", "Panel Sewi is the best project in the world 🎮"];
+  async function zololoReply(uid) {
+    botBusy = true; renderChat(true);
+    const history = chatMsgs(BOT).slice(-12).map(m => ({ role: m.from === me ? "user" : "assistant", content: m.t }));
+    let text = "";
+    try {
+      if (!sampler) throw 0;
+      const intro = "You are Zololo, a friendly robot bot friend inside 'Yours', the social app of the V-Devil Production website made by Kenos (album 'Skull of Death', game 'Panel Sewi'). You chat with " + nameOf(me) + ". Answer in the same language they write, short like a text message (1-2 sentences), playful, with an emoji sometimes. Never pretend to be a real person.";
+      const msgs = history.length ? history.slice() : [{ role: "user", content: "hi" }];
+      while (msgs.length && msgs[0].role !== "user") msgs.shift();
+      if (!msgs.length) msgs.push({ role: "user", content: "hi" });
+      msgs[0] = { role: "user", content: intro + "\n\nTheir message: " + msgs[0].content };
+      const r = await sampler(msgs, { modelTier: "quick", cache: false });
+      text = (r && r.text || "").trim().slice(0, 400);
+    } catch (_) {}
+    if (!text) text = BOT_LINES[Math.floor(Math.random() * BOT_LINES.length)];
+    await new Promise(r => setTimeout(r, 500));
+    botBusy = false;
+    try { await saveDm({ to: BOT, t: text, at: Date.now(), bot: 1 }); } catch (_) {}
+    if (chatWith === uid) renderChat(true); else render();
+  }
+  $("igc-form").addEventListener("submit", async e => {
+    e.preventDefault();
+    const t = $("igc-in").value.trim().slice(0, 500), uid = chatWith; if (!t || !uid || !db) return;
+    $("igc-in").value = "";
+    try { await saveDm({ to: uid, t, at: Date.now() }); renderChat(true); }
+    catch (_) { $("igc-note").textContent = "Your access to this page doesn't let you send messages."; return; }
+    if (uid === BOT && !botBusy) zololoReply(uid);
+  });
   // ---- comments: a 16-bit sheet that slides up, with likes, replies and voice comments ----
   let csKey = null, replyTo = null, csTimer = 0;
   const openReplies = new Set(), players = {};
-  const heart = '<svg viewBox="0 0 16 16" shape-rendering="crispEdges"><path d="M3 3h3v1h1v1h2V4h1V3h3v1h1v5h-1v1h-1v1h-1v1h-1v1H9v1H7v-1H6v-1H5v-1H4v-1H3V9H2V4h1z"/></svg>';
+  const heart = '<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-8.6-9C2.3 7.6 4.6 4.5 7.8 4.5c1.9 0 3.3 1 4.2 2.4.9-1.4 2.3-2.4 4.2-2.4 3.2 0 5.5 3.1 4.4 6.5C19 15.6 12 20 12 20z"/></svg>';
   function openComments(key) {
     clearTimeout(csTimer); csKey = key; replyTo = null; openReplies.clear();
     const cs = $("ig-cs"); cs.hidden = false; $("ig-cs-sheet").style.transform = "";
@@ -3477,7 +3579,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     };
     try { r.stop(); } catch (_) {}
   }
-  addEventListener("keydown", e => { if (e.key !== "Escape" || $("yours").hidden) return; if (sv) closeStories(); else if (csKey) closeComments(); else if (!$("ig-editor").hidden) closeEditor(); else if (viewing) closeView(); else leaveApp(); });
+  addEventListener("keydown", e => { if (e.key !== "Escape" || $("yours").hidden) return; if (sv) closeStories(); else if (csKey) closeComments(); else if (chatWith) closeChat(); else if (!$("ig-editor").hidden) closeEditor(); else if (viewing) closeView(); else leaveApp(); });
 })();
 
 // Logged in before on this device (until LOG OUT): open the site straight away

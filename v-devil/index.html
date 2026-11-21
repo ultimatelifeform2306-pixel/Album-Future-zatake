@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Russo+One&family=VT323&display=swap">
-<link rel="stylesheet" href="general.css?v=20261121i">
+<link rel="stylesheet" href="general.css?v=20261121j">
 
 <!-- sign-in gate: nobody reaches the site without an account -->
 <div class="gate" id="gate">
@@ -3229,10 +3229,32 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     const w = E.img.width, h = E.img.height;
     return w / h > r ? { sx: (w - h * r) / 2, sy: 0, sw: h * r, sh: h } : { sx: 0, sy: (h - w / r) / 2, sw: w, sh: w / r };
   }
+  const CANVAS_FILTER = (() => { try { const x = document.createElement("canvas").getContext("2d"); x.filter = "grayscale(1)"; return x.filter === "grayscale(1)"; } catch (_) { return false; } })();
+  function pixelFilter(x, W, H, f) { // same looks as the CSS filters, done pixel by pixel
+    const ops = [...f.matchAll(/([a-z-]+)\(([-\d.]+)(deg|px)?\)/g)].map(m => [m[1], parseFloat(m[2])]);
+    if (!ops.length) return;
+    const d = x.getImageData(0, 0, W, H), p = d.data;
+    const mats = ops.map(([n, v]) => {
+      if (n === "grayscale") { const a = 1 - v; return [[.2126 + .7874 * a, .7152 - .7152 * a, .0722 - .0722 * a], [.2126 - .2126 * a, .7152 + .2848 * a, .0722 - .0722 * a], [.2126 - .2126 * a, .7152 - .7152 * a, .0722 + .9278 * a], 0]; }
+      if (n === "sepia") { const a = 1 - v; return [[.393 + .607 * a, .769 - .769 * a, .189 - .189 * a], [.349 - .349 * a, .686 + .314 * a, .168 - .168 * a], [.272 - .272 * a, .534 - .534 * a, .131 + .869 * a], 0]; }
+      if (n === "saturate") return [[.213 + .787 * v, .715 - .715 * v, .072 - .072 * v], [.213 - .213 * v, .715 + .285 * v, .072 - .072 * v], [.213 - .213 * v, .715 - .715 * v, .072 + .928 * v], 0];
+      if (n === "hue-rotate") { const a = v * Math.PI / 180, c = Math.cos(a), s = Math.sin(a); return [[.213 + c * .787 - s * .213, .715 - c * .715 - s * .715, .072 - c * .072 + s * .928], [.213 - c * .213 + s * .143, .715 + c * .285 + s * .140, .072 - c * .072 - s * .283], [.213 - c * .213 - s * .787, .715 - c * .715 + s * .715, .072 + c * .928 + s * .072], 0]; }
+      if (n === "brightness") return [[v, 0, 0], [0, v, 0], [0, 0, v], 0];
+      if (n === "contrast") return [[v, 0, 0], [0, v, 0], [0, 0, v], (.5 - .5 * v) * 255];
+      return null; // blur is left out
+    }).filter(Boolean);
+    for (let i = 0; i < p.length; i += 4) {
+      let r = p[i], g = p[i + 1], b = p[i + 2];
+      for (const [a, b2, c, o] of mats) { const nr = a[0] * r + a[1] * g + a[2] * b + o, ng = b2[0] * r + b2[1] * g + b2[2] * b + o, nb = c[0] * r + c[1] * g + c[2] * b + o; r = nr < 0 ? 0 : nr > 255 ? 255 : nr; g = ng < 0 ? 0 : ng > 255 ? 255 : ng; b = nb < 0 ? 0 : nb > 255 ? 255 : nb; }
+      p[i] = r; p[i + 1] = g; p[i + 2] = b;
+    }
+    x.putImageData(d, 0, 0);
+  }
   function drawBase(c, W) {
     const r = ratio(), H = Math.round(W / r); c.width = W; c.height = H;
     const x = c.getContext("2d"), k = cropRect(r);
-    x.filter = E.filter; x.drawImage(E.img, k.sx, k.sy, k.sw, k.sh, 0, 0, W, H); x.filter = "none";
+    if (CANVAS_FILTER) { x.filter = E.filter; x.drawImage(E.img, k.sx, k.sy, k.sw, k.sh, 0, 0, W, H); x.filter = "none"; }
+    else { x.drawImage(E.img, k.sx, k.sy, k.sw, k.sh, 0, 0, W, H); if (E.filter && E.filter !== "none") pixelFilter(x, W, H, E.filter); }
     return x;
   }
   function layout() { // fit the stage in the space between the top bar and the buttons
@@ -3250,11 +3272,19 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
       const n = el("div", "ige-item" + (it.type === "text" ? " txt" : "") + (i === E.sel ? " sel" : ""), it.text);
       n.style.left = it.x * 100 + "%"; n.style.top = it.y * 100 + "%"; n.style.fontSize = it.size * w + "px"; if (it.type === "text") n.style.color = it.color;
       n.addEventListener("pointerdown", ev => {
-        ev.preventDefault(); E.sel = i; panel("item"); drawItems();
-        const r = stage.getBoundingClientRect(), node = stage.querySelectorAll(".ige-item")[i];
-        node.setPointerCapture(ev.pointerId);
-        const move = m => { it.x = Math.min(1, Math.max(0, (m.clientX - r.left) / r.width)); it.y = Math.min(1, Math.max(0, (m.clientY - r.top) / r.height)); node.style.left = it.x * 100 + "%"; node.style.top = it.y * 100 + "%"; };
-        node.onpointermove = move; node.onpointerup = () => { node.onpointermove = null; };
+        ev.preventDefault(); ev.stopPropagation();
+        const first = E.sel !== i; E.sel = i;
+        stage.querySelectorAll(".ige-item").forEach((x, k) => x.classList.toggle("sel", k === i));
+        if (first || E.panel !== "item") panel("item");
+        const id = ev.pointerId, r0 = stage.getBoundingClientRect(), ox = ev.clientX - (r0.left + it.x * r0.width), oy = ev.clientY - (r0.top + it.y * r0.height);
+        const move = m => {
+          if (m.pointerId !== id) return; m.preventDefault();
+          const r = stage.getBoundingClientRect(); // the picture can resize while dragging
+          it.x = Math.min(1, Math.max(0, (m.clientX - ox - r.left) / r.width)); it.y = Math.min(1, Math.max(0, (m.clientY - oy - r.top) / r.height));
+          const node = stage.querySelectorAll(".ige-item")[i]; if (node) { node.style.left = it.x * 100 + "%"; node.style.top = it.y * 100 + "%"; node.classList.add("drag"); }
+        };
+        const up = m => { if (m.pointerId !== id) return; removeEventListener("pointermove", move); removeEventListener("pointerup", up); removeEventListener("pointercancel", up); const node = stage.querySelectorAll(".ige-item")[i]; if (node) node.classList.remove("drag"); };
+        addEventListener("pointermove", move, { passive: false }); addEventListener("pointerup", up); addEventListener("pointercancel", up);
       });
       stage.append(n);
     });
@@ -3441,10 +3471,13 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
   function toast(t) { const e = $("ig-toast"); e.textContent = t; e.hidden = false; e.classList.remove("on"); void e.offsetWidth; e.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => { e.hidden = true; }, 2200); }
   function holdable(box, p) {
     let t = 0, x0 = 0, y0 = 0;
-    const cancel = () => { clearTimeout(t); t = 0; box.classList.remove("pressing"); };
+    const cancel = () => { clearTimeout(t); t = 0; box.classList.remove("pressing"); box.querySelectorAll(".ig-ripple").forEach(n => n.remove()); };
+    box.querySelectorAll("img").forEach(i => { i.draggable = false; });
     box.addEventListener("pointerdown", e => {
       if (e.button > 0) return; x0 = e.clientX; y0 = e.clientY; box.classList.add("pressing");
-      t = setTimeout(() => { t = 0; box.classList.remove("pressing"); if (navigator.vibrate) try { navigator.vibrate(12); } catch (_) {} openHold(p, box); }, 450);
+      const r = box.getBoundingClientRect(), rip = el("span", "ig-ripple"); rip.style.left = (e.clientX - r.left) + "px"; rip.style.top = (e.clientY - r.top) + "px";
+      box.querySelectorAll(".ig-ripple").forEach(n => n.remove()); box.append(rip);
+      t = setTimeout(() => { t = 0; box.classList.remove("pressing"); box.querySelectorAll(".ig-ripple").forEach(n => n.remove()); if (navigator.vibrate) try { navigator.vibrate(12); } catch (_) {} openHold(p, box); }, 450);
     });
     box.addEventListener("pointermove", e => { if (t && Math.hypot(e.clientX - x0, e.clientY - y0) > 10) cancel(); });
     ["pointerup", "pointercancel", "pointerleave"].forEach(k => box.addEventListener(k, cancel));
@@ -3461,7 +3494,12 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     const card = $("igh-card");
     if (src && card.animate && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
       const r = src.getBoundingClientRect(), cr = m.getBoundingClientRect();
-      if (cr.width && r.width) m.animate([{ transform: "translate(" + (r.left + r.width / 2 - cr.left - cr.width / 2) + "px," + (r.top + r.height / 2 - cr.top - cr.height / 2) + "px) scale(" + (r.width / cr.width) + ")", borderRadius: "0" }, { transform: "scale(1.04)", offset: .7 }, { transform: "none" }], { duration: 380, easing: "cubic-bezier(.2,.9,.3,1.2)" });
+      if (cr.width && r.width) m.animate([
+        { transform: "translate(" + (r.left + r.width / 2 - cr.left - cr.width / 2) + "px," + (r.top + r.height / 2 - cr.top - cr.height / 2) + "px) scale(" + (r.width / cr.width) + ")", borderRadius: "0" },
+        { transform: "scale(1.08, .94)", borderRadius: "30px", offset: .55 },
+        { transform: "scale(.96, 1.05)", offset: .72 },
+        { transform: "scale(1.02, .99)", offset: .86 },
+        { transform: "none", borderRadius: "22px" }], { duration: 620, easing: "ease-out" });
     }
   }
   function closeHold() { holdPost = null; $("ig-hold").hidden = true; $("igh-media").textContent = ""; }

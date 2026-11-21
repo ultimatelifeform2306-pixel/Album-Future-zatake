@@ -1190,3 +1190,10 @@ html.ig-open, html.ig-open body { overflow: hidden; }
 .ig-toast.on { animation: ig-toast .25s ease-out; }
 @keyframes ig-toast { from { opacity: 0; transform: translate(-50%, 10px); } }
 @media (prefers-reduced-motion: reduce) { .igh, .igh-menu, .ig-toast.on { animation: none; } }
+
+/* editor drag and hold ripple */
+.ige-item.drag { cursor: grabbing; transform: translate(-50%, -50%) scale(1.08); transition: transform .12s; }
+.ig-post-media { position: relative; overflow: hidden; }
+.ig-post-media img { pointer-events: none; }
+.ig-ripple { position: absolute; width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.55), rgba(255,255,255,.15) 60%, transparent 70%); pointer-events: none; animation: ig-ripple .45s ease-out forwards; }
+@keyframes ig-ripple { to { transform: scale(9); opacity: .25; } }

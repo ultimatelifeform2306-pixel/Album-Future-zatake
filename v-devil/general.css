@@ -1283,3 +1283,13 @@ html.live-full #live .live-top { left: 120px; }
 .live-sure-yes { background: #e0102a; }
 .live-cam-link { background: #3897f0; text-decoration: none; }
 .live-cam-link[hidden] { display: none; }
+
+/* login code + change password */
+.gate-code { margin-top: 14px; }
+.gate-code summary { cursor: pointer; font: 10px var(--f-pixel); color: var(--gold); }
+.gate-code textarea, .acct-tools textarea { width: 100%; box-sizing: border-box; margin: 8px 0; font: 14px monospace; color: #fff; background: var(--ink, #0b0430); border: 0; padding: 8px; box-shadow: 0 0 0 2px var(--lilac); word-break: break-all; }
+.acct-tools { display: grid; gap: 8px; margin: 18px 0; }
+.acct-tools h3 { margin: 10px 0 0; font: 10px var(--f-pixel); color: var(--gold); }
+.acc-pw { display: grid; gap: 8px; }
+.acc-pw input { font: 18px var(--f-body); color: #fff; background: var(--ink, #0b0430); border: 0; padding: 8px; box-shadow: 0 0 0 2px var(--lilac); }
+.acc-pw .btn, .acct-tools > .btn { justify-self: start; border: 0; cursor: pointer; }

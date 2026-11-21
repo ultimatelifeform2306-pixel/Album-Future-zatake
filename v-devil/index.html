@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Russo+One&family=VT323&display=swap">
-<link rel="stylesheet" href="general.css?v=20261121g">
+<link rel="stylesheet" href="general.css?v=20261121h">
 
 <!-- sign-in gate: nobody reaches the site without an account -->
 <div class="gate" id="gate">
@@ -1034,6 +1034,14 @@ they crush my heart destroy my body  just like a lego
       <div class="igp" id="ig-posts" hidden>
         <div class="igp-top"><button type="button" class="ig-ico" id="igp-back" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 4 7 12l8 8"/></svg></button><div class="igp-title"><strong>Posts</strong><span id="igp-user"></span></div><span class="igp-sp"></span></div>
         <div class="igp-list" id="igp-list"></div>
+      </div>
+
+      <!-- delete: are you sure? -->
+      <div class="igd" id="ig-del" hidden>
+        <div class="igd-box" role="alertdialog" aria-labelledby="igd-q">
+          <p id="igd-q">Are you sure to delete?</p>
+          <div class="igd-row"><button type="button" class="igd-yes" id="igd-yes">Yup</button><button type="button" class="igd-no" id="igd-no">Nah</button></div>
+        </div>
       </div>
 
       <!-- chat with a friend -->
@@ -3019,7 +3027,13 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     const who = el("button", "ig-who"); who.type = "button"; who.append(avatar(p.uid, "ring"), el("span", "", nameOf(p.uid)));
     if (isOwnerId(p.uid)) who.append(el("span", "ig-check", "✔"));
     who.onclick = () => openProfile(p.uid);
-    head.append(who, el("span", "ig-dots", "•••"));
+    if (p.uid === me || isCreator) {
+      const wrap = el("div", "ig-dots-wrap"), dots = el("button", "ig-dots", "•••"), menu = el("div", "ig-dmenu"), del = el("button", "", "Delete");
+      dots.type = del.type = "button"; dots.setAttribute("aria-label", "More"); menu.hidden = true;
+      dots.onclick = e => { e.stopPropagation(); const open = menu.hidden; document.querySelectorAll(".ig-dmenu").forEach(m => m.hidden = true); menu.hidden = !open; };
+      del.onclick = e => { e.stopPropagation(); menu.hidden = true; askDelete(p); };
+      menu.append(del); wrap.append(dots, menu); head.append(who, wrap);
+    } else head.append(who);
     const box = el("div", "ig-post-media"); box.append(media(p, true)); box.ondblclick = () => toggleLike(p.key, true);
     const acts = el("div", "ig-acts");
     const like = el("button", "ig-ico like" + (iLike(p.key) ? " on" : "")); like.type = "button"; like.setAttribute("aria-label", "Like");
@@ -3384,6 +3398,24 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
 
 
 
+  // ---- ••• menu → Delete → "Are you sure to delete?" Yup / Nah ----
+  let delPost = null;
+  document.addEventListener("click", () => document.querySelectorAll(".ig-dmenu").forEach(m => m.hidden = true));
+  function askDelete(p) { delPost = p; const d = $("ig-del"); d.hidden = false; d.classList.remove("open"); void d.offsetWidth; d.classList.add("open"); $("igd-no").focus(); }
+  function closeDelete() { const d = $("ig-del"); delPost = null; d.classList.remove("open"); d.hidden = true; }
+  $("igd-no").onclick = closeDelete;
+  $("ig-del").addEventListener("click", e => { if (e.target.id === "ig-del") closeDelete(); });
+  $("igd-yes").onclick = async () => {
+    const p = delPost; if (!p) return;
+    const list = (posts[p.uid] && posts[p.uid].items) || [];
+    try {
+      await db.doc("posts/" + p.uid).set({ items: list.filter(x => x.id !== p.id) });
+      if (p.asset && assets) assets.delete(p.asset).catch(() => {});
+      if (viewing === p.key) closeView();
+    } catch (_) { off("Couldn't delete that post."); }
+    closeDelete();
+  };
+
   // ---- a person's posts as a page: zooms out of the tapped tile, swipe right to go back ----
   let postsOf = null, postsTile = null;
   const reduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -3694,7 +3726,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     };
     try { r.stop(); } catch (_) {}
   }
-  addEventListener("keydown", e => { if (e.key !== "Escape" || $("yours").hidden) return; if (sv) closeStories(); else if (csKey) closeComments(); else if (chatWith) closeChat(); else if (postsOf) closePosts(); else if (!$("ig-editor").hidden) closeEditor(); else if (viewing) closeView(); else leaveApp(); });
+  addEventListener("keydown", e => { if (e.key !== "Escape" || $("yours").hidden) return; if (delPost) closeDelete(); else if (sv) closeStories(); else if (csKey) closeComments(); else if (chatWith) closeChat(); else if (postsOf) closePosts(); else if (!$("ig-editor").hidden) closeEditor(); else if (viewing) closeView(); else leaveApp(); });
 })();
 
 // Logged in before on this device (until LOG OUT): open the site straight away

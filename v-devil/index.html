@@ -736,6 +736,16 @@ they crush my heart destroy my body  just like a lego
     <div class="ps nd" id="nd-page" hidden>
       <button type="button" class="gl-back" id="nd-back"><i class="stk l" aria-hidden="true"></i> <span data-i18n="all_games">ALL GAMES</span></button>
       <div class="nd-hero"><img src="new-danger-cover.jpg" alt="New Danger 2025"></div>
+      <div class="ps-media" aria-label="Screenshots">
+        <figure class="ps-view">
+          <div class="ps-view-bg" id="nd-view-bg" aria-hidden="true"></div>
+          <img id="nd-big" src="nd-shot-station.jpg" alt="">
+          <button type="button" class="ps-nav prev" id="nd-prev" aria-label="Previous screenshot">‹</button>
+          <button type="button" class="ps-nav next" id="nd-next" aria-label="Next screenshot">›</button>
+          <figcaption id="nd-cap"></figcaption>
+        </figure>
+        <div class="ps-thumbs" id="nd-thumbs"></div>
+      </div>
       <div class="ps-about">
         <h3>New Danger 2025</h3>
         <p>The next game from V-Devil Production. More soon.</p>
@@ -2663,45 +2673,53 @@ document.querySelectorAll("[data-lock]").forEach(s => { const l = document.query
   document.querySelectorAll('nav a[data-tab="game"]').forEach(a => a.addEventListener("click", () => setTimeout(showList, 0)));
 })();
 
-// ===== GAME store page: screenshot gallery =====
+// ===== GAME store pages: screenshot galleries (Panel Sewi and New Danger 2025) =====
 (() => {
-  const SHOTS = [
+  const zoom = $("ps-zoom"), zimg = $("ps-zoom-img");
+  zoom.onclick = () => { zoom.hidden = true; };
+  function gallery(pre, page, SHOTS) {
+    const big = $(pre + "-big"), bg = $(pre + "-view-bg"), cap = $(pre + "-cap"), thumbs = $(pre + "-thumbs");
+    let cur = 0;
+    SHOTS.forEach((sh, i) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.setAttribute("aria-label", "Screenshot " + (i + 1) + ": " + sh.cap);
+      const im = document.createElement("img"); im.src = sh.src; im.alt = ""; b.append(im);
+      b.onclick = () => pick(i);
+      thumbs.append(b);
+    });
+    function pick(i) {
+      cur = (i + SHOTS.length) % SHOTS.length;
+      const sh = SHOTS[cur];
+      big.src = sh.src; big.alt = sh.cap; big.classList.toggle("px", !!sh.px);
+      bg.style.backgroundImage = "url(" + sh.src + ")";
+      cap.textContent = (cur + 1) + "/" + SHOTS.length; // picture number out of the total; the name stays for screen readers
+      [...thumbs.children].forEach((b, k) => b.classList.toggle("on", k === cur));
+    }
+    $(pre + "-prev").onclick = e => { e.stopPropagation(); pick(cur - 1); };
+    $(pre + "-next").onclick = e => { e.stopPropagation(); pick(cur + 1); };
+    big.parentElement.onclick = () => { zimg.src = SHOTS[cur].src; zimg.alt = SHOTS[cur].cap; zimg.classList.toggle("px", !!SHOTS[cur].px); zoom.hidden = false; };
+    addEventListener("keydown", e => {
+      if (!zoom.hidden && e.key === "Escape") zoom.hidden = true;
+      if ($("game").hidden || !zoom.hidden || (page && page.hidden) || page && page.closest("[hidden]")) return;
+      if (e.key === "ArrowRight") pick(cur + 1); else if (e.key === "ArrowLeft") pick(cur - 1);
+    });
+    let sx = null; // swipe through screenshots on phones
+    big.parentElement.addEventListener("touchstart", e => { sx = e.touches[0].clientX; }, { passive: true });
+    big.parentElement.addEventListener("touchend", e => { if (sx === null) return; const dx = e.changedTouches[0].clientX - sx; sx = null; if (Math.abs(dx) > 40) pick(cur + (dx < 0 ? 1 : -1)); });
+    pick(0);
+  }
+  gallery("ps", $("ps-big").closest(".ps"), [
     { src: "shot-london.jpg", cap: "LONDON · TOWER BRIDGE STAGE", px: true },
     { src: "shot-egypt.jpg", cap: "EGYPT · GIZA STAGE" },
     { src: "shot-rotterdam.jpg", cap: "ROTTERDAM · CENTRAAL STATION STAGE" },
     { src: "shot-cafe.jpg", cap: "STORY SCENE · THE CAFÉ" },
     { src: "shot-forest.jpg", cap: "STORY SCENE · THE AUTUMN FOREST" }
-  ];
-  const big = $("ps-big"), bg = $("ps-view-bg"), cap = $("ps-cap"), thumbs = $("ps-thumbs"), zoom = $("ps-zoom"), zimg = $("ps-zoom-img");
-  let cur = 0;
-  SHOTS.forEach((sh, i) => {
-    const b = document.createElement("button");
-    b.type = "button"; b.setAttribute("aria-label", "Screenshot " + (i + 1) + ": " + sh.cap);
-    const im = document.createElement("img"); im.src = sh.src; im.alt = ""; b.append(im);
-    b.onclick = () => pick(i);
-    thumbs.append(b);
-  });
-  function pick(i) {
-    cur = (i + SHOTS.length) % SHOTS.length;
-    const sh = SHOTS[cur];
-    big.src = sh.src; big.alt = sh.cap; big.classList.toggle("px", !!sh.px);
-    bg.style.backgroundImage = "url(" + sh.src + ")";
-    cap.textContent = (cur + 1) + "/" + SHOTS.length; // picture number out of the total; the name stays for screen readers
-    [...thumbs.children].forEach((b, k) => b.classList.toggle("on", k === cur));
-  }
-  $("ps-prev").onclick = e => { e.stopPropagation(); pick(cur - 1); };
-  $("ps-next").onclick = e => { e.stopPropagation(); pick(cur + 1); };
-  big.parentElement.onclick = () => { zimg.src = SHOTS[cur].src; zimg.alt = SHOTS[cur].cap; zimg.classList.toggle("px", !!SHOTS[cur].px); zoom.hidden = false; };
-  zoom.onclick = () => { zoom.hidden = true; };
-  addEventListener("keydown", e => {
-    if (!zoom.hidden && e.key === "Escape") zoom.hidden = true;
-    if ($("game").hidden || !zoom.hidden) return;
-    if (e.key === "ArrowRight") pick(cur + 1); else if (e.key === "ArrowLeft") pick(cur - 1);
-  });
-  let sx = null; // swipe through screenshots on phones
-  big.parentElement.addEventListener("touchstart", e => { sx = e.touches[0].clientX; }, { passive: true });
-  big.parentElement.addEventListener("touchend", e => { if (sx === null) return; const dx = e.changedTouches[0].clientX - sx; sx = null; if (Math.abs(dx) > 40) pick(cur + (dx < 0 ? 1 : -1)); });
-  pick(0);
+  ]);
+  gallery("nd", $("nd-page"), [
+    { src: "nd-shot-station.jpg", cap: "SARTROUVILLE STATION" },
+    { src: "nd-shot-park.jpg", cap: "STORY SCENE · THE PARK" },
+    { src: "nd-shot-night.jpg", cap: "THE STREET AT NIGHT" }
+  ]);
 })();
 
 // ===== For E-Star pack: only E-Star members get these =====

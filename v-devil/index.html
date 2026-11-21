@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Russo+One&family=VT323&display=swap">
-<link rel="stylesheet" href="general.css?v=20261121f">
+<link rel="stylesheet" href="general.css?v=20261121g">
 
 <!-- sign-in gate: nobody reaches the site without an account -->
 <div class="gate" id="gate">
@@ -958,7 +958,7 @@ they crush my heart destroy my body  just like a lego
             <input type="date" id="yrs-arch-date" aria-label="Archive date" disabled>
             <p class="yrs-arch-tip">The post shows this date, like “November 17”. From the next year on it shows “2026-11-17”.</p>
           </div>
-          <div class="ig-row"><button class="ig-btn blue" type="submit" id="yrs-new-go">Share</button><button class="ig-btn" type="button" id="yrs-new-cancel">Cancel</button></div>
+          <div class="ig-row"><button class="ig-btn blue" type="submit" id="yrs-new-go">Send Yours</button><button class="ig-btn" type="button" id="yrs-new-cancel">Cancel</button></div>
           <p class="ig-msg" id="yrs-new-msg" role="status"></p>
         </form>
       </main>
@@ -1028,6 +1028,12 @@ they crush my heart destroy my body  just like a lego
           </form>
           <p class="ig-cs-note" id="ig-cs-note" role="status"></p>
         </div>
+      </div>
+
+      <!-- one person's posts, opened from their profile grid (zooms in, swipe right to go back) -->
+      <div class="igp" id="ig-posts" hidden>
+        <div class="igp-top"><button type="button" class="ig-ico" id="igp-back" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 4 7 12l8 8"/></svg></button><div class="igp-title"><strong>Posts</strong><span id="igp-user"></span></div><span class="igp-sp"></span></div>
+        <div class="igp-list" id="igp-list"></div>
       </div>
 
       <!-- chat with a friend -->
@@ -2959,7 +2965,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
   // ---- opening and leaving the app (it covers the whole website) ----
   const app = $("ig");
   function enterApp() { document.documentElement.classList.add("ig-open"); go(tab); }
-  function leaveApp() { document.documentElement.classList.remove("ig-open"); closeComments(true); closeChat(); closeView(); closeEditor(); closeStories(); show("home"); try { history.replaceState(null, "", "#home"); } catch (_) {} }
+  function leaveApp() { document.documentElement.classList.remove("ig-open"); closeComments(true); closeChat(); closePosts(true); closeView(); closeEditor(); closeStories(); show("home"); try { history.replaceState(null, "", "#home"); } catch (_) {} }
   $("ig-back").onclick = leaveApp;
   new MutationObserver(() => { if (!$("yours").hidden) enterApp(); else document.documentElement.classList.remove("ig-open"); }).observe($("yours"), { attributes: true, attributeFilter: ["hidden"] });
   if (!$("yours").hidden) enterApp();
@@ -2996,7 +3002,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
   })();
   setInterval(() => { // keep the creator's counters climbing on screen
     if ($("yours").hidden || !allPosts().some(p => isOwnerId(p.uid))) return;
-    document.querySelectorAll("[data-live-likes]").forEach(e => { const p = allPosts().find(p => p.key === e.dataset.liveLikes); if (p) e.textContent = fmt(likesShown(p)) + " likes"; });
+    document.querySelectorAll("[data-live-likes]").forEach(e => { const p = allPosts().find(p => p.key === e.dataset.liveLikes); if (p) e.textContent = fmt(likesShown(p)); });
     document.querySelectorAll("[data-live-views]").forEach(e => { const p = allPosts().find(p => p.key === e.dataset.liveViews); if (p) e.textContent = fmt(ramp(p.at, 1000000)) + " views"; });
     if (viewing) fillView();
   }, 1000);
@@ -3013,7 +3019,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     const who = el("button", "ig-who"); who.type = "button"; who.append(avatar(p.uid, "ring"), el("span", "", nameOf(p.uid)));
     if (isOwnerId(p.uid)) who.append(el("span", "ig-check", "✔"));
     who.onclick = () => openProfile(p.uid);
-    head.append(who, el("span", "ig-time", dateLabel(p)));
+    head.append(who, el("span", "ig-dots", "•••"));
     const box = el("div", "ig-post-media"); box.append(media(p, true)); box.ondblclick = () => toggleLike(p.key, true);
     const acts = el("div", "ig-acts");
     const like = el("button", "ig-ico like" + (iLike(p.key) ? " on" : "")); like.type = "button"; like.setAttribute("aria-label", "Like");
@@ -3022,20 +3028,24 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     const cm = el("button", "ig-ico"); cm.type = "button"; cm.setAttribute("aria-label", "Comments");
     cm.innerHTML = '<svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-3.3-6.5A8 8 0 0 1 20 12zM20 20l-2.5-2.6"/></svg>';
     cm.onclick = () => openComments(p.key);
-    acts.append(like, cm);
-    const meta = el("div", "ig-meta");
-    const lk = el("strong", "", fmt(likesShown(p)) + " likes"); lk.dataset.liveLikes = p.key; meta.append(lk);
-    if (isOwnerId(p.uid)) { const vw = el("span", "ig-views", fmt(ramp(p.at, 1000000)) + " views"); vw.dataset.liveViews = p.key; meta.append(vw); }
+    const lk = el("span", "ig-count", fmt(likesShown(p))); lk.dataset.liveLikes = p.key;
+    const nc = cmtsOf(p.key).length;
+    acts.append(like, lk, cm, el("span", "ig-count", isOwnerId(p.uid) ? "" : fmt(nc)));
+    if (isOwnerId(p.uid)) { const vw = el("span", "ig-views", fmt(ramp(p.at, 1000000)) + " views"); vw.dataset.liveViews = p.key; acts.append(vw); }
+    art.append(head, box, acts);
+    const fans = likers(p.key).filter(u => u !== p.uid);
+    if (fans.length) { const f = fans[fans.length - 1], lb = el("p", "ig-likedby"); lb.append(avatar(f), document.createTextNode("Liked by "), el("strong", "", nameOf(f))); if (likesShown(p) > 1) lb.append(document.createTextNode(" and "), el("strong", "", "others")); art.append(lb); }
     const cap = el("p", "ig-cap"); cap.append(el("strong", "", nameOf(p.uid) + " "), document.createTextNode(p.desc || ""));
-    art.append(head, box, acts, meta, cap);
-    if (!isOwnerId(p.uid)) { const n = cmtsOf(p.key).length; const more = el("button", "ig-more", n ? "View all " + n + " comments" : "Add a comment…"); more.type = "button"; more.onclick = () => openComments(p.key); art.append(more); }
+    art.append(cap);
+    if (!isOwnerId(p.uid) && nc) { const more = el("button", "ig-more", "View all " + nc + " comments"); more.type = "button"; more.onclick = () => openComments(p.key); art.append(more); }
+    art.append(el("p", "ig-date", dateLabel(p)));
     return art;
   }
-  function tile(p) {
-    const b = el("button", "yrs-tile"); b.type = "button";
+  function tile(p, onProfile) {
+    const b = el("button", "yrs-tile"); b.type = "button"; b.dataset.key = p.key;
     if (p.kind === "video") { const v = el("video"); v.src = p.src; v.muted = true; v.playsInline = true; v.preload = "metadata"; b.append(v, el("i", "", "▶")); }
     else { const im = el("img"); im.src = p.src; im.alt = p.desc ? p.desc.slice(0, 80) : "Post"; im.loading = "lazy"; b.append(im); }
-    b.onclick = () => openView(p.key); return b;
+    b.onclick = () => onProfile ? openPosts(p.uid, p.key, b) : openView(p.key); return b;
   }
   function personRow(uid, sub) {
     const b = el("button", "ig-person-row"); b.type = "button";
@@ -3101,7 +3111,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
       $("yrs-prof-bio").textContent = bioOf(profUid); $("yrs-prof-badge").hidden = !isOwnerId(profUid) && profUid !== BOT; $("yrs-prof-badge").textContent = profUid === BOT ? "BOT" : "CREATOR";
       $("yrs-edit-btn").hidden = profUid !== me;
       const g = $("yrs-prof-grid"); g.textContent = "";
-      const theirs = all.filter(p => p.uid === profUid); theirs.forEach(p => g.append(tile(p)));
+      const theirs = all.filter(p => p.uid === profUid); theirs.forEach(p => g.append(tile(p, true)));
       if (!theirs.length) g.append(el("p", "ig-empty", "No posts yet."));
       $("yrs-prof-posts").textContent = theirs.length;
       $("yrs-prof-likes").textContent = fmt(theirs.reduce((s, p) => s + likesShown(p), 0));
@@ -3110,6 +3120,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     if (viewing) fillView();
     if (csKey) renderComments();
     if (chatWith) renderChat();
+    if (postsOf) renderPosts();
   }
   $("ig-q").oninput = render;
 
@@ -3300,7 +3311,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
       const up = await assets.upload(readyBlob);
       const items = ((posts[me] && posts[me].items) || []).concat({ id: Date.now().toString(36), kind: E.kind, src: BLOB(up.id), asset: up.id, desc, at, ...(arch ? { arch: 1 } : {}) }).slice(-60);
       await db.doc("posts/" + me).set({ items });
-      m.textContent = ""; readyBlob = null; go("home");
+      m.textContent = ""; const sent = readyBlob; readyBlob = null; flyToProfile(sent, me + ":" + items[items.length - 1].id);
     } catch (err) { m.textContent = upErr(err); }
     $("yrs-new-go").disabled = false;
   });
@@ -3371,6 +3382,87 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     try { await db.doc("posts/" + me).set({ items: list.filter(x => x.id !== id) }); closeView(); if (it && it.asset && assets) assets.delete(it.asset).catch(() => {}); } catch (_) {}
   };
 
+
+
+  // ---- a person's posts as a page: zooms out of the tapped tile, swipe right to go back ----
+  let postsOf = null, postsTile = null;
+  const reduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function zoomFrom(rect) { // transform that maps the page onto the tile
+    const pg = $("ig-posts").getBoundingClientRect();
+    return "translate(" + (rect.left - pg.left) + "px," + (rect.top - pg.top) + "px) scale(" + (rect.width / pg.width) + "," + (rect.height / pg.height) + ")";
+  }
+  function openPosts(uid, key, tileEl) {
+    postsOf = uid; postsTile = tileEl || null;
+    const pg = $("ig-posts"); pg.hidden = false; pg.style.transform = ""; pg.style.opacity = "";
+    $("igp-user").textContent = nameOf(uid);
+    renderPosts();
+    const target = $("igp-list").querySelector('[data-key="' + CSS.escape(key) + '"]');
+    $("igp-list").scrollTop = target ? target.offsetTop : 0;
+    if (tileEl && !reduce() && pg.animate) {
+      const r = tileEl.getBoundingClientRect();
+      pg.animate([{ transform: zoomFrom(r), opacity: .4, borderRadius: "6px" }, { transform: "none", opacity: 1, borderRadius: "0" }], { duration: 320, easing: "cubic-bezier(.2,.85,.25,1)" });
+    }
+  }
+  function closePosts(now) {
+    if (!postsOf) return;
+    const pg = $("ig-posts"), tileEl = postsTile && postsTile.isConnected ? postsTile : null;
+    postsOf = null; postsTile = null;
+    const done = () => { pg.hidden = true; pg.style.transform = ""; pg.style.opacity = ""; $("igp-list").textContent = ""; };
+    if (now || reduce() || !pg.animate) return done();
+    const from = pg.style.transform || "none";
+    const to = tileEl ? { transform: zoomFrom(tileEl.getBoundingClientRect()), opacity: 0, borderRadius: "6px" } : { transform: "translateX(100%)", opacity: 1 };
+    const a = pg.animate([{ transform: from, opacity: 1 }, to], { duration: 260, easing: "cubic-bezier(.4,0,.6,1)", fill: "forwards" });
+    a.onfinish = () => { a.cancel(); done(); };
+  }
+  $("igp-back").onclick = () => closePosts();
+  function renderPosts() {
+    if (!postsOf) return;
+    const list = $("igp-list"), keep = list.scrollTop, theirs = allPosts().filter(p => p.uid === postsOf);
+    list.textContent = "";
+    theirs.forEach(p => { const a = feedPost(p); a.dataset.key = p.key; list.append(a); });
+    if (!theirs.length) list.append(el("p", "ig-empty", "No posts yet."));
+    list.scrollTop = keep;
+  }
+  // swipe right from anywhere on the page to go back, like Instagram
+  (() => {
+    const pg = $("ig-posts"); let x0 = null, y0 = 0, dx = 0, on = false;
+    pg.addEventListener("touchstart", e => { if (e.touches.length !== 1) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; dx = 0; on = false; }, { passive: true });
+    pg.addEventListener("touchmove", e => {
+      if (x0 == null) return;
+      const mx = e.touches[0].clientX - x0, my = e.touches[0].clientY - y0;
+      if (!on) { if (Math.abs(mx) < 12 && Math.abs(my) < 12) return; if (mx > 0 && Math.abs(mx) > Math.abs(my) * 1.3) on = true; else { x0 = null; return; } }
+      dx = Math.max(0, mx); pg.style.transform = "translateX(" + dx + "px)"; pg.style.opacity = String(1 - Math.min(.35, dx / 900));
+    }, { passive: true });
+    pg.addEventListener("touchend", () => {
+      if (x0 == null) return; x0 = null; if (!on) return;
+      if (dx > 90) { pg.style.transform = "translateX(" + dx + "px)"; const w = pg.getBoundingClientRect().width; const a = pg.animate([{ transform: "translateX(" + dx + "px)" }, { transform: "translateX(" + w + "px)" }], { duration: 180, fill: "forwards" }); a.onfinish = () => { a.cancel(); postsTile = null; closePosts(true); }; }
+      else { pg.animate([{ transform: "translateX(" + dx + "px)" }, { transform: "none" }], { duration: 180 }); pg.style.transform = ""; pg.style.opacity = ""; }
+    });
+  })();
+
+  // ---- Send Yours: the picture flies into your profile and pops into the grid ----
+  function flyToProfile(blob, key) {
+    const prev = $("yrs-new-prev").querySelector("img,video"), from = prev ? prev.getBoundingClientRect() : null, to = $("yrs-mine-btn").getBoundingClientRect();
+    const land = () => {
+      openProfile(me);
+      const main = $("ig-main");
+      if (!reduce() && main.animate) main.animate([{ transform: "translateX(40%)", opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 300, easing: "cubic-bezier(.2,.85,.25,1)" });
+      const t = $("yrs-prof-grid").querySelector('[data-key="' + CSS.escape(key) + '"]');
+      if (t) { t.classList.add("igp-new"); setTimeout(() => t.classList.remove("igp-new"), 1400); }
+      const btn = $("yrs-mine-btn"); btn.classList.add("igp-bump"); setTimeout(() => btn.classList.remove("igp-bump"), 600);
+    };
+    if (!from || reduce() || !document.body.animate) return land();
+    const fly = el(prev.tagName === "VIDEO" ? "video" : "img", "igp-fly"); fly.src = URL.createObjectURL(blob); if (fly.tagName === "VIDEO") fly.muted = true;
+    Object.assign(fly.style, { left: from.left + "px", top: from.top + "px", width: from.width + "px", height: from.height + "px" });
+    document.body.append(fly);
+    const dx = to.left + to.width / 2 - (from.left + from.width / 2), dy = to.top + to.height / 2 - (from.top + from.height / 2), k = 34 / Math.max(from.width, from.height);
+    const a = fly.animate([
+      { transform: "none", borderRadius: "8px", opacity: 1 },
+      { transform: "translate(" + dx * .35 + "px," + (dy * .35 - 40) + "px) scale(.6) rotate(-6deg)", borderRadius: "20px", opacity: 1, offset: .45 },
+      { transform: "translate(" + dx + "px," + dy + "px) scale(" + k + ")", borderRadius: "50%", opacity: .6 }
+    ], { duration: 700, easing: "cubic-bezier(.5,0,.3,1)" });
+    a.onfinish = () => { URL.revokeObjectURL(fly.src); fly.remove(); land(); };
+  }
 
   // ---- chat with a friend; their profile sits in the far right corner ----
   const dms = {};
@@ -3602,7 +3694,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     };
     try { r.stop(); } catch (_) {}
   }
-  addEventListener("keydown", e => { if (e.key !== "Escape" || $("yours").hidden) return; if (sv) closeStories(); else if (csKey) closeComments(); else if (chatWith) closeChat(); else if (!$("ig-editor").hidden) closeEditor(); else if (viewing) closeView(); else leaveApp(); });
+  addEventListener("keydown", e => { if (e.key !== "Escape" || $("yours").hidden) return; if (sv) closeStories(); else if (csKey) closeComments(); else if (chatWith) closeChat(); else if (postsOf) closePosts(); else if (!$("ig-editor").hidden) closeEditor(); else if (viewing) closeView(); else leaveApp(); });
 })();
 
 // Logged in before on this device (until LOG OUT): open the site straight away

@@ -1121,3 +1121,27 @@ html.ig-open, html.ig-open body { overflow: hidden; }
 .yrs-arch input[type=date]:disabled { opacity: .4; }
 .yrs-arch-tip { margin: 0; font-size: 12px; color: #8e8e8e; }
 .yrs-date { margin: 2px 0 0; font-size: 12px; color: #8e8e8e; text-transform: none; }
+
+/* ===== YOURS: posts page (zoom from the profile grid), post layout like Instagram, Send Yours flight ===== */
+.igp { position: fixed; inset: 0; z-index: 50; display: grid; grid-template-rows: auto 1fr; grid-template-columns: minmax(0, 1fr); background: #000; color: #f5f5f5; transform-origin: 0 0; padding-top: env(safe-area-inset-top, 0px); will-change: transform; }
+.igp[hidden] { display: none; }
+.igp-top { display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; padding: 6px 10px; border-bottom: 1px solid #1f1f1f; }
+.igp-title { display: grid; justify-items: center; line-height: 1.15; }
+.igp-title strong { font-size: 16px; }
+.igp-title span { font-size: 12px; color: #8e8e93; }
+.igp-list { overflow-y: auto; overscroll-behavior: contain; padding-bottom: 40px; -webkit-overflow-scrolling: touch; }
+.ig-dots { color: #f5f5f5; letter-spacing: 1px; font-size: 12px; }
+.ig-acts { align-items: center; gap: 0; padding: 6px 6px 0; }
+.ig-acts .ig-ico { width: 36px; }
+.ig-count { margin: 0 10px 0 0; font-size: 15px; font-weight: 700; }
+.ig-count:empty { display: none; }
+.ig-acts .ig-views { margin-left: auto; padding-right: 8px; font-size: 13px; }
+.ig-likedby { display: flex; align-items: center; gap: 5px; margin: 6px 14px 0; font-size: 14px; flex-wrap: wrap; }
+.ig-likedby .yrs-av { width: 20px; height: 20px; border-radius: 50%; }
+.ig-likedby strong { font-weight: 700; }
+.ig-date { margin: 6px 14px 0; font-size: 12px; color: #8e8e93; }
+.yrs-tile.igp-new { animation: igp-pop 1.2s cubic-bezier(.2,.9,.3,1.4); position: relative; z-index: 1; }
+@keyframes igp-pop { 0% { transform: scale(.2); opacity: 0; } 35% { transform: scale(1.08); opacity: 1; box-shadow: 0 0 0 3px #0095f6; } 100% { transform: none; box-shadow: none; } }
+.igp-bump { animation: igp-bump .5s ease-out; }
+@keyframes igp-bump { 40% { transform: scale(1.3); } }
+.igp-fly { position: fixed; z-index: 80; object-fit: cover; pointer-events: none; box-shadow: 0 10px 30px rgba(0,0,0,.6); }

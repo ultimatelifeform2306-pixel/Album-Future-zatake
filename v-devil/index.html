@@ -853,6 +853,12 @@ they crush my heart destroy my body  just like a lego
         <div class="live-soon" id="live-soon"><span>STARTING SOON</span></div>
         <div class="live-top"><span class="live-badge" id="live-badge">OFFLINE</span><span class="live-time" id="live-time" hidden>00:00</span></div>
         <div class="live-cap"><span id="live-title-show">Enter your title</span></div>
+        <div class="live-ctl" id="live-ctl">
+          <button type="button" id="live-pp" aria-label="Pause"><svg viewBox="0 0 24 24"><path d="M7 5h3v14H7zM14 5h3v14h-3z"/></svg></button>
+          <button type="button" id="live-vol" aria-label="Hear myself"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="w" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/><path class="x" d="m16 9 6 6M22 9l-6 6"/></svg></button>
+          <span class="live-ctl-sp"></span>
+          <button type="button" id="live-wide" aria-label="Widescreen"><svg viewBox="0 0 24 24"><path class="in" d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/><path class="out" d="M9 4v5H4M20 9h-5V4M15 20v-5h5M4 15h5v5"/></svg></button>
+        </div>
       </div>
       <button type="button" class="live-back" id="live-back" hidden>‹ BACK</button>
       <div class="live-sure" id="live-sure" hidden>
@@ -3019,7 +3025,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     t0 = Date.now(); timer = setInterval(() => { const s = Math.floor((Date.now() - t0) / 1000); $("live-time").textContent = String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0"); }, 500);
     $("live-go").textContent = "■ END STREAM"; $("live-go").classList.add("end");
     msg("You're live.", true);
-    enterFull();
+    showCtl();
   }
   // ---- the live takes the whole screen, sideways (landscape) ----
   const liveStage = document.querySelector("#live .live-stage");
@@ -3035,6 +3041,21 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     const fe = document.fullscreenElement || document.webkitFullscreenElement;
     if (fe) { const x = document.exitFullscreen || document.webkitExitFullscreen; try { const r = x.call(document); if (r && r.catch) r.catch(() => {}); } catch (_) {} }
   }
+  // ---- player controls: tap the live to show them; the widescreen button fills the screen with the chat on the right ----
+  let ctlT = 0;
+  function showCtl() { const pl = $("live-player"); pl.classList.add("ctl-on"); clearTimeout(ctlT); ctlT = setTimeout(() => pl.classList.remove("ctl-on"), 3500); syncCtl(); }
+  function syncCtl() {
+    const cam = $("live-cam"), paused = !!stream && cam.paused;
+    $("live-pp").hidden = !stream; $("live-vol").hidden = !stream;
+    $("live-pp").innerHTML = paused ? '<svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>' : '<svg viewBox="0 0 24 24"><path d="M7 5h3v14H7zM14 5h3v14h-3z"/></svg>';
+    $("live-pp").setAttribute("aria-label", paused ? "Play" : "Pause");
+    $("live-vol").classList.toggle("off", !$("live-hear").checked);
+    $("live-wide").classList.toggle("on", document.documentElement.classList.contains("live-full"));
+  }
+  $("live-player").addEventListener("click", e => { if (e.target.closest(".live-ctl button")) return; const pl = $("live-player"); if (pl.classList.contains("ctl-on")) { pl.classList.remove("ctl-on"); clearTimeout(ctlT); } else showCtl(); });
+  $("live-pp").onclick = e => { e.stopPropagation(); const cam = $("live-cam"); if (cam.paused) cam.play().catch(() => {}); else cam.pause(); showCtl(); };
+  $("live-vol").onclick = e => { e.stopPropagation(); const h = $("live-hear"); h.checked = !h.checked; h.dispatchEvent(new Event("change", { bubbles: true })); if (nodes) nodes.out.gain.value = h.checked ? 1 : 0; showCtl(); };
+  $("live-wide").onclick = e => { e.stopPropagation(); if (document.documentElement.classList.contains("live-full")) exitFull(); else enterFull(); showCtl(); };
   $("live-back").onclick = () => { const s = $("live-sure"); s.hidden = false; s.classList.remove("open"); void s.offsetWidth; s.classList.add("open"); $("live-sure-no").focus(); };
   $("live-sure-no").onclick = () => { $("live-sure").hidden = true; };
   $("live-sure-yes").onclick = () => { $("live-sure").hidden = true; if (stream) endLive(); else exitFull(); };

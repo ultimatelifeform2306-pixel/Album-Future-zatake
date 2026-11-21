@@ -1293,3 +1293,20 @@ html.live-full #live .live-top { left: 120px; }
 .acc-pw { display: grid; gap: 8px; }
 .acc-pw input { font: 18px var(--f-body); color: #fff; background: var(--ink, #0b0430); border: 0; padding: 8px; box-shadow: 0 0 0 2px var(--lilac); }
 .acc-pw .btn, .acct-tools > .btn { justify-self: start; border: 0; cursor: pointer; }
+
+/* ===== LIVE: player controls (tap to show), widescreen button ===== */
+.live-player { cursor: pointer; }
+.live-ctl { position: absolute; left: 0; right: 0; bottom: 0; z-index: 4; display: flex; align-items: center; gap: 6px; padding: 26px 10px 8px;
+  background: linear-gradient(transparent, rgba(0,0,0,.75)); opacity: 0; pointer-events: none; transition: opacity .2s; }
+.live-player.ctl-on .live-ctl { opacity: 1; pointer-events: auto; }
+@media (hover: hover) { .live-player:hover .live-ctl { opacity: 1; pointer-events: auto; } }
+.live-player.ctl-on .live-cap { opacity: 0; }
+.live-ctl button { display: grid; place-items: center; width: 40px; height: 40px; border: 0; padding: 0; border-radius: 8px; background: none; color: #fff; cursor: pointer; }
+.live-ctl button:hover, .live-ctl button:focus-visible { background: rgba(255,255,255,.15); outline: none; }
+.live-ctl button[hidden] { display: none; }
+.live-ctl svg { width: 26px; height: 26px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+#live-pp svg { fill: #fff; stroke: none; }
+#live-vol svg path:first-child { fill: #fff; }
+#live-vol .x { display: none; } #live-vol.off .x { display: inline; } #live-vol.off .w { display: none; }
+#live-wide .out { display: none; } #live-wide.on .out { display: inline; } #live-wide.on .in { display: none; }
+.live-ctl-sp { flex: 1; }

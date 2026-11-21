@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Russo+One&family=VT323&display=swap">
-<link rel="stylesheet" href="general.css?v=20261121c">
+<link rel="stylesheet" href="general.css?v=20261121d">
 
 <!-- sign-in gate: nobody reaches the site without an account -->
 <div class="gate" id="gate">
@@ -1001,10 +1001,26 @@ they crush my heart destroy my body  just like a lego
               <textarea id="yrs-v-edit" maxlength="300" rows="2" aria-label="Edit description"></textarea>
               <div class="ig-row"><button class="ig-btn" type="button" id="yrs-v-save">Save description</button><button class="ig-btn red" type="button" id="yrs-v-del">Delete post</button></div>
             </div>
-            <ol class="yrs-cmts" id="yrs-v-cmts"></ol>
-            <form class="yrs-cmt-form" id="yrs-v-cform" novalidate><label class="sr" for="yrs-v-cin">Comment</label><input id="yrs-v-cin" type="text" maxlength="200" placeholder="Add a comment…"><button class="ig-btn blue" type="submit">Post</button></form>
+            <button type="button" class="ig-btn yrs-v-cbtn" id="yrs-v-cbtn">Comments</button>
             <p class="yrs-cnote" id="yrs-v-cnote"></p>
           </div>
+        </div>
+      </div>
+
+      <!-- comments: slides up from the bottom -->
+      <div class="ig-cs" id="ig-cs" hidden>
+        <div class="ig-cs-sheet" id="ig-cs-sheet" role="dialog" aria-label="Comments">
+          <div class="ig-cs-grab" id="ig-cs-grab"><i></i><h3>Comments</h3><button type="button" class="ig-cs-x" id="ig-cs-x" aria-label="Close">×</button></div>
+          <ol class="ig-cs-list" id="ig-cs-list"></ol>
+          <div class="ig-cs-replying" id="ig-cs-replying" hidden><span>Replying to <b id="ig-cs-rname"></b></span><button type="button" id="ig-cs-rx" aria-label="Cancel reply">×</button></div>
+          <div class="ig-cs-rec" id="ig-cs-rec" hidden><i></i><span id="ig-cs-rtime">0:00</span> Recording… tap ■ to send</div>
+          <form class="ig-cs-form" id="ig-cs-form" novalidate>
+            <img class="yrs-av" id="ig-cs-av" alt="">
+            <label class="sr" for="ig-cs-in">Comment</label><input id="ig-cs-in" type="text" maxlength="200" placeholder="Add a comment…" autocomplete="off">
+            <button type="button" class="ig-cs-mic" id="ig-cs-mic" aria-label="Record a voice comment"><svg viewBox="0 0 16 16" shape-rendering="crispEdges"><path d="M6 1h4v1h1v7h-1v1H6V9H5V2h1z"/><path d="M3 7h1v2h1v1h1v1h4v-1h1V9h1V7h1v3h-1v1h-1v1H9v2h2v1H5v-1h2v-2H5v-1H4v-1H3z"/></svg></button>
+            <button type="submit" class="ig-cs-send" id="ig-cs-send">Post</button>
+          </form>
+          <p class="ig-cs-note" id="ig-cs-note" role="status"></p>
         </div>
       </div>
     </div>
@@ -2875,8 +2891,20 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
   const activeStories = uid => ((stories[uid] && Array.isArray(stories[uid].items)) ? stories[uid].items : []).filter(s => s && s.src && Date.now() - s.at < DAY).sort((a, b) => a.at - b.at);
   const off = t => { const o = $("yrs-off"); o.hidden = !t; o.textContent = t || ""; };
   const isOwnerId = uid => !!ownerId && uid === ownerId;
-  const nameOf = uid => (profiles[uid] && profiles[uid].name) || (isOwnerId(uid) ? "Kenos" : "Player");
-  const avatarOf = uid => (profiles[uid] && profiles[uid].photo) || (isOwnerId(uid) ? "yours-creator.jpg" : letterAvatar(nameOf(uid)));
+  const BOT = "bot_zololo"; // Zololo: an example friend made by the site
+  const nameOf = uid => uid === BOT ? "Zololo" : (profiles[uid] && profiles[uid].name) || (isOwnerId(uid) ? "Kenos" : "Player");
+  const avatarOf = uid => uid === BOT ? botAvatar() : (profiles[uid] && profiles[uid].photo) || (isOwnerId(uid) ? "yours-creator.jpg" : letterAvatar(nameOf(uid)));
+  const bioOf = uid => uid === BOT ? "🤖 Bot friend. I'm here as an example so you can see how friends look. Bip boup." : (profiles[uid] && profiles[uid].bio) || "";
+  let botPic = "";
+  function botAvatar() { // a 16-bit robot head
+    if (botPic) return botPic;
+    const art = ["................","................",".......yy.......",".......yy.......","...pppppppppp...","..pppppppppppp..","..ppwwwppwwwpp..","..ppwkwppwkwpp..","..ppwwwppwwwpp..","..pppppppppppp..","..ppprrrrrrppp..","..pppppppppppp..","...pppppppppp...","....pp....pp....","................","................"];
+    const col = { y: "#ffc531", p: "#a640ff", w: "#ffffff", k: "#0b0620", r: "#ff3b7a" };
+    const c = document.createElement("canvas"); c.width = c.height = 64; const x = c.getContext("2d");
+    x.fillStyle = "#1a0d44"; x.fillRect(0, 0, 64, 64);
+    art.forEach((row, r) => [...row].forEach((ch, k) => { if (col[ch]) { x.fillStyle = col[ch]; x.fillRect(k * 4, r * 4, 4, 4); } }));
+    return (botPic = c.toDataURL());
+  }
   const letters = {};
   function letterAvatar(n) {
     if (letters[n]) return letters[n];
@@ -2889,7 +2917,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
   const ago = at => { const s = Math.max(0, (Date.now() - at) / 1000); return s < 60 ? "now" : s < 3600 ? Math.floor(s / 60) + "m" : s < 86400 ? Math.floor(s / 3600) + "h" : Math.floor(s / 86400) + "d"; };
   const allPosts = () => Object.entries(posts).flatMap(([uid, d]) => (Array.isArray(d.items) ? d.items : []).filter(p => p && p.id && p.src).map(p => ({ ...p, uid, key: uid + ":" + p.id }))).sort((a, b) => b.at - a.at);
   const likers = key => Object.entries(likes).filter(([, l]) => Array.isArray(l.keys) && l.keys.includes(key)).map(([u]) => u);
-  const cmtsOf = key => Object.entries(cmts).flatMap(([uid, d]) => (Array.isArray(d.items) ? d.items : []).filter(c => c && c.k === key && typeof c.t === "string").map(c => ({ uid, t: c.t.slice(0, 200), at: +c.at || 0 }))).sort((a, b) => a.at - b.at);
+  const cmtsOf = key => Object.entries(cmts).flatMap(([uid, d]) => (Array.isArray(d.items) ? d.items : []).filter(c => c && c.k === key && (typeof c.t === "string" || typeof c.a === "string")).map(c => ({ uid, id: String(c.id || uid + "-" + c.at), t: String(c.t || "").slice(0, 200), a: typeof c.a === "string" ? c.a : "", d: +c.d || 0, r: c.r ? String(c.r) : "", at: +c.at || 0 }))).sort((a, b) => a.at - b.at);
   // the creator's posts climb to 1M views and 100K likes over their first five minutes
   const RAMP = 5 * 60 * 1000, ramp = (at, top) => Math.round(top * Math.pow(Math.min(1, Math.max(0, Date.now() - at) / RAMP), .6));
   const likesShown = p => (isOwnerId(p.uid) ? ramp(p.at, 100000) : 0) + likers(p.key).length;
@@ -2900,7 +2928,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
   // ---- opening and leaving the app (it covers the whole website) ----
   const app = $("ig");
   function enterApp() { document.documentElement.classList.add("ig-open"); go(tab); }
-  function leaveApp() { document.documentElement.classList.remove("ig-open"); closeView(); closeEditor(); closeStories(); show("home"); try { history.replaceState(null, "", "#home"); } catch (_) {} }
+  function leaveApp() { document.documentElement.classList.remove("ig-open"); closeComments(true); closeView(); closeEditor(); closeStories(); show("home"); try { history.replaceState(null, "", "#home"); } catch (_) {} }
   $("ig-back").onclick = leaveApp;
   new MutationObserver(() => { if (!$("yours").hidden) enterApp(); else document.documentElement.classList.remove("ig-open"); }).observe($("yours"), { attributes: true, attributeFilter: ["hidden"] });
   if (!$("yours").hidden) enterApp();
@@ -2962,14 +2990,14 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     like.onclick = () => toggleLike(p.key);
     const cm = el("button", "ig-ico"); cm.type = "button"; cm.setAttribute("aria-label", "Comments");
     cm.innerHTML = '<svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-3.3-6.5A8 8 0 0 1 20 12zM20 20l-2.5-2.6"/></svg>';
-    cm.onclick = () => openView(p.key);
+    cm.onclick = () => openComments(p.key);
     acts.append(like, cm);
     const meta = el("div", "ig-meta");
     const lk = el("strong", "", fmt(likesShown(p)) + " likes"); lk.dataset.liveLikes = p.key; meta.append(lk);
     if (isOwnerId(p.uid)) { const vw = el("span", "ig-views", fmt(ramp(p.at, 1000000)) + " views"); vw.dataset.liveViews = p.key; meta.append(vw); }
     const cap = el("p", "ig-cap"); cap.append(el("strong", "", nameOf(p.uid) + " "), document.createTextNode(p.desc || ""));
     art.append(head, box, acts, meta, cap);
-    if (!isOwnerId(p.uid)) { const n = cmtsOf(p.key).length; const more = el("button", "ig-more", n ? "View all " + n + " comments" : "Add a comment…"); more.type = "button"; more.onclick = () => openView(p.key); art.append(more); }
+    if (!isOwnerId(p.uid)) { const n = cmtsOf(p.key).length; const more = el("button", "ig-more", n ? "View all " + n + " comments" : "Add a comment…"); more.type = "button"; more.onclick = () => openComments(p.key); art.append(more); }
     return art;
   }
   function tile(p) {
@@ -2983,7 +3011,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     const t = el("span", "ig-pr-txt"); t.append(el("strong", "", nameOf(uid) + (uid === me ? " (you)" : "")), el("span", "", sub));
     b.append(avatar(uid), t); b.onclick = () => openProfile(uid); return b;
   }
-  const everyone = () => [...new Set([...(ownerId ? [ownerId] : []), ...(me ? [me] : []), ...Object.keys(profiles), ...Object.keys(posts)])];
+  const everyone = () => [...new Set([...(ownerId ? [ownerId] : []), ...(me ? [me] : []), BOT, ...Object.keys(profiles), ...Object.keys(posts)])];
 
   // ---- drawing each screen ----
   function render() {
@@ -3013,7 +3041,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     }
     if (!$("ig-friends").hidden) {
       const fl = $("ig-friend-list"); fl.textContent = "";
-      everyone().filter(uid => uid !== me).forEach(uid => fl.append(personRow(uid, isOwnerId(uid) ? "Creator" : (profiles[uid] && profiles[uid].bio) || postsLabel(all.filter(p => p.uid === uid).length))));
+      everyone().filter(uid => uid !== me).forEach(uid => fl.append(personRow(uid, isOwnerId(uid) ? "Creator" : uid === BOT ? "Bot friend · example" : bioOf(uid) || postsLabel(all.filter(p => p.uid === uid).length))));
       if (!fl.children.length) fl.append(el("p", "ig-empty", "Nobody else is here yet. Share the site with your friends."));
     }
     if (!$("ig-inbox").hidden) {
@@ -3021,7 +3049,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
       const mine = all.filter(p => p.uid === me), evs = [];
       mine.forEach(p => {
         likers(p.key).filter(u => u !== me).forEach(u => evs.push({ uid: u, t: "liked your post.", at: p.at, p }));
-        cmtsOf(p.key).filter(c => c.uid !== me).forEach(c => evs.push({ uid: c.uid, t: "commented: " + c.t, at: c.at, p }));
+        cmtsOf(p.key).filter(c => c.uid !== me).forEach(c => evs.push({ uid: c.uid, t: c.a ? "sent a voice comment." : (c.r ? "replied: " : "commented: ") + c.t, at: c.at, p }));
       });
       evs.sort((a, b) => b.at - a.at).slice(0, 100).forEach(e => {
         const row = el("button", "ig-person-row"); row.type = "button";
@@ -3033,7 +3061,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     }
     if (profUid && !$("yrs-prof").hidden) {
       $("yrs-prof-av").src = avatarOf(profUid); $("yrs-prof-name").textContent = nameOf(profUid);
-      $("yrs-prof-bio").textContent = (profiles[profUid] && profiles[profUid].bio) || ""; $("yrs-prof-badge").hidden = !isOwnerId(profUid);
+      $("yrs-prof-bio").textContent = bioOf(profUid); $("yrs-prof-badge").hidden = !isOwnerId(profUid) && profUid !== BOT; $("yrs-prof-badge").textContent = profUid === BOT ? "BOT" : "CREATOR";
       $("yrs-edit-btn").hidden = profUid !== me;
       const g = $("yrs-prof-grid"); g.textContent = "";
       const theirs = all.filter(p => p.uid === profUid); theirs.forEach(p => g.append(tile(p)));
@@ -3043,6 +3071,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
       $("yrs-prof-views").textContent = fmt(theirs.reduce((s, p) => s + (isOwnerId(p.uid) ? ramp(p.at, 1000000) : 0), 0));
     }
     if (viewing) fillView();
+    if (csKey) renderComments();
   }
   $("ig-q").oninput = render;
 
@@ -3070,7 +3099,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
   }
   $("yrs-edit-btn").onclick = () => {
     editPhoto = null; screen("yrs-edit");
-    $("yrs-edit-av").src = avatarOf(me); $("yrs-edit-name").value = nameOf(me); $("yrs-edit-bio").value = (profiles[me] && profiles[me].bio) || ""; $("yrs-edit-msg").textContent = "";
+    $("yrs-edit-av").src = avatarOf(me); $("yrs-edit-name").value = nameOf(me); $("yrs-edit-bio").value = bioOf(me); $("yrs-edit-msg").textContent = "";
   };
   $("yrs-edit-cancel").onclick = () => openProfile(me);
   $("yrs-edit-photo").onchange = async e => {
@@ -3080,8 +3109,8 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
   $("yrs-edit").addEventListener("submit", async e => {
     e.preventDefault();
     const name = $("yrs-edit-name").value.trim().replace(/\s+/g, " "), bio = $("yrs-edit-bio").value.trim().slice(0, 160), m = $("yrs-edit-msg");
-    const bad = checkUsername(name); if (bad) { m.textContent = bad; return; }
-    if (isOffensive(bio)) { m.textContent = "Your description has a word that isn't allowed here."; return; }
+    if (!name) { m.textContent = "Pick a name."; return; }
+    if ([...name].length > 15) { m.textContent = "15 characters maximum."; return; }
     const prev = profiles[me] || {};
     try { await db.doc("profiles/" + me).set({ name, bio, photo: editPhoto || prev.photo || "" }); openProfile(me); }
     catch (_) { m.textContent = "Your access to this page doesn't let you change a profile."; }
@@ -3139,7 +3168,7 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     if (name === "text") {
       const f = el("form", "ige-textform"); const i = el("input"); i.type = "text"; i.maxLength = 60; i.placeholder = "Type your text"; i.id = "ige-text-in";
       const ok = el("button", "ig-btn blue", "Add"); ok.type = "submit"; f.append(i, ok);
-      f.onsubmit = e => { e.preventDefault(); const t = i.value.trim(); if (!t) return; if (isOffensive(t)) { $("ige-tip").textContent = "That text has a word that isn't allowed here."; return; } E.items.push({ type: "text", text: t, x: .5, y: .45, size: .08, color: "#ffffff" }); E.sel = E.items.length - 1; drawItems(); panel("item"); };
+      f.onsubmit = e => { e.preventDefault(); const t = i.value.trim(); if (!t) return; E.items.push({ type: "text", text: t, x: .5, y: .45, size: .08, color: "#ffffff" }); E.sel = E.items.length - 1; drawItems(); panel("item"); };
       p.append(f); setTimeout(() => i.focus(), 0);
     }
     if (name === "item" && E.items[E.sel]) {
@@ -3219,7 +3248,6 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     e.preventDefault();
     const m = $("yrs-new-msg"), desc = $("yrs-new-desc").value.trim().slice(0, 300);
     if (!readyBlob) { m.textContent = "Pick a photo or video first."; return; }
-    if (isOffensive(desc)) { m.textContent = "Your description has a word that isn't allowed here."; return; }
     $("yrs-new-go").disabled = true; m.textContent = "Uploading…";
     try {
       const up = await assets.upload(readyBlob);
@@ -3280,27 +3308,14 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     $("yrs-v-views").textContent = isOwnerId(p.uid) ? fmt(ramp(p.at, 1000000)) + " views" : "";
     $("yrs-v-desc").textContent = p.desc || "";
     $("yrs-v-mine").hidden = p.uid !== me;
-    const creatorPost = isOwnerId(p.uid), list = $("yrs-v-cmts"); list.textContent = "";
-    $("yrs-v-cform").hidden = creatorPost;
-    $("yrs-v-cnote").textContent = creatorPost ? "Comments are turned off on the creator's posts." : "";
-    if (!creatorPost) {
-      const all = cmtsOf(p.key);
-      all.forEach(c => { const li = el("li"); li.append(el("strong", "", nameOf(c.uid) + " "), el("span", "", c.t)); list.append(li); });
-      if (!all.length) list.append(el("li", "yrs-empty", "No comments yet."));
-    }
+    const creatorPost = isOwnerId(p.uid), n = cmtsOf(p.key).length;
+    $("yrs-v-cbtn").textContent = creatorPost ? "Comments are turned off" : n ? "View all " + n + " comments" : "Add a comment…";
+    $("yrs-v-cbtn").disabled = creatorPost;
   }
+  $("yrs-v-cbtn").onclick = () => viewing && openComments(viewing);
   $("yrs-v-like").onclick = () => viewing && toggleLike(viewing);
-  $("yrs-v-cform").addEventListener("submit", async e => {
-    e.preventDefault();
-    const t = $("yrs-v-cin").value.trim().slice(0, 200), p = allPosts().find(p => p.key === viewing);
-    if (!t || !p || isOwnerId(p.uid)) return;
-    if (isOffensive(t)) { $("yrs-v-cnote").textContent = "That comment has a word that isn't allowed here."; return; }
-    const items = ((cmts[me] && cmts[me].items) || []).concat({ k: p.key, t, at: Date.now() }).slice(-200);
-    try { await db.doc("cmts/" + me).set({ items }); $("yrs-v-cin").value = ""; } catch (_) { $("yrs-v-cnote").textContent = "Your access to this page doesn't let you comment."; }
-  });
   $("yrs-v-save").onclick = async () => {
     const id = viewing && viewing.split(":")[1], desc = $("yrs-v-edit").value.trim().slice(0, 300);
-    if (isOffensive(desc)) { $("yrs-v-cnote").textContent = "Your description has a word that isn't allowed here."; return; }
     const items = ((posts[me] && posts[me].items) || []).map(x => x.id === id ? { ...x, desc } : x);
     try { await db.doc("posts/" + me).set({ items }); } catch (_) {}
   };
@@ -3308,7 +3323,161 @@ document.querySelectorAll(".addon").forEach(el => el.querySelector(".addon-buy")
     const id = viewing && viewing.split(":")[1], list = (posts[me] && posts[me].items) || [], it = list.find(x => x.id === id);
     try { await db.doc("posts/" + me).set({ items: list.filter(x => x.id !== id) }); closeView(); if (it && it.asset && assets) assets.delete(it.asset).catch(() => {}); } catch (_) {}
   };
-  addEventListener("keydown", e => { if (e.key !== "Escape" || $("yours").hidden) return; if (sv) closeStories(); else if (!$("ig-editor").hidden) closeEditor(); else if (viewing) closeView(); else leaveApp(); });
+
+  // ---- comments: a 16-bit sheet that slides up, with likes, replies and voice comments ----
+  let csKey = null, replyTo = null, csTimer = 0;
+  const openReplies = new Set(), players = {};
+  const heart = '<svg viewBox="0 0 16 16" shape-rendering="crispEdges"><path d="M3 3h3v1h1v1h2V4h1V3h3v1h1v5h-1v1h-1v1h-1v1h-1v1H9v1H7v-1H6v-1H5v-1H4v-1H3V9H2V4h1z"/></svg>';
+  function openComments(key) {
+    clearTimeout(csTimer); csKey = key; replyTo = null; openReplies.clear();
+    const cs = $("ig-cs"); cs.hidden = false; $("ig-cs-sheet").style.transform = "";
+    $("ig-cs-note").textContent = ""; $("ig-cs-replying").hidden = true; $("ig-cs-av").src = avatarOf(me);
+    renderComments(); $("ig-cs-list").scrollTop = 0;
+    requestAnimationFrame(() => requestAnimationFrame(() => cs.classList.add("open")));
+  }
+  function closeComments(now) {
+    if (rec) stopRec(true);
+    if (dictOn && dict) dict.stop().catch(() => {});
+    Object.values(players).forEach(pl => pl.audio.pause());
+    const cs = $("ig-cs"); cs.classList.remove("open"); csKey = null;
+    clearTimeout(csTimer); if (now) cs.hidden = true; else csTimer = setTimeout(() => { cs.hidden = true; }, 320);
+  }
+  $("ig-cs-x").onclick = () => closeComments();
+  $("ig-cs").addEventListener("click", e => { if (e.target.id === "ig-cs") closeComments(); });
+  // swipe the sheet down to close it, like TikTok
+  (() => {
+    const g = $("ig-cs-grab"), sh = $("ig-cs-sheet"); let y0 = null, dy = 0;
+    g.addEventListener("pointerdown", e => { if (e.target.closest("button")) return; y0 = e.clientY; dy = 0; g.setPointerCapture(e.pointerId); sh.style.transition = "none"; });
+    g.addEventListener("pointermove", e => { if (y0 == null) return; dy = Math.max(0, e.clientY - y0); sh.style.transform = "translateY(" + dy + "px)"; });
+    const end = () => { if (y0 == null) return; y0 = null; sh.style.transition = ""; sh.style.transform = ""; if (dy > 90) closeComments(); };
+    g.addEventListener("pointerup", end); g.addEventListener("pointercancel", end);
+  })();
+  const mmss = s => Math.floor(s / 60) + ":" + String(Math.round(s % 60)).padStart(2, "0");
+  function voicePlayer(c) {
+    let pl = players[c.id];
+    if (!pl) {
+      const box = el("div", "ig-voice"), b = el("button", "ig-voice-play", "▶"), bars = el("span", "ig-voice-bars"), t = el("span", "ig-voice-t", mmss(c.d));
+      b.type = "button"; b.setAttribute("aria-label", "Play voice comment");
+      for (let k = 0; k < 14; k++) { const i = el("i"); i.style.height = (4 + ((c.id.charCodeAt(k % c.id.length) * (k + 3)) % 14)) + "px"; bars.append(i); }
+      const audio = new Audio(); audio.preload = "none"; audio.src = BLOB(c.a);
+      b.onclick = () => { if (audio.paused) { Object.values(players).forEach(o => o.audio !== audio && o.audio.pause()); audio.play().catch(() => { $("ig-cs-note").textContent = "This voice comment can't play in this browser."; }); } else audio.pause(); };
+      audio.onplay = () => { b.textContent = "❚❚"; box.classList.add("on"); };
+      audio.onpause = audio.onended = () => { b.textContent = "▶"; box.classList.remove("on"); };
+      audio.ontimeupdate = () => { const k = audio.duration && isFinite(audio.duration) ? audio.currentTime / audio.duration : c.d ? audio.currentTime / c.d : 0; [...bars.children].forEach((i, n) => i.classList.toggle("lit", n / 14 < k)); };
+      box.append(b, bars, t); pl = players[c.id] = { box, audio };
+    }
+    return pl.box;
+  }
+  function cmtRow(c, isReply) {
+    const li = el("li", "ig-c" + (isReply ? " reply" : ""));
+    const av = avatar(c.uid); av.onclick = () => { closeComments(); closeView(); openProfile(c.uid); };
+    const body = el("div", "ig-c-body");
+    const top = el("div", "ig-c-top"); top.append(el("strong", "", nameOf(c.uid)));
+    if (isOwnerId(c.uid)) top.append(el("span", "ig-check", "✔"));
+    top.append(el("span", "ig-c-time", ago(c.at)));
+    body.append(top);
+    if (c.a) body.append(voicePlayer(c)); else body.append(el("p", "ig-c-txt", c.t));
+    const n = likers("c|" + c.id).length, meta = el("div", "ig-c-meta");
+    if (n) meta.append(el("span", "", fmt(n) + (n === 1 ? " like" : " likes")));
+    const rb = el("button", "", "Reply"); rb.type = "button";
+    rb.onclick = () => { replyTo = c.r || c.id; $("ig-cs-rname").textContent = nameOf(c.uid); $("ig-cs-replying").hidden = false; const i = $("ig-cs-in"); if (c.r && c.uid !== me) i.value = "@" + nameOf(c.uid) + " "; i.focus(); };
+    meta.append(rb);
+    if (c.uid === me || isCreator) { const d = el("button", "del", "Delete"); d.type = "button"; d.onclick = () => deleteCmt(c); meta.append(d); }
+    body.append(meta);
+    const lk = el("button", "ig-c-like" + (iLike("c|" + c.id) ? " on" : "")); lk.type = "button"; lk.setAttribute("aria-label", "Like comment"); lk.innerHTML = heart;
+    lk.onclick = () => toggleLike("c|" + c.id);
+    li.append(av, body, lk); return li;
+  }
+  function renderComments() {
+    const p = allPosts().find(p => p.key === csKey), list = $("ig-cs-list"), keep = list.scrollTop;
+    if (!p) return closeComments(true);
+    list.textContent = "";
+    const off = isOwnerId(p.uid);
+    $("ig-cs-form").hidden = off;
+    if (off) { list.append(el("li", "ig-cs-empty", "Comments are turned off on the creator's posts.")); return; }
+    const all = cmtsOf(p.key), ids = new Set(all.map(c => c.id)), tops = all.filter(c => !c.r || !ids.has(c.r));
+    tops.forEach(c => {
+      list.append(cmtRow(c));
+      const reps = all.filter(r => r.r === c.id);
+      if (!reps.length) return;
+      if (openReplies.has(c.id)) reps.forEach(r => list.append(cmtRow(r, true)));
+      const t = el("li", "ig-c-more"), b = el("button", "", openReplies.has(c.id) ? "Hide replies" : "View " + reps.length + " more " + (reps.length === 1 ? "reply" : "replies"));
+      b.type = "button"; b.onclick = () => { openReplies.has(c.id) ? openReplies.delete(c.id) : openReplies.add(c.id); renderComments(); };
+      t.append(b); list.append(t);
+    });
+    if (!tops.length) list.append(el("li", "ig-cs-empty", "No comments yet. Be the first!"));
+    list.scrollTop = keep;
+  }
+  $("ig-cs-rx").onclick = () => { replyTo = null; $("ig-cs-replying").hidden = true; };
+  async function addCmt(extra) {
+    const p = allPosts().find(p => p.key === csKey); if (!p || isOwnerId(p.uid) || !db) return false;
+    const c = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), k: p.key, at: Date.now(), ...extra };
+    const rt = replyTo; if (rt) c.r = rt;
+    const items = ((cmts[me] && cmts[me].items) || []).concat(c).slice(-300);
+    try { await db.doc("cmts/" + me).set({ items }); if (rt) { openReplies.add(rt); renderComments(); } replyTo = null; $("ig-cs-replying").hidden = true; return true; }
+    catch (_) { $("ig-cs-note").textContent = "Your access to this page doesn't let you comment."; return false; }
+  }
+  async function deleteCmt(c) {
+    const items = ((cmts[c.uid] && cmts[c.uid].items) || []).filter(x => String(x.id || c.uid + "-" + x.at) !== c.id);
+    try { await db.doc("cmts/" + c.uid).set({ items }); if (c.a && assets) assets.delete(c.a).catch(() => {}); } catch (_) { $("ig-cs-note").textContent = "Couldn't delete that comment."; }
+  }
+  $("ig-cs-form").addEventListener("submit", async e => {
+    e.preventDefault();
+    if (rec) return stopRec();
+    const t = $("ig-cs-in").value.trim().slice(0, 200); if (!t) return;
+    $("ig-cs-note").textContent = "";
+    const wasReply = !!replyTo;
+    if (await addCmt({ t })) { $("ig-cs-in").value = ""; if (!wasReply) requestAnimationFrame(() => { const l = $("ig-cs-list"); l.scrollTop = l.scrollHeight; }); }
+  });
+
+  // voice comments: record with the microphone; where the mic is blocked, talk and the words get typed
+  let rec = null, recStream = null, recChunks = [], recAt = 0, recTick = 0, micBlocked = false, dict = null, dictOn = false;
+  if (window.claude && window.claude.use) window.claude.use("dictation").then(d => {
+    dict = d; if (!d) return;
+    d.onFinal(({ text }) => { const i = $("ig-cs-in"); i.value = (i.value ? i.value.replace(/\s*$/, " ") : "") + text; });
+    d.onState(({ state }) => { dictOn = state !== "idle"; $("ig-cs-mic").classList.toggle("rec", dictOn); });
+  }).catch(() => {});
+  $("ig-cs-mic").onclick = async () => {
+    const note = $("ig-cs-note"); note.textContent = "";
+    if (dictOn && dict) { dict.stop().catch(() => {}); return; }
+    if (rec) return stopRec();
+    if (micBlocked) {
+      if (!dict) { note.textContent = "The microphone is blocked here. Allow it in your browser, then try again."; micBlocked = false; return; }
+      dict.start().catch(err => { note.textContent = err && err.code === "not_granted" ? "Microphone not allowed. Type your comment instead." : "Couldn't start listening. Try again."; });
+      note.textContent = "Talk now: your words are typed in the box. Tap 🎤 again to stop.";
+      return;
+    }
+    if (!assets) { note.textContent = "Your access to this page doesn't let you send voice comments."; return; }
+    try { recStream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+    catch (_) {
+      micBlocked = true;
+      note.textContent = dict ? "Voice recording is blocked here. Tap 🎤 again to talk and your words get typed." : "Allow the microphone for this site to send voice comments.";
+      return;
+    }
+    const type = ["audio/webm;codecs=opus", "audio/mp4", "audio/webm"].find(t => window.MediaRecorder && MediaRecorder.isTypeSupported(t));
+    try { rec = new MediaRecorder(recStream, type ? { mimeType: type } : undefined); } catch (_) { recStream.getTracks().forEach(t => t.stop()); note.textContent = "This browser can't record voice."; return; }
+    recChunks = []; rec.ondataavailable = e => e.data.size && recChunks.push(e.data);
+    rec.start(); recAt = Date.now();
+    $("ig-cs-rec").hidden = false; $("ig-cs-mic").classList.add("rec"); $("ig-cs-send").textContent = "■";
+    const tick = () => { const s = Math.floor((Date.now() - recAt) / 1000); $("ig-cs-rtime").textContent = mmss(s); if (s >= 60) stopRec(); };
+    tick(); recTick = setInterval(tick, 250);
+  };
+  function stopRec(cancel) {
+    const r = rec; if (!r) return; rec = null; clearInterval(recTick);
+    $("ig-cs-rec").hidden = true; $("ig-cs-mic").classList.remove("rec"); $("ig-cs-send").textContent = "Post";
+    const secs = (Date.now() - recAt) / 1000;
+    r.onstop = async () => {
+      recStream && recStream.getTracks().forEach(t => t.stop());
+      if (cancel || secs < 0.6 || !recChunks.length) return;
+      const kind = (r.mimeType || "").includes("mp4") ? "video/mp4" : "video/webm"; // stored as a sound-only video file
+      const blob = new Blob(recChunks, { type: kind }), note = $("ig-cs-note");
+      note.textContent = "Sending your voice…";
+      try { const up = await assets.upload(blob, { type: kind }); if (await addCmt({ t: "", a: up.id, d: Math.round(secs) })) note.textContent = ""; }
+      catch (_) { note.textContent = "Couldn't send the voice comment."; }
+    };
+    try { r.stop(); } catch (_) {}
+  }
+  addEventListener("keydown", e => { if (e.key !== "Escape" || $("yours").hidden) return; if (sv) closeStories(); else if (csKey) closeComments(); else if (!$("ig-editor").hidden) closeEditor(); else if (viewing) closeView(); else leaveApp(); });
 })();
 
 // Logged in before on this device (until LOG OUT): open the site straight away

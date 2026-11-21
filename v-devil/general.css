@@ -1256,3 +1256,28 @@ nav a .nav-ico { width: 18px; height: 18px; border-radius: 50%; vertical-align: 
 .yg-intro.out { animation: yg-out .65s cubic-bezier(.65,0,.25,1) forwards; }
 @keyframes yg-out { to { transform: translateX(-100%); } }
 @media (prefers-reduced-motion: reduce) { .yg.open .yg-box, .yg-intro.out { animation: none; } }
+
+/* ===== LIVE: full screen, sideways, with BACK → "You sure?" ===== */
+.live-stage { position: relative; }
+.live-back { display: none; }
+html.live-full, html.live-full body { overflow: hidden; }
+html.live-full #live .live-stage { position: fixed; z-index: 300; inset: 0; margin: 0; gap: 0; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  background: #000; grid-template-columns: minmax(0, 1fr) minmax(180px, 26%); }
+html.live-full #live .live-player { aspect-ratio: auto; height: 100%; box-shadow: none; }
+html.live-full #live .live-chat { height: 100%; min-height: 0; max-height: none; box-shadow: none; background: rgba(11,4,48,.92); }
+html.live-full .live-back { display: block; position: absolute; z-index: 5; left: calc(10px + env(safe-area-inset-left)); top: calc(10px + env(safe-area-inset-top)); border: 0; padding: 8px 12px; font: 10px var(--f-pixel); color: #fff; background: rgba(0,0,0,.6); box-shadow: 0 0 0 2px var(--lilac); cursor: pointer; }
+html.live-full .live-back[hidden] { display: none; }
+html.live-full #live .live-top { left: 120px; }
+/* a phone held upright: the live turns sideways anyway */
+@media (orientation: portrait) {
+  html.live-full #live .live-stage { inset: auto; left: 50%; top: 50%; width: 100vh; height: 100vw; width: 100dvh; height: 100dvw; transform: translate(-50%, -50%) rotate(90deg); padding: 0; }
+}
+.live-sure { position: absolute; inset: 0; z-index: 10; display: grid; place-items: center; background: rgba(0,0,0,.65); }
+.live-sure[hidden] { display: none; }
+.live-sure-box { display: grid; gap: 10px; justify-items: center; padding: 22px 24px 18px; background: #0b0620; text-align: center; box-shadow: 0 0 0 4px var(--lilac), 0 0 0 8px #120838, 8px 8px 0 8px rgba(0,0,0,.5); }
+.live-sure.open .live-sure-box { animation: igd-pop .42s steps(6, end); }
+.live-sure-box p { margin: 0; font: 14px/1.6 var(--f-pixel); color: var(--gold); text-shadow: 2px 2px 0 #4d1f99; }
+.live-sure-box small { font: 18px var(--f-body); color: #b9addf; }
+.live-sure-row { display: flex; gap: 12px; }
+.live-sure-row .btn { border: 0; cursor: pointer; min-width: 90px; justify-content: center; }
+.live-sure-yes { background: #e0102a; }

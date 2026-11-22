@@ -1344,3 +1344,18 @@ html.live-full.rot-90 #live .live-stage { transform: translate(-50%, -50%) rotat
 .live-src button[hidden] { display: none; }
 .live-src small { font: 16px/1.2 var(--f-body); color: #b9addf; }
 #live-src-devs { display: grid; gap: 6px; }
+
+/* ===== YOURS hold menu: glossy purple glass (like the reference picture) ===== */
+.igh-menu { position: relative; width: min(300px, 100%); border-radius: 22px; overflow: hidden; padding: 0;
+  background:
+    linear-gradient(118deg, rgba(255,255,255,0) 30%, rgba(255,255,255,.55) 44%, rgba(255,255,255,0) 58%),
+    linear-gradient(160deg, #d9b8f2 0%, #e6cdfa 28%, #c49be3 52%, #8a4fc4 74%, #4e1d82 100%);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.35), inset 0 2px 0 rgba(255,255,255,.7), 0 0 0 2px #7d52b4, 0 14px 40px rgba(40,0,80,.6); }
+.igh-menu button { position: relative; padding: 18px 20px; border-bottom: 0; color: #3d4455; font: 700 21px system-ui, -apple-system, "Segoe UI", sans-serif;
+  text-shadow: 0 1px 0 rgba(255,255,255,.55), 0 -1px 0 rgba(0,0,0,.12); }
+.igh-menu button + button:not([hidden]) { box-shadow: inset 0 2px 0 rgba(60,20,90,.55), inset 0 3px 0 rgba(255,255,255,.35); }
+.igh-menu button[hidden] + button { box-shadow: none; }
+.igh-menu button.red { color: #7a17a8; text-shadow: 0 1px 0 rgba(255,255,255,.5); }
+.igh-menu button:active { background: rgba(255,255,255,.18); }
+.igh-menu svg { width: 24px; height: 24px; stroke: #3d4455; stroke-width: 1.8; filter: drop-shadow(0 1px 0 rgba(255,255,255,.5)); }
+.igh-menu button.red svg { stroke: #7a17a8; }

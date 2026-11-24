@@ -1598,3 +1598,29 @@ html.vd-open .vd-top { gap: 4px; }
 .vd-sl-heart.go svg { animation: vd-heart .8s ease-out; }
 @keyframes vd-heart { 0% { opacity: 0; transform: scale(.4) rotate(-12deg); } 25% { opacity: 1; transform: scale(1.15) rotate(-12deg); } 60% { opacity: 1; transform: scale(1) rotate(-12deg); } 100% { opacity: 0; transform: translateY(-60px) scale(1.2) rotate(-12deg); } }
 @media (prefers-reduced-motion: reduce) { .vd-sl-disc { animation: none; } }
+
+/* Shorts v2: top bar like the reference, @name + Subscribe pill, one-line caption, little picture, progress line */
+.vd-sv-top { gap: 2px; }
+.vd-sv-top .vd-sp { flex: 1; }
+.vd-sv-x svg circle { fill: #fff; stroke: none; }
+.vd-sv-menu { position: absolute; z-index: 4; right: 10px; top: calc(54px + env(safe-area-inset-top)); display: grid; min-width: 180px; border-radius: 12px; overflow: hidden; background: rgba(32,32,36,.96); box-shadow: 0 8px 24px rgba(0,0,0,.5); }
+.vd-sv-menu[hidden] { display: none; }
+.vd-sv-menu button { padding: 13px 16px; border: 0; border-bottom: 1px solid rgba(255,255,255,.08); background: none; color: #fff; text-align: left; font: 500 15px system-ui, sans-serif; cursor: pointer; }
+.vd-sl iframe { width: 100%; height: 100%; border: 0; pointer-events: none; background: #000; }
+.vd-sl-tap { position: absolute; inset: 0; z-index: 1; }
+.vd-sl-pause, .vd-sl-heart { z-index: 2; }
+.vd-sl-rail { z-index: 2; bottom: calc(150px + env(safe-area-inset-bottom)); }
+.vd-sl-info { z-index: 2; right: 86px; bottom: calc(26px + env(safe-area-inset-bottom)); gap: 10px; }
+.vd-sl-row { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.vd-sl-av { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; flex: none; }
+.vd-sl-row b { font: 700 16px system-ui, sans-serif; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vd-sl-sub { flex: none; padding: 8px 16px; border: 0; border-radius: 22px; background: #fff; color: #0f0f0f; font: 700 15px system-ui, sans-serif; cursor: pointer; }
+.vd-sl-sub.on { background: rgba(255,255,255,.22); color: #fff; }
+.vd-sl-cap { margin: 0; font: 500 16px/1.3 system-ui, sans-serif !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vd-sl-thumb { position: absolute; z-index: 2; right: 14px; bottom: calc(24px + env(safe-area-inset-bottom)); width: 46px; height: 46px; border-radius: 8px; border: 2px solid #fff; object-fit: cover; }
+.vd-sl-bar { position: absolute; z-index: 3; left: 0; right: 0; bottom: env(safe-area-inset-bottom); height: 14px; display: flex; align-items: flex-end; cursor: pointer; }
+.vd-sl-bar::before { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(255,255,255,.3); }
+.vd-sl-bar i { position: relative; display: block; height: 3px; width: 0; background: #f1f1f1; }
+.vd-sl.paused .vd-sl-bar::before, .vd-sl.paused .vd-sl-bar i { height: 5px; }
+.vd-sl-yt { position: absolute; z-index: 3; left: 12px; top: calc(58px + env(safe-area-inset-top)); padding: 5px 10px; border-radius: 14px; background: rgba(0,0,0,.45); color: #fff; font: 600 12px system-ui, sans-serif; text-decoration: none; }
+.vd-sl-disc { display: none; }
